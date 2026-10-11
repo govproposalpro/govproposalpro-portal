@@ -4,90 +4,198 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>GovProposalPro · Secure Your Account</title>
+  <meta name="theme-color" content="#05081A" />
+  <title>GovProposalPro · Secure Your Access</title>
+  <link rel="icon" type="image/png" href="/assets/gpp-mark.png" />
   <!-- Compiled Tailwind CSS is inlined here by `npm run build`. -->
   <style>/*__TAILWIND__*/</style>
   <style>
-    @keyframes rise { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+    body { background: radial-gradient(1200px 600px at 10% -10%, rgba(30,91,255,0.22), transparent 60%), radial-gradient(1000px 600px at 110% 10%, rgba(255,31,61,0.16), transparent 60%), #05081A; }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: none; } }
     .rise { animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .field { display:block; width:100%; border-radius:1rem; border:1px solid rgba(186,196,234,0.14); background:rgba(8,13,36,0.7); padding:0.85rem 1rem; font-size:15px; color:#EEF1FF; outline:none; transition:border-color .2s, box-shadow .2s; }
+    .field::placeholder { color: rgba(142,154,200,0.6); }
+    .field:focus { border-color:#1E5BFF; box-shadow:0 0 0 4px rgba(30,91,255,0.25); }
+    select.field { appearance:none; background-image:linear-gradient(45deg,transparent 50%,#8E9AC8 50%),linear-gradient(135deg,#8E9AC8 50%,transparent 50%); background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%; background-size:5px 5px; background-repeat:no-repeat; padding-right:2.5rem; }
+    select.field option { background:#0E1533; color:#EEF1FF; }
+    .choice input { position:absolute; opacity:0; pointer-events:none; }
+    .choice span { display:block; border-radius:1rem; border:1px solid rgba(186,196,234,0.14); background:rgba(8,13,36,0.6); padding:0.75rem 0.9rem; transition:all .2s; cursor:pointer; }
+    .choice input:checked + span { border-color:transparent; background:linear-gradient(135deg,rgba(30,91,255,0.28),rgba(255,31,61,0.22)); box-shadow:0 0 0 1px rgba(127,162,255,0.6); }
+    .choice input:focus-visible + span { box-shadow:0 0 0 4px rgba(30,91,255,0.35); }
+    .chip input { position:absolute; opacity:0; pointer-events:none; }
+    .chip span { display:inline-block; border-radius:9999px; border:1px solid rgba(186,196,234,0.18); padding:0.45rem 0.9rem; font-size:13px; color:#BAC4EA; cursor:pointer; transition:all .2s; }
+    .chip input:checked + span { color:#fff; border-color:transparent; background:linear-gradient(135deg,#1E5BFF,#FF1F3D); }
+    .chip input:focus-visible + span { box-shadow:0 0 0 4px rgba(30,91,255,0.35); }
+    .cta { background-image:linear-gradient(135deg,#1E5BFF 0%,#5B3BFF 45%,#FF1F3D 100%); }
+    .dot { height:8px; border-radius:9999px; transition:all .3s; }
     @media (prefers-reduced-motion: reduce) { .rise { animation: none; } }
   </style>
 </head>
-<body class="min-h-screen bg-white font-sans text-navy-900 antialiased">
-  <main class="flex min-h-screen items-center justify-center px-4 py-12">
-    <div class="w-full max-w-md">
+<body class="min-h-screen font-sans text-mist-100 antialiased">
+  <main class="flex min-h-screen items-start justify-center px-4 py-10 sm:items-center">
+    <div class="w-full max-w-lg">
 
-      <!-- Brand mark -->
-      <div class="mb-8 text-center">
-        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 shadow-bubble">
-          <svg viewBox="0 0 24 24" class="h-7 w-7 text-gold-400" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7.5 3v5.25c0 4.6-3.2 8.5-7.5 9.75-4.3-1.25-7.5-5.15-7.5-9.75V6L12 3z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
-          </svg>
-        </div>
-        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-gold-600">GovProposalPro</p>
-      </div>
+      <!-- Brand -->
+      <header class="mb-8 text-center">
+        <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="mx-auto h-auto w-72 sm:w-96" />
+      </header>
 
       <!-- Form card -->
-      <section id="form-card" class="rise rounded-[28px] border border-navy-100 bg-white p-8 shadow-bubble sm:p-10">
-        <h1 class="text-2xl font-semibold tracking-tight text-navy-900">Create your secure login</h1>
-        <p class="mt-2 text-[15px] leading-relaxed text-navy-700">
-          Use the same email you checked out with on Whop. These will be your master credentials for the command center.
-        </p>
+      <section id="form-card" class="rise rounded-[32px] border border-white/10 bg-ink-800/80 p-7 shadow-bubble backdrop-blur-xl sm:p-10">
+        <div class="mb-6 flex items-center gap-2" aria-hidden="true">
+          <div id="dot-1" class="dot w-10 bg-gradient-to-r from-brand-blue to-brand-red"></div>
+          <div id="dot-2" class="dot w-4 bg-white/15"></div>
+          <p id="step-label" class="ml-auto text-xs font-semibold uppercase tracking-[0.2em] text-mist-400">Step 1 of 2</p>
+        </div>
 
-        <form id="capture-form" class="mt-8 space-y-5" novalidate>
-          <div>
-            <label for="email" class="mb-1.5 block text-sm font-medium text-navy-900">Business email</label>
-            <input id="email" name="email" type="email" autocomplete="email" required maxlength="254"
-              class="block w-full rounded-2xl border border-navy-100 bg-white px-4 py-3.5 text-[15px] text-navy-900 placeholder-navy-500/60 outline-none transition focus:border-gold-500 focus:ring-4 focus:ring-gold-300/40"
-              placeholder="you@company.com" />
+        <form id="capture-form" novalidate>
+          <!-- Step 1: account -->
+          <fieldset id="step-1">
+            <legend class="text-2xl font-semibold tracking-tight text-white">Create your secure login</legend>
+            <p class="mt-2 text-[15px] leading-relaxed text-mist-300">
+              Use the same email you checked out with on Whop. These become your master credentials for the command center.
+            </p>
+
+            <div class="mt-7 space-y-5">
+              <div>
+                <label for="email" class="mb-1.5 block text-sm font-medium text-mist-100">Whop purchase email</label>
+                <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" class="field" placeholder="you@company.com" />
+              </div>
+              <div>
+                <label for="password" class="mb-1.5 block text-sm font-medium text-mist-100">Password</label>
+                <input id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="72" aria-describedby="password-hint" class="field" />
+                <p id="password-hint" class="mt-1.5 text-xs text-mist-500">At least 12 characters, with an uppercase letter, a lowercase letter and a number.</p>
+              </div>
+              <div>
+                <label for="confirmPassword" class="mb-1.5 block text-sm font-medium text-mist-100">Confirm password</label>
+                <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required maxlength="72" class="field" />
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Step 2: business profile -->
+          <fieldset id="step-2" class="hidden">
+            <legend class="text-2xl font-semibold tracking-tight text-white">Tailor your command center</legend>
+            <p class="mt-2 text-[15px] leading-relaxed text-mist-300">
+              Tell us about your business so we can configure GovProposalPro around where you are today.
+            </p>
+
+            <div class="mt-7 space-y-5">
+              <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label for="fullName" class="mb-1.5 block text-sm font-medium text-mist-100">Full name</label>
+                  <input id="fullName" name="fullName" type="text" autocomplete="name" required maxlength="120" class="field" />
+                </div>
+                <div>
+                  <label for="phone" class="mb-1.5 block text-sm font-medium text-mist-100">Mobile phone</label>
+                  <input id="phone" name="phone" type="tel" autocomplete="tel" required maxlength="30" class="field" placeholder="(555) 123-4567" />
+                </div>
+              </div>
+
+              <div>
+                <label for="businessName" class="mb-1.5 block text-sm font-medium text-mist-100">Business name</label>
+                <input id="businessName" name="businessName" type="text" autocomplete="organization" required maxlength="160" class="field" />
+              </div>
+
+              <div role="radiogroup" aria-labelledby="exp-label">
+                <p id="exp-label" class="mb-2 block text-sm font-medium text-mist-100">Government contracting experience</p>
+                <div class="grid gap-2.5 sm:grid-cols-2">
+                  <label class="choice relative"><input type="radio" name="experienceLevel" value="new" required /><span><strong class="block text-sm text-white">Brand new</strong><span class="!border-0 !bg-transparent !p-0 text-xs text-mist-400">Haven't bid yet</span></span></label>
+                  <label class="choice relative"><input type="radio" name="experienceLevel" value="bidding" /><span><strong class="block text-sm text-white">Bidding</strong><span class="!border-0 !bg-transparent !p-0 text-xs text-mist-400">No awards yet</span></span></label>
+                  <label class="choice relative"><input type="radio" name="experienceLevel" value="emerging" /><span><strong class="block text-sm text-white">1 to 5 wins</strong><span class="!border-0 !bg-transparent !p-0 text-xs text-mist-400">Building momentum</span></span></label>
+                  <label class="choice relative"><input type="radio" name="experienceLevel" value="established" /><span><strong class="block text-sm text-white">6+ wins</strong><span class="!border-0 !bg-transparent !p-0 text-xs text-mist-400">Ready to scale</span></span></label>
+                </div>
+              </div>
+
+              <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label for="samStatus" class="mb-1.5 block text-sm font-medium text-mist-100">SAM.gov registration</label>
+                  <select id="samStatus" name="samStatus" required class="field">
+                    <option value="">Select…</option>
+                    <option value="active">Active</option>
+                    <option value="in_progress">In progress</option>
+                    <option value="not_started">Not started</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="annualRevenue" class="mb-1.5 block text-sm font-medium text-mist-100">Annual revenue</label>
+                  <select id="annualRevenue" name="annualRevenue" class="field">
+                    <option value="">Prefer not to say</option>
+                    <option value="pre_revenue">Pre-revenue</option>
+                    <option value="under_250k">Under $250K</option>
+                    <option value="250k_1m">$250K to $1M</option>
+                    <option value="1m_5m">$1M to $5M</option>
+                    <option value="over_5m">Over $5M</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label for="primaryGoal" class="mb-1.5 block text-sm font-medium text-mist-100">Primary goal for the next 90 days</label>
+                <select id="primaryGoal" name="primaryGoal" required class="field">
+                  <option value="">Select…</option>
+                  <option value="first_contract">Win my first contract</option>
+                  <option value="middleman">Win and subcontract the work (Middleman)</option>
+                  <option value="win_rate">Raise my win rate</option>
+                  <option value="scale">Scale to more and bigger contracts</option>
+                </select>
+              </div>
+
+              <div>
+                <p class="mb-2 block text-sm font-medium text-mist-100">Certifications <span class="font-normal text-mist-500">(select any)</span></p>
+                <div class="flex flex-wrap gap-2">
+                  <label class="chip relative"><input type="checkbox" name="certifications" value="8a" /><span>8(a)</span></label>
+                  <label class="chip relative"><input type="checkbox" name="certifications" value="wosb" /><span>WOSB</span></label>
+                  <label class="chip relative"><input type="checkbox" name="certifications" value="sdvosb" /><span>SDVOSB</span></label>
+                  <label class="chip relative"><input type="checkbox" name="certifications" value="vosb" /><span>VOSB</span></label>
+                  <label class="chip relative"><input type="checkbox" name="certifications" value="hubzone" /><span>HUBZone</span></label>
+                  <label class="chip relative"><input type="checkbox" name="certifications" value="sdb" /><span>SDB</span></label>
+                </div>
+              </div>
+
+              <div>
+                <label for="naics" class="mb-1.5 block text-sm font-medium text-mist-100">NAICS codes <span class="font-normal text-mist-500">(optional)</span></label>
+                <input id="naics" name="naics" type="text" maxlength="200" class="field" placeholder="e.g. 561720, 238220" />
+              </div>
+
+              <div>
+                <label for="capabilities" class="mb-1.5 block text-sm font-medium text-mist-100">What does your business do? <span class="font-normal text-mist-500">(optional)</span></label>
+                <textarea id="capabilities" name="capabilities" rows="3" maxlength="600" class="field resize-none" placeholder="Janitorial, facilities maintenance, IT support…"></textarea>
+              </div>
+            </div>
+          </fieldset>
+
+          <p id="form-error" role="alert" aria-live="assertive" class="mt-5 hidden rounded-2xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm font-medium text-brand-redSoft"></p>
+
+          <div class="mt-7 flex gap-3">
+            <button id="back-btn" type="button" class="hidden rounded-full border border-white/15 px-6 py-4 text-[15px] font-semibold text-mist-100 transition hover:bg-white/5 focus:outline-none focus-visible:shadow-ring">Back</button>
+            <button id="submit-btn" type="submit" class="cta flex-1 rounded-full px-6 py-4 text-[15px] font-semibold tracking-wide text-white shadow-glow transition duration-200 hover:-translate-y-0.5 hover:shadow-glowHover focus:outline-none focus-visible:shadow-ring active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0">
+              <span id="btn-label">Continue</span>
+            </button>
           </div>
-
-          <div>
-            <label for="password" class="mb-1.5 block text-sm font-medium text-navy-900">Password</label>
-            <input id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="72"
-              aria-describedby="password-hint"
-              class="block w-full rounded-2xl border border-navy-100 bg-white px-4 py-3.5 text-[15px] text-navy-900 outline-none transition focus:border-gold-500 focus:ring-4 focus:ring-gold-300/40" />
-            <p id="password-hint" class="mt-1.5 text-xs text-navy-500">At least 12 characters, with an uppercase letter, a lowercase letter and a number.</p>
-          </div>
-
-          <div>
-            <label for="confirmPassword" class="mb-1.5 block text-sm font-medium text-navy-900">Confirm password</label>
-            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required maxlength="72"
-              class="block w-full rounded-2xl border border-navy-100 bg-white px-4 py-3.5 text-[15px] text-navy-900 outline-none transition focus:border-gold-500 focus:ring-4 focus:ring-gold-300/40" />
-          </div>
-
-          <p id="form-error" role="alert" aria-live="assertive"
-            class="hidden rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700"></p>
-
-          <button id="submit-btn" type="submit"
-            class="relative w-full rounded-full bg-gradient-to-b from-gold-400 to-gold-500 px-6 py-4 text-[15px] font-semibold tracking-wide text-navy-900 shadow-glow transition duration-200 hover:-translate-y-0.5 hover:shadow-glowHover focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-300/60 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0">
-            <span id="btn-label">Secure My Account</span>
-          </button>
         </form>
 
-        <p class="mt-6 flex items-center justify-center gap-1.5 text-xs text-navy-500">
-          <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 118 0v4" />
-          </svg>
+        <p class="mt-6 flex items-center justify-center gap-1.5 text-xs text-mist-500">
+          <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 118 0v4" /></svg>
           Encrypted in transit. Passwords are hashed and never stored in plain text.
         </p>
       </section>
 
-      <!-- Success card (hidden until 200 OK) -->
-      <section id="success-card" class="hidden rounded-[28px] border border-navy-100 bg-white p-8 text-center shadow-bubble sm:p-10" tabindex="-1">
-        <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-gold-400 to-gold-500 shadow-glow">
-          <svg viewBox="0 0 24 24" class="h-8 w-8 text-navy-900" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5" />
-          </svg>
+      <!-- Success card -->
+      <section id="success-card" class="hidden rounded-[32px] border border-white/10 bg-ink-800/80 p-8 text-center shadow-bubble backdrop-blur-xl sm:p-10" tabindex="-1">
+        <div class="cta mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full shadow-glow">
+          <svg viewBox="0 0 24 24" class="h-8 w-8 text-white" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5" /></svg>
         </div>
-        <h2 class="text-2xl font-semibold tracking-tight text-navy-900">Credentials secured.</h2>
-        <p class="mt-3 text-[15px] leading-relaxed text-navy-700">
-          Your automated environment is being provisioned. Full access to the GovProposalPro command center will be delivered to your inbox on <span class="font-semibold text-navy-900">Sunday, October 18th</span>.
+        <h2 class="text-2xl font-semibold tracking-tight text-white">Credentials secured.</h2>
+        <p class="mt-3 text-[15px] leading-relaxed text-mist-300">
+          A member of the GovProposalPro team will reach out to confirm your access and walk through your setup.
+        </p>
+        <p class="mt-3 text-[15px] leading-relaxed text-mist-300">
+          Full access to the command center arrives in your inbox on <span class="font-semibold text-white">Sunday, October 18th</span>. You'll sign in with the email and password you just created.
         </p>
       </section>
 
-      <p class="mt-8 text-center text-xs text-navy-500">&copy; GovProposalPro · Contract Bros</p>
+      <p class="mt-8 text-center text-xs text-mist-500">&copy; GovProposalPro · Contract Bros</p>
     </div>
   </main>
 
@@ -100,27 +208,35 @@
       var successCard = document.getElementById('success-card');
       var errorBox = document.getElementById('form-error');
       var submitBtn = document.getElementById('submit-btn');
+      var backBtn = document.getElementById('back-btn');
       var btnLabel = document.getElementById('btn-label');
+      var step1 = document.getElementById('step-1');
+      var step2 = document.getElementById('step-2');
+      var stepLabel = document.getElementById('step-label');
+      var dot1 = document.getElementById('dot-1');
+      var dot2 = document.getElementById('dot-2');
+      var step = 1;
 
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      function showError(message) {
-        errorBox.textContent = message;
-        errorBox.classList.remove('hidden');
-      }
+      function showError(message) { errorBox.textContent = message; errorBox.classList.remove('hidden'); }
+      function clearError() { errorBox.textContent = ''; errorBox.classList.add('hidden'); }
 
-      function clearError() {
-        errorBox.textContent = '';
-        errorBox.classList.add('hidden');
-      }
-
-      function setLoading(loading) {
-        submitBtn.disabled = loading;
-        btnLabel.textContent = loading ? 'Securing…' : 'Secure My Account';
+      function goTo(n) {
+        step = n;
+        step1.classList.toggle('hidden', n !== 1);
+        step2.classList.toggle('hidden', n !== 2);
+        backBtn.classList.toggle('hidden', n !== 2);
+        stepLabel.textContent = 'Step ' + n + ' of 2';
+        btnLabel.textContent = n === 1 ? 'Continue' : 'Secure My Access';
+        dot1.className = 'dot ' + (n === 1 ? 'w-10 bg-gradient-to-r from-brand-blue to-brand-red' : 'w-4 bg-white/40');
+        dot2.className = 'dot ' + (n === 2 ? 'w-10 bg-gradient-to-r from-brand-blue to-brand-red' : 'w-4 bg-white/15');
+        var first = (n === 1 ? step1 : step2).querySelector('input,select,textarea');
+        if (first) first.focus();
       }
 
       // Mirrors the server rules so buyers get instant feedback; the server re-validates everything.
-      function validate(email, password, confirmPassword) {
+      function validateAccount(email, password, confirmPassword) {
         if (!EMAIL_RE.test(email) || email.length > 254) return 'Please enter a valid email address.';
         if (password.length < 12) return 'Password must be at least 12 characters.';
         if (new TextEncoder().encode(password).length > 72) return 'Password is too long (72 bytes max).';
@@ -131,6 +247,41 @@
         return null;
       }
 
+      function readProfile() {
+        var exp = form.querySelector('input[name="experienceLevel"]:checked');
+        var certs = Array.prototype.map.call(form.querySelectorAll('input[name="certifications"]:checked'), function (c) { return c.value; });
+        return {
+          fullName: form.fullName.value.trim(),
+          phone: form.phone.value.trim(),
+          businessName: form.businessName.value.trim(),
+          experienceLevel: exp ? exp.value : '',
+          samStatus: form.samStatus.value,
+          annualRevenue: form.annualRevenue.value,
+          primaryGoal: form.primaryGoal.value,
+          certifications: certs,
+          naics: form.naics.value.trim(),
+          capabilities: form.capabilities.value.trim(),
+        };
+      }
+
+      function validateProfile(p) {
+        if (!p.fullName) return 'Please enter your full name.';
+        if (p.phone.replace(/\D/g, '').length < 10) return 'Please enter a valid phone number so our team can reach you.';
+        if (!p.businessName) return 'Please enter your business name.';
+        if (!p.experienceLevel) return 'Please choose your contracting experience.';
+        if (!p.samStatus) return 'Please select your SAM.gov registration status.';
+        if (!p.primaryGoal) return 'Please select your primary goal.';
+        return null;
+      }
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        backBtn.disabled = loading;
+        btnLabel.textContent = loading ? 'Securing…' : (step === 1 ? 'Continue' : 'Secure My Access');
+      }
+
+      backBtn.addEventListener('click', function () { clearError(); goTo(1); });
+
       form.addEventListener('submit', async function (event) {
         event.preventDefault();
         clearError();
@@ -139,7 +290,12 @@
         var password = form.password.value;
         var confirmPassword = form.confirmPassword.value;
 
-        var problem = validate(email, password, confirmPassword);
+        var problem = validateAccount(email, password, confirmPassword);
+        if (problem) { if (step !== 1) goTo(1); return showError(problem); }
+        if (step === 1) return goTo(2);
+
+        var profile = readProfile();
+        problem = validateProfile(profile);
         if (problem) return showError(problem);
 
         setLoading(true);
@@ -148,7 +304,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
-            body: JSON.stringify({ email: email, password: password, confirmPassword: confirmPassword }),
+            body: JSON.stringify({ email: email, password: password, confirmPassword: confirmPassword, profile: profile }),
           });
 
           if (res.ok) {
@@ -162,6 +318,7 @@
 
           var data = {};
           try { data = await res.json(); } catch (_) { /* non-JSON error */ }
+          if (data.field === 'email') goTo(1);
           showError(data.error || 'Something went wrong. Please try again.');
         } catch (_) {
           showError('Network error. Check your connection and try again.');

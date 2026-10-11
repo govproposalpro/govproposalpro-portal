@@ -26,3 +26,16 @@ CREATE TABLE IF NOT EXISTS "Users" (
 );
 -- Case-insensitive uniqueness: Jalen@x.com and jalen@x.com are the same account.
 CREATE UNIQUE INDEX IF NOT EXISTS users_email_key ON "Users" (lower(email));
+
+-- Business profile captured at signup, used to tailor onboarding and for sales follow-up.
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS full_name        VARCHAR(120);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS phone            VARCHAR(30);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS business_name    VARCHAR(160);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS experience_level VARCHAR(20);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS sam_status       VARCHAR(20);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS annual_revenue   VARCHAR(20);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS primary_goal     VARCHAR(20);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS certifications   VARCHAR(100);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS naics            VARCHAR(200);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS capabilities     VARCHAR(600);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS ghl_contact_id   VARCHAR(64);

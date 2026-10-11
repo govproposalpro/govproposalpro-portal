@@ -52,7 +52,10 @@ app.use('/api', registerRouter);
 
 app.get('/healthz', (_req, res) => res.json({ ok: true }));
 
-app.get('/', (_req, res) => {
+app.use('/assets', express.static(path.join(PUBLIC_DIR, 'assets'), { maxAge: '7d', index: false }));
+
+// Served at both / and /access so the page works on a custom domain path too.
+app.get(['/', '/access'], (_req, res) => {
   res.set('Cache-Control', 'no-store');
   res.type('html').send(indexHtml);
 });
