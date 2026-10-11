@@ -24,30 +24,22 @@ function escapeHtml(value) {
 }
 
 const LOGO_URL = process.env.EMAIL_LOGO_URL || 'https://assets.cdn.filesafe.space/2c9ZJNooQ8eEnTMWsHaX/media/6a8dec9e56f37ac03c83343c.png';
+const ACCESS_URL = process.env.ACCESS_URL || 'https://govproposalpro.com/access';
+const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || 'https://govproposalpro-portal.onrender.com').replace(/\/$/, '');
+const GUIDE_URL = `${PUBLIC_BASE_URL}/assets/GovProposalPro_Access_Instructions.pdf`;
+const SIGNATURE_TEXT = ['Kinno & Jalen', 'The ContractBros'];
 
-function buildWelcomeEmail({ email, tier, firstName = '' }) {
-  const edition = tier === 'enterprise' ? 'Enterprise Edition' : tier === 'core' ? 'Core Edition' : 'GovProposalPro';
-  const subject = 'Your GovProposalPro access is secured';
-  const greeting = firstName ? `Welcome to the CEO Seat, ${firstName}.` : 'Welcome to the CEO Seat.';
+const editionName = (tier) => (tier === 'enterprise' ? 'Enterprise Edition' : tier === 'core' ? 'Core Edition' : 'GovProposalPro');
 
-  const text = [
-    greeting,
-    '',
-    `Your ${edition} login has been created for ${email}.`,
-    'A member of the GovProposalPro team will reach out shortly to confirm your access and walk through your setup.',
-    '',
-    `Full access to the GovProposalPro command center will be delivered to this inbox on ${LAUNCH_DATE}.`,
-    'You will sign in with the exact email and password you just created.',
-    '',
-    'For your security, we will never ask for your password by email or phone.',
-    '',
-    'Kinno & Jalen',
-    'The ContractBros',
-  ].join('\n');
+const P = 'margin:0 0 14px 0;';
+const button = (href, label) => `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 18px 0;"><tr><td style="border-radius:999px;background:#1E5BFF;background-image:linear-gradient(135deg,#1E5BFF 0%,#5B3BFF 45%,#FF1F3D 100%);">
+  <a href="${href}" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;">${label}</a></td></tr></table>`;
+const stepRow = (n, title, body) => `<tr><td style="padding:0 0 12px 0;"><div style="border-radius:18px;background:#151E45;border:1px solid #2B3A78;padding:14px 16px;font-size:14px;line-height:1.55;color:#BAC4EA;">
+  <strong style="color:#FFFFFF;">${n}. ${title}</strong> ${body}</div></td></tr>`;
 
-  const safeEmail = escapeHtml(email);
-  const safeGreeting = escapeHtml(greeting);
-  const html = `<!DOCTYPE html>
+// Shared dark, blue/red branded layout used by every GovProposalPro email.
+function layout({ eyebrow, heading, bodyHtml }) {
+  return `<!DOCTYPE html>
 <html><head><meta name="color-scheme" content="dark light"><meta name="supported-color-schemes" content="dark light"></head>
 <body style="margin:0;padding:0;background:#05081A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#EEF1FF;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#05081A;padding:36px 16px;">
@@ -56,18 +48,14 @@ function buildWelcomeEmail({ email, tier, firstName = '' }) {
         <tr><td align="center" style="padding:0 0 24px 0;">
           <img src="${LOGO_URL}" width="300" alt="GovProposalPro by Contract Bros" style="display:block;width:300px;max-width:80%;height:auto;border:0;" />
         </td></tr>
-        <tr><td style="background:#0E1533;border:1px solid #1E2A5C;border-radius:28px;">
+        <tr><td style="background:#0E1533;border:1px solid #1E2A5C;border-radius:28px;overflow:hidden;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-            <tr><td style="height:6px;border-radius:28px 28px 0 0;background:#1E5BFF;background-image:linear-gradient(90deg,#1E5BFF,#5B3BFF,#FF1F3D);font-size:0;line-height:0;">&nbsp;</td></tr>
-            <tr><td style="padding:34px 34px 6px 34px;">
-              <p style="margin:0 0 8px 0;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700;color:#FF8A9A;">Access secured</p>
-              <h1 style="margin:0;font-size:24px;line-height:1.3;font-weight:700;color:#FFFFFF;">${safeGreeting}</h1>
+            <tr><td style="height:6px;background:#1E5BFF;background-image:linear-gradient(90deg,#1E5BFF,#5B3BFF,#FF1F3D);font-size:0;line-height:0;">&nbsp;</td></tr>
+            <tr><td style="padding:32px 34px 6px 34px;">
+              <p style="margin:0 0 8px 0;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700;color:#FF8A9A;">${eyebrow}</p>
+              <h1 style="margin:0;font-size:24px;line-height:1.3;font-weight:700;color:#FFFFFF;">${heading}</h1>
             </td></tr>
-            <tr><td style="padding:16px 34px 4px 34px;font-size:15px;line-height:1.65;color:#BAC4EA;">
-              <p style="margin:0 0 14px 0;">Your <strong style="color:#FFFFFF;">${edition}</strong> login has been created for <strong style="color:#FFFFFF;">${safeEmail}</strong>.</p>
-              <p style="margin:0 0 14px 0;">A member of the GovProposalPro team will reach out shortly to <strong style="color:#FFFFFF;">confirm your access</strong> and walk through your setup.</p>
-              <p style="margin:0 0 14px 0;">Full access to the command center will be delivered to this inbox on <strong style="color:#FFFFFF;">${LAUNCH_DATE}</strong>. You'll sign in with the exact email and password you just created.</p>
-            </td></tr>
+            <tr><td style="padding:16px 34px 4px 34px;font-size:15px;line-height:1.65;color:#BAC4EA;">${bodyHtml}</td></tr>
             <tr><td style="padding:6px 34px 0 34px;">
               <div style="border-radius:18px;background:#151E45;border:1px solid #2B3A78;padding:14px 16px;font-size:13px;line-height:1.5;color:#BAC4EA;">
                 &#128274; For your security, we will never ask for your password by email or phone.
@@ -83,7 +71,84 @@ function buildWelcomeEmail({ email, tier, firstName = '' }) {
     </td></tr>
   </table>
 </body></html>`;
+}
 
+/** Sent the moment a GovProposalPro purchase lands on Whop: how to set up access. */
+function buildPurchaseEmail({ tier, firstName = '' }) {
+  const edition = editionName(tier);
+  const subject = 'Action required: set up your GovProposalPro access';
+  const greeting = firstName ? `Welcome to the CEO Seat, ${firstName}.` : 'Welcome to the CEO Seat.';
+
+  const text = [
+    greeting,
+    '',
+    `Congratulations on securing your GovProposalPro ${edition} license. Your private command center requires a secure, encrypted login. Please complete your setup now:`,
+    '',
+    `1. Initialize your account: ${ACCESS_URL}`,
+    '2. Create your keys: use the same email you used to purchase on Whop and create a secure password.',
+    '3. Tailor your command center: tell us about your business and experience level. A member of our team will reach out to confirm your access.',
+    '',
+    `Deployment date: ${LAUNCH_DATE}. You will receive an automated email granting full access to the live software, and you will log in with the email and password you create today.`,
+    '',
+    `Setup guide (PDF): ${GUIDE_URL}`,
+    'You can also find everything inside Whop under "GovProposalPro Access".',
+    tier === 'enterprise' ? '\nAs an Enterprise member, your VIP Onboarding Concierge will reach out separately to collect your business details for your Done-For-You SAM.gov registration.' : '',
+    '',
+    ...SIGNATURE_TEXT,
+  ].join('\n');
+
+  const html = layout({
+    eyebrow: 'Action required',
+    heading: escapeHtml(greeting),
+    bodyHtml: `<p style="${P}">Congratulations on securing your <strong style="color:#FFFFFF;">GovProposalPro ${edition}</strong> license. Your private command center requires a secure, encrypted login. Please complete your setup now.</p>
+      ${button(ACCESS_URL, 'Set Up My Access &rarr;')}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        ${stepRow(1, 'Initialize your account.', `Open <a href="${ACCESS_URL}" style="color:#7FA2FF;">${ACCESS_URL.replace(/^https:\/\//, '')}</a>.`)}
+        ${stepRow(2, 'Create your keys.', 'Use the <strong style="color:#FFFFFF;">same email you used to purchase on Whop</strong> and create a secure password.')}
+        ${stepRow(3, 'Tailor your command center.', 'Tell us about your business and experience level. A member of our team will reach out to confirm your access.')}
+      </table>
+      <p style="${P}"><strong style="color:#FFFFFF;">Deployment date: ${LAUNCH_DATE}.</strong> You'll receive an automated email granting full access to the live software, and you'll log in with the email and password you create today.</p>
+      ${tier === 'enterprise' ? `<p style="${P}">As an Enterprise member, your VIP Onboarding Concierge will reach out separately to collect your business details for your Done-For-You SAM.gov registration.</p>` : ''}
+      <p style="${P}">&#128196; <a href="${GUIDE_URL}" style="color:#7FA2FF;">Download your setup guide (PDF)</a>. You can also find everything inside Whop under <strong style="color:#FFFFFF;">GovProposalPro Access</strong>.</p>`,
+  });
+  return { subject, text, html };
+}
+
+/** Sent after a buyer completes signup on the access portal. */
+function buildWelcomeEmail({ email, tier, firstName = '' }) {
+  const edition = editionName(tier);
+  const subject = 'Your GovProposalPro access is secured';
+  const greeting = firstName ? `Credentials secured, ${firstName}.` : 'Credentials secured.';
+
+  const text = [
+    greeting,
+    '',
+    `Your ${edition} login has been created for ${email}.`,
+    'A member of the GovProposalPro team will reach out shortly to confirm your access and walk through your setup.',
+    '',
+    `Full access to the GovProposalPro command center will be delivered to this inbox on ${LAUNCH_DATE}.`,
+    'You will sign in with the exact email and password you just created.',
+    '',
+    `Access portal: ${ACCESS_URL}`,
+    `Setup guide (PDF): ${GUIDE_URL}`,
+    'Everything is also inside Whop under "GovProposalPro Access".',
+    '',
+    ...SIGNATURE_TEXT,
+  ].join('\n');
+
+  const html = layout({
+    eyebrow: 'Access secured',
+    heading: escapeHtml(greeting),
+    bodyHtml: `<p style="${P}">Your <strong style="color:#FFFFFF;">${edition}</strong> login has been created for <strong style="color:#FFFFFF;">${escapeHtml(email)}</strong>.</p>
+      <p style="${P}">A member of the GovProposalPro team will reach out shortly to <strong style="color:#FFFFFF;">confirm your access</strong> and walk through your setup.</p>
+      <p style="${P}">Full access to the command center will be delivered to this inbox on <strong style="color:#FFFFFF;">${LAUNCH_DATE}</strong>. You'll sign in with the exact email and password you just created.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        ${stepRow('&#10003;', 'Account created.', 'Your encrypted login is saved.')}
+        ${stepRow('&#10003;', 'Business profile received.', 'We\'ll use it to tailor your workspace.')}
+        ${stepRow('&#8594;', 'Next: access confirmation.', 'Watch your phone and inbox for our team.')}
+      </table>
+      <p style="${P}">&#128196; <a href="${GUIDE_URL}" style="color:#7FA2FF;">Your setup guide (PDF)</a> &middot; <a href="${ACCESS_URL}" style="color:#7FA2FF;">Access portal</a>. Everything is also inside Whop under <strong style="color:#FFFFFF;">GovProposalPro Access</strong>.</p>`,
+  });
   return { subject, text, html };
 }
 
@@ -128,4 +193,4 @@ async function sendWelcomeEmail({ email, tier = null }) {
   return sendViaSmtp({ email, tier });
 }
 
-module.exports = { sendWelcomeEmail, buildWelcomeEmail };
+module.exports = { sendWelcomeEmail, buildWelcomeEmail, buildPurchaseEmail };

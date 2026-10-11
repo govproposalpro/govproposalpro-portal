@@ -14,6 +14,7 @@ const crypto = require('crypto');
 const express = require('express');
 const db = require('../db');
 const { normalizeEmail, isValidEmail } = require('../validation');
+const ghl = require('../services/ghl');
 
 const router = express.Router();
 const TOLERANCE_SECONDS = 5 * 60;
@@ -52,10 +53,30 @@ function extract(event) {
   const email = normalizeEmail(data.user?.email || data.email || data.customer?.email || '');
   const productId = data.product?.id || data.product_id || data.plan?.product_id || null;
   const ref = data.membership?.id || data.membership_id || data.id || null;
+  const fullName = typeof data.user?.name === 'string' ? data.user.name.slice(0, 120) : '';
   let tier = null;
   if (productId && ENTERPRISE_PRODUCTS.has(productId)) tier = 'enterprise';
   else if (productId && CORE_PRODUCTS.has(productId)) tier = 'core';
-  return { type, email, tier, ref: ref ? String(ref).slice(0, 128) : null };
+  return { type, email, tier, fullName, ref: ref ? String(ref).slice(0, 128) : null };
+}
+
+// Whop sends several grant events per purchase; the access_email_sent_at claim makes the
+// "set up your access" email go out exactly once per buyer. Runs after the 200 is returned.
+function sendAccessEmailOnce({ email, tier, fullName }) {
+  if (!ghl.enabled()) return;
+  db.query(
+    `UPDATE authorized_purchasers SET access_email_sent_at = now()
+      WHERE lower(email) = $1 AND access_email_sent_at IS NULL RETURNING id`,
+    [email]
+  )
+    .then((claim) => {
+      if (claim.rowCount === 0) return null;
+      return ghl.onPurchased({ email, tier, fullName }).catch((err) => {
+        console.error('[whop] access email failed:', err.message);
+        return db.query('UPDATE authorized_purchasers SET access_email_sent_at = NULL WHERE lower(email) = $1', [email]);
+      });
+    })
+    .catch((err) => console.error('[whop] access email claim failed:', err.message));
 }
 
 router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '256kb' }), async (req, res) => {
@@ -73,7 +94,7 @@ router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '25
     return res.status(400).json({ error: 'invalid json' });
   }
 
-  const { type, email, tier, ref } = extract(event);
+  const { type, email, tier, fullName, ref } = extract(event);
   // The Whop company sells other products too; only GovProposalPro products grant or revoke access.
   if (!tier) return res.status(200).json({ ignored: true });
   if (!isValidEmail(email)) {
@@ -92,6 +113,7 @@ router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '25
                revoked_at = NULL`,
         [email, tier, ref]
       );
+      sendAccessEmailOnce({ email, tier, fullName });
     } else if (REVOKE_EVENTS.has(type)) {
       await db.query('UPDATE authorized_purchasers SET revoked_at = now() WHERE lower(email) = $1', [email]);
     }

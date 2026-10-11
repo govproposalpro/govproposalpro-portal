@@ -39,3 +39,6 @@ ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS certifications   VARCHAR(100);
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS naics            VARCHAR(200);
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS capabilities     VARCHAR(600);
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS ghl_contact_id   VARCHAR(64);
+
+-- When the "set up your access" email went out after purchase (sent once per buyer).
+ALTER TABLE authorized_purchasers ADD COLUMN IF NOT EXISTS access_email_sent_at TIMESTAMPTZ;

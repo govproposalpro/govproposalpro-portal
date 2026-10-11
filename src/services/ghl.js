@@ -14,7 +14,7 @@
  */
 
 const { PROFILE_OPTIONS } = require('../validation');
-const { buildWelcomeEmail } = require('./email');
+const { buildWelcomeEmail, buildPurchaseEmail } = require('./email');
 
 const BASE = 'https://services.leadconnectorhq.com';
 
@@ -116,7 +116,11 @@ async function onRegistered({ email, tier, profile }) {
     try { await run(); } catch (err) { console.error(`[ghl] ${name} failed:`, err.message); }
   }
 
-  const { subject, html } = buildWelcomeEmail({ email, tier, firstName });
+  await sendEmail(contactId, buildWelcomeEmail({ email, tier, firstName }));
+  return { contactId, emailed: true };
+}
+
+async function sendEmail(contactId, { subject, html }) {
   await call('POST', '/conversations/messages', {
     type: 'Email',
     contactId,
@@ -124,8 +128,29 @@ async function onRegistered({ email, tier, profile }) {
     html,
     ...(process.env.GHL_EMAIL_FROM ? { emailFrom: process.env.GHL_EMAIL_FROM } : {}),
   }, '2021-04-15');
-
-  return { contactId, emailed: true };
 }
 
-module.exports = { onRegistered, enabled };
+/**
+ * Runs when a GovProposalPro purchase lands on Whop: makes sure the buyer is a GHL contact,
+ * tags them, and emails the access link and setup instructions.
+ */
+async function onPurchased({ email, tier, fullName = '' }) {
+  if (!enabled()) throw new Error('GHL_API_KEY / GHL_LOCATION_ID are not set');
+  const { firstName, lastName } = splitName(fullName);
+  const upsert = await call('POST', '/contacts/upsert', {
+    locationId: process.env.GHL_LOCATION_ID,
+    email,
+    ...(firstName ? { firstName, lastName } : {}),
+    source: 'GovProposalPro Whop Purchase',
+    customFields: [{ key: 'gpp_tier', field_value: tier || '' }],
+  });
+  const contactId = upsert.contact?.id;
+  if (!contactId) throw new Error('GHL upsert returned no contact id');
+  try {
+    await call('POST', `/contacts/${contactId}/tags`, { tags: ['gpp-purchased', tier ? `gpp-${tier}` : 'gpp-tier-unknown'] });
+  } catch (err) { console.error('[ghl] purchase tags failed:', err.message); }
+  await sendEmail(contactId, buildPurchaseEmail({ tier, firstName }));
+  return { contactId };
+}
+
+module.exports = { onRegistered, onPurchased, enabled };
