@@ -41,7 +41,8 @@ function buildWelcomeEmail({ email, tier, firstName = '' }) {
     '',
     'For your security, we will never ask for your password by email or phone.',
     '',
-    '- Jalen & The Contract Bros Team',
+    'Kinno & Jalen',
+    'The ContractBros',
   ].join('\n');
 
   const safeEmail = escapeHtml(email);
@@ -73,7 +74,7 @@ function buildWelcomeEmail({ email, tier, firstName = '' }) {
               </div>
             </td></tr>
             <tr><td style="padding:26px 34px 34px 34px;font-size:14px;line-height:1.6;color:#BAC4EA;">
-              Welcome to the empire.<br/><strong style="color:#FFFFFF;">Jalen &amp; The Contract Bros Team</strong>
+              Welcome to the empire.<br/><strong style="color:#FFFFFF;">Kinno &amp; Jalen</strong><br/>The ContractBros
             </td></tr>
           </table>
         </td></tr>

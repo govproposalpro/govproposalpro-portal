@@ -74,6 +74,8 @@ router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '25
   }
 
   const { type, email, tier, ref } = extract(event);
+  // The Whop company sells other products too; only GovProposalPro products grant or revoke access.
+  if (!tier) return res.status(200).json({ ignored: true });
   if (!isValidEmail(email)) {
     console.warn(`[whop] ${type || 'unknown event'} had no usable email; ignored`);
     return res.status(200).json({ ignored: true });
