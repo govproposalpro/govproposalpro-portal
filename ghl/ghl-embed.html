@@ -1,0 +1,187 @@
+<!--
+  GovProposalPro credential capture: GoHighLevel embed.
+  Paste this whole block into a "Custom JS/HTML" (Code) element on a GoHighLevel funnel page.
+  Set API_BASE below to the URL where the backend is deployed (no trailing slash).
+  Styles are scoped under #gpp-portal so they don't touch the rest of your GHL page.
+-->
+<div id="gpp-portal">
+  <style>
+    #gpp-portal, #gpp-portal * { box-sizing: border-box; }
+    #gpp-portal {
+      --navy-900: #0A1F44; --navy-700: #16397A; --navy-500: #3A5A99; --navy-100: #E6ECF7;
+      --gold-600: #B8860B; --gold-500: #D4A537; --gold-400: #E6BE5A; --gold-300: #F2D58A;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+      color: var(--navy-900); background: #FFFFFF; -webkit-font-smoothing: antialiased;
+      display: flex; justify-content: center; padding: 48px 16px;
+    }
+    #gpp-portal .gpp-wrap { width: 100%; max-width: 448px; }
+    #gpp-portal .gpp-brand { text-align: center; margin-bottom: 32px; }
+    #gpp-portal .gpp-mark {
+      width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 16px; background: var(--navy-900);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 2px rgba(10,31,68,.04), 0 12px 40px -8px rgba(10,31,68,.14);
+    }
+    #gpp-portal .gpp-mark svg { width: 28px; height: 28px; color: var(--gold-400); }
+    #gpp-portal .gpp-eyebrow { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--gold-600); }
+    #gpp-portal .gpp-card {
+      background: #FFFFFF; border: 1px solid var(--navy-100); border-radius: 28px; padding: 40px;
+      box-shadow: 0 1px 2px rgba(10,31,68,.04), 0 12px 40px -8px rgba(10,31,68,.14);
+      animation: gpp-rise .55s cubic-bezier(.22,1,.36,1) both;
+    }
+    @media (max-width: 480px) { #gpp-portal .gpp-card { padding: 32px 24px; } }
+    @keyframes gpp-rise { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { #gpp-portal .gpp-card { animation: none; } }
+    #gpp-portal h1, #gpp-portal h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -.01em; color: var(--navy-900); line-height: 1.3; }
+    #gpp-portal .gpp-lead { margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: var(--navy-700); }
+    #gpp-portal form { margin-top: 32px; }
+    #gpp-portal .gpp-field { margin-bottom: 20px; }
+    #gpp-portal label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: var(--navy-900); }
+    #gpp-portal input {
+      display: block; width: 100%; padding: 14px 16px; font: inherit; font-size: 15px; color: var(--navy-900);
+      background: #FFFFFF; border: 1px solid var(--navy-100); border-radius: 16px; outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    #gpp-portal input::placeholder { color: rgba(58,90,153,.6); }
+    #gpp-portal input:focus { border-color: var(--gold-500); box-shadow: 0 0 0 4px rgba(242,213,138,.4); }
+    #gpp-portal .gpp-hint { margin: 6px 0 0; font-size: 12px; color: var(--navy-500); }
+    #gpp-portal .gpp-error { display: none; margin: 0 0 20px; padding: 12px 16px; border-radius: 16px; background: #FEF2F2; color: #B91C1C; font-size: 14px; font-weight: 500; }
+    #gpp-portal .gpp-error.gpp-show { display: block; }
+    #gpp-portal button {
+      width: 100%; padding: 16px 24px; border: 0; border-radius: 999px; cursor: pointer;
+      font: inherit; font-size: 15px; font-weight: 600; letter-spacing: .02em; color: var(--navy-900);
+      background: linear-gradient(to bottom, var(--gold-400), var(--gold-500));
+      box-shadow: 0 0 0 1px rgba(212,165,55,.35), 0 8px 28px -4px rgba(212,165,55,.55);
+      transition: transform .2s, box-shadow .2s, opacity .2s;
+    }
+    #gpp-portal button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(212,165,55,.5), 0 10px 40px -2px rgba(212,165,55,.75); }
+    #gpp-portal button:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(242,213,138,.6), 0 8px 28px -4px rgba(212,165,55,.55); }
+    #gpp-portal button:disabled { opacity: .7; cursor: not-allowed; }
+    #gpp-portal .gpp-foot { margin: 24px 0 0; text-align: center; font-size: 12px; color: var(--navy-500); }
+    #gpp-portal .gpp-success { text-align: center; }
+    #gpp-portal .gpp-check {
+      width: 64px; height: 64px; margin: 0 auto 24px; border-radius: 999px; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(to bottom, var(--gold-400), var(--gold-500));
+      box-shadow: 0 0 0 1px rgba(212,165,55,.35), 0 8px 28px -4px rgba(212,165,55,.55);
+    }
+    #gpp-portal .gpp-check svg { width: 32px; height: 32px; color: var(--navy-900); }
+    #gpp-portal .gpp-success p { margin: 12px 0 0; font-size: 15px; line-height: 1.6; color: var(--navy-700); }
+    #gpp-portal .gpp-success strong { color: var(--navy-900); }
+    #gpp-portal [hidden] { display: none !important; }
+  </style>
+
+  <div class="gpp-wrap">
+    <div class="gpp-brand">
+      <div class="gpp-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7.5 3v5.25c0 4.6-3.2 8.5-7.5 9.75-4.3-1.25-7.5-5.15-7.5-9.75V6L12 3z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+        </svg>
+      </div>
+      <p class="gpp-eyebrow">GovProposalPro</p>
+    </div>
+
+    <section class="gpp-card" id="gpp-form-card">
+      <h1>Create your secure login</h1>
+      <p class="gpp-lead">Use the same email you checked out with on Whop. These will be your master credentials for the command center.</p>
+
+      <form id="gpp-form" novalidate>
+        <div class="gpp-field">
+          <label for="gpp-email">Business email</label>
+          <input id="gpp-email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@company.com" />
+        </div>
+        <div class="gpp-field">
+          <label for="gpp-password">Password</label>
+          <input id="gpp-password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="72" aria-describedby="gpp-hint" />
+          <p class="gpp-hint" id="gpp-hint">At least 12 characters, with an uppercase letter, a lowercase letter and a number.</p>
+        </div>
+        <div class="gpp-field">
+          <label for="gpp-confirm">Confirm password</label>
+          <input id="gpp-confirm" name="confirmPassword" type="password" autocomplete="new-password" required maxlength="72" />
+        </div>
+        <p class="gpp-error" id="gpp-error" role="alert" aria-live="assertive"></p>
+        <button type="submit" id="gpp-submit">Secure My Account</button>
+      </form>
+
+      <p class="gpp-foot">Encrypted in transit. Passwords are hashed and never stored in plain text.</p>
+    </section>
+
+    <section class="gpp-card gpp-success" id="gpp-success" tabindex="-1" hidden>
+      <div class="gpp-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5" />
+        </svg>
+      </div>
+      <h2>Credentials secured.</h2>
+      <p>Your automated environment is being provisioned. Full access to the GovProposalPro command center will be delivered to your inbox on <strong>Sunday, October 18th</strong>.</p>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // >>> Set this to your deployed backend URL, e.g. https://govproposalpro-portal.onrender.com
+      var API_BASE = 'https://YOUR-BACKEND-URL';
+
+      var form = document.getElementById('gpp-form');
+      var formCard = document.getElementById('gpp-form-card');
+      var success = document.getElementById('gpp-success');
+      var errorBox = document.getElementById('gpp-error');
+      var button = document.getElementById('gpp-submit');
+      var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function showError(msg) { errorBox.textContent = msg; errorBox.classList.add('gpp-show'); }
+      function clearError() { errorBox.textContent = ''; errorBox.classList.remove('gpp-show'); }
+      function setLoading(on) { button.disabled = on; button.textContent = on ? 'Securing…' : 'Secure My Account'; }
+
+      // Mirrors the server rules for instant feedback; the server re-validates everything.
+      function validate(email, password, confirm) {
+        if (!EMAIL_RE.test(email) || email.length > 254) return 'Please enter a valid email address.';
+        if (password.length < 12) return 'Password must be at least 12 characters.';
+        if (new TextEncoder().encode(password).length > 72) return 'Password is too long (72 bytes max).';
+        if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+          return 'Password needs an uppercase letter, a lowercase letter and a number.';
+        }
+        if (password !== confirm) return 'Passwords do not match.';
+        return null;
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        e.stopPropagation(); // keep GoHighLevel's own form handlers out of this
+        clearError();
+
+        var email = form.email.value.trim();
+        var password = form.password.value;
+        var confirm = form.confirmPassword.value;
+        var problem = validate(email, password, confirm);
+        if (problem) return showError(problem);
+
+        setLoading(true);
+        try {
+          var res = await fetch(API_BASE + '/api/register', {
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'omit',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password, confirmPassword: confirm }),
+          });
+          if (res.ok) {
+            form.reset();
+            formCard.hidden = true;
+            success.hidden = false;
+            success.focus();
+            return;
+          }
+          var data = {};
+          try { data = await res.json(); } catch (_) { /* non-JSON error */ }
+          showError(data.error || 'Something went wrong. Please try again.');
+        } catch (_) {
+          showError('Network error. Check your connection and try again.');
+        } finally {
+          setLoading(false);
+        }
+      });
+    })();
+  </script>
+</div>

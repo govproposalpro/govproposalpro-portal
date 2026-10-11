@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>GovProposalPro · Secure Your Account</title>
+  <!-- Compiled Tailwind CSS is inlined here by `npm run build`. -->
+  <style>/*__TAILWIND__*/</style>
+  <style>
+    @keyframes rise { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+    .rise { animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @media (prefers-reduced-motion: reduce) { .rise { animation: none; } }
+  </style>
+</head>
+<body class="min-h-screen bg-white font-sans text-navy-900 antialiased">
+  <main class="flex min-h-screen items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+
+      <!-- Brand mark -->
+      <div class="mb-8 text-center">
+        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 shadow-bubble">
+          <svg viewBox="0 0 24 24" class="h-7 w-7 text-gold-400" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7.5 3v5.25c0 4.6-3.2 8.5-7.5 9.75-4.3-1.25-7.5-5.15-7.5-9.75V6L12 3z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+          </svg>
+        </div>
+        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-gold-600">GovProposalPro</p>
+      </div>
+
+      <!-- Form card -->
+      <section id="form-card" class="rise rounded-[28px] border border-navy-100 bg-white p-8 shadow-bubble sm:p-10">
+        <h1 class="text-2xl font-semibold tracking-tight text-navy-900">Create your secure login</h1>
+        <p class="mt-2 text-[15px] leading-relaxed text-navy-700">
+          Use the same email you checked out with on Whop. These will be your master credentials for the command center.
+        </p>
+
+        <form id="capture-form" class="mt-8 space-y-5" novalidate>
+          <div>
+            <label for="email" class="mb-1.5 block text-sm font-medium text-navy-900">Business email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required maxlength="254"
+              class="block w-full rounded-2xl border border-navy-100 bg-white px-4 py-3.5 text-[15px] text-navy-900 placeholder-navy-500/60 outline-none transition focus:border-gold-500 focus:ring-4 focus:ring-gold-300/40"
+              placeholder="you@company.com" />
+          </div>
+
+          <div>
+            <label for="password" class="mb-1.5 block text-sm font-medium text-navy-900">Password</label>
+            <input id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="72"
+              aria-describedby="password-hint"
+              class="block w-full rounded-2xl border border-navy-100 bg-white px-4 py-3.5 text-[15px] text-navy-900 outline-none transition focus:border-gold-500 focus:ring-4 focus:ring-gold-300/40" />
+            <p id="password-hint" class="mt-1.5 text-xs text-navy-500">At least 12 characters, with an uppercase letter, a lowercase letter and a number.</p>
+          </div>
+
+          <div>
+            <label for="confirmPassword" class="mb-1.5 block text-sm font-medium text-navy-900">Confirm password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required maxlength="72"
+              class="block w-full rounded-2xl border border-navy-100 bg-white px-4 py-3.5 text-[15px] text-navy-900 outline-none transition focus:border-gold-500 focus:ring-4 focus:ring-gold-300/40" />
+          </div>
+
+          <p id="form-error" role="alert" aria-live="assertive"
+            class="hidden rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700"></p>
+
+          <button id="submit-btn" type="submit"
+            class="relative w-full rounded-full bg-gradient-to-b from-gold-400 to-gold-500 px-6 py-4 text-[15px] font-semibold tracking-wide text-navy-900 shadow-glow transition duration-200 hover:-translate-y-0.5 hover:shadow-glowHover focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-300/60 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0">
+            <span id="btn-label">Secure My Account</span>
+          </button>
+        </form>
+
+        <p class="mt-6 flex items-center justify-center gap-1.5 text-xs text-navy-500">
+          <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 118 0v4" />
+          </svg>
+          Encrypted in transit. Passwords are hashed and never stored in plain text.
+        </p>
+      </section>
+
+      <!-- Success card (hidden until 200 OK) -->
+      <section id="success-card" class="hidden rounded-[28px] border border-navy-100 bg-white p-8 text-center shadow-bubble sm:p-10" tabindex="-1">
+        <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-gold-400 to-gold-500 shadow-glow">
+          <svg viewBox="0 0 24 24" class="h-8 w-8 text-navy-900" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-semibold tracking-tight text-navy-900">Credentials secured.</h2>
+        <p class="mt-3 text-[15px] leading-relaxed text-navy-700">
+          Your automated environment is being provisioned. Full access to the GovProposalPro command center will be delivered to your inbox on <span class="font-semibold text-navy-900">Sunday, October 18th</span>.
+        </p>
+      </section>
+
+      <p class="mt-8 text-center text-xs text-navy-500">&copy; GovProposalPro · Contract Bros</p>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var form = document.getElementById('capture-form');
+      var formCard = document.getElementById('form-card');
+      var successCard = document.getElementById('success-card');
+      var errorBox = document.getElementById('form-error');
+      var submitBtn = document.getElementById('submit-btn');
+      var btnLabel = document.getElementById('btn-label');
+
+      var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function showError(message) {
+        errorBox.textContent = message;
+        errorBox.classList.remove('hidden');
+      }
+
+      function clearError() {
+        errorBox.textContent = '';
+        errorBox.classList.add('hidden');
+      }
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        btnLabel.textContent = loading ? 'Securing…' : 'Secure My Account';
+      }
+
+      // Mirrors the server rules so buyers get instant feedback; the server re-validates everything.
+      function validate(email, password, confirmPassword) {
+        if (!EMAIL_RE.test(email) || email.length > 254) return 'Please enter a valid email address.';
+        if (password.length < 12) return 'Password must be at least 12 characters.';
+        if (new TextEncoder().encode(password).length > 72) return 'Password is too long (72 bytes max).';
+        if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+          return 'Password needs an uppercase letter, a lowercase letter and a number.';
+        }
+        if (password !== confirmPassword) return 'Passwords do not match.';
+        return null;
+      }
+
+      form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        clearError();
+
+        var email = form.email.value.trim();
+        var password = form.password.value;
+        var confirmPassword = form.confirmPassword.value;
+
+        var problem = validate(email, password, confirmPassword);
+        if (problem) return showError(problem);
+
+        setLoading(true);
+        try {
+          var res = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ email: email, password: password, confirmPassword: confirmPassword }),
+          });
+
+          if (res.ok) {
+            form.reset();
+            formCard.classList.add('hidden');
+            successCard.classList.remove('hidden');
+            successCard.classList.add('rise');
+            successCard.focus();
+            return;
+          }
+
+          var data = {};
+          try { data = await res.json(); } catch (_) { /* non-JSON error */ }
+          showError(data.error || 'Something went wrong. Please try again.');
+        } catch (_) {
+          showError('Network error. Check your connection and try again.');
+        } finally {
+          setLoading(false);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
