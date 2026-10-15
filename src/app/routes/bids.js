@@ -38,6 +38,11 @@ function parseBid(body, { requireTitle }) {
     else if (typeof b.dueAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.dueAt) && !Number.isNaN(Date.parse(b.dueAt))) fields.due_at = b.dueAt;
     else return { error: 'Due date must be a valid date.' };
   }
+  if (b.questionsDueAt !== undefined) {
+    if (b.questionsDueAt === null || b.questionsDueAt === '') fields.questions_due_at = null;
+    else if (typeof b.questionsDueAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.questionsDueAt) && !Number.isNaN(Date.parse(b.questionsDueAt))) fields.questions_due_at = b.questionsDueAt;
+    else return { error: 'Questions due date must be a valid date.' };
+  }
   if (b.estValue !== undefined) {
     const n = b.estValue === null || b.estValue === '' ? null : Number(b.estValue);
     if (n !== null && (!Number.isFinite(n) || n < 0 || n > 1e12)) return { error: 'Estimated value must be a positive number.' };
@@ -56,7 +61,8 @@ function parseBid(body, { requireTitle }) {
 }
 
 const COLUMNS = `id, title, agency, solicitation_number AS "solicitationNumber", naics, set_aside AS "setAside",
-  place_of_performance AS "placeOfPerformance", to_char(due_at, 'YYYY-MM-DD') AS "dueAt", est_value::float AS "estValue",
+  place_of_performance AS "placeOfPerformance", to_char(due_at, 'YYYY-MM-DD') AS "dueAt",
+  to_char(questions_due_at, 'YYYY-MM-DD') AS "questionsDueAt", est_value::float AS "estValue",
   stage, position, notes, created_at AS "createdAt", updated_at AS "updatedAt"`;
 
 router.get('/bids', async (req, res, next) => {

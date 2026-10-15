@@ -153,4 +153,15 @@ async function onPurchased({ email, tier, fullName = '' }) {
   return { contactId };
 }
 
-module.exports = { onRegistered, onPurchased, enabled };
+/** Makes sure an address is a GHL contact (emails can only go to contacts) and returns its id. */
+async function upsertContact({ email, tags = [] }) {
+  const upsert = await call('POST', '/contacts/upsert', { locationId: process.env.GHL_LOCATION_ID, email });
+  const contactId = upsert.contact?.id;
+  if (!contactId) throw new Error('GHL upsert returned no contact id');
+  if (tags.length) {
+    try { await call('POST', `/contacts/${contactId}/tags`, { tags }); } catch (err) { console.error('[ghl] tags failed:', err.message); }
+  }
+  return contactId;
+}
+
+module.exports = { onRegistered, onPurchased, enabled, upsertContact, sendEmail };

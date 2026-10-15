@@ -74,6 +74,9 @@ async function requireAuth(req, res, next) {
           AND s.last_seen_at > now() - make_interval(hours => $2)
         RETURNING u.id, u.email, u.full_name, u.business_name, u.naics, u.capabilities, u.certifications,
                   u.experience_level, u.sam_status, u.primary_goal,
+                  u.uei, u.cage_code, u.sam_expires_on, u.website, u.address, u.year_founded, u.employees,
+                  u.service_area, u.differentiators, u.key_personnel, u.past_performance, u.onboarded_at,
+                  u.sam_checklist, u.email_alerts, u.phone, u.status, u.ghl_contact_id,
                   COALESCE(ap.tier, u.tier) AS tier, ap.id AS purchase_id, ap.revoked_at`,
       [sha256(token), IDLE_HOURS]
     );
@@ -81,6 +84,11 @@ async function requireAuth(req, res, next) {
     if (!user) {
       res.setHeader('Set-Cookie', cookieHeader('', 0));
       return res.status(401).json({ error: 'Your session has ended. Please sign in again.' });
+    }
+    if (user.status === 'disabled') {
+      await db.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
+      res.setHeader('Set-Cookie', cookieHeader('', 0));
+      return res.status(403).json({ error: 'This account has been disabled. Contact support.' });
     }
     if (REQUIRE_PURCHASE && (!user.purchase_id || user.revoked_at)) {
       await db.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);

@@ -82,7 +82,18 @@ GET  /api/me          profile, tier, monthly proposal usage, feature locks
 /api/bids             Visual Bid CRM (Kanban CRUD + drag-and-drop reorder)
 /api/decryptor        AI Bid Decryptor: PDF or pasted text -> structured one-page brief (Claude)
 /api/proposals        AI Proposal Engine: Markdown proposal (Claude); Core 10 / Enterprise 50 per month
+/api/me/profile       Business profile (UEI, CAGE, NAICS, capabilities, past performance...) used by every AI feature
+/api/me/documents     Company documents (PDF) read by Claude; facts feed proposals and auto-fill the profile
+/api/capability-statements  Capability Statement Generator
+/api/me/sam-checklist SAM.gov Registration Checklist progress
+/api/vetting          Sub-Safe SAM.gov Vetting (Enterprise): SAM.gov entity + exclusions lookup
+/api/alerts           Deadline alerts feed; an hourly job emails 7/3/1-day bid and 60/30/7-day SAM reminders
+/api/auth/forgot, /api/auth/reset, /api/me/password   Password reset and change
 ```
+
+New members land on a four-step setup (upload documents, company basics, what you do, team and
+past performance). The Subcontracting Limits Checker (FAR 52.219-14) runs entirely in the browser.
+`src/app/playbook.md` is the proposal-writing playbook sent (cached) with every proposal request.
 
 | Path | What it is |
 | --- | --- |
@@ -98,3 +109,21 @@ scripts and styles; uploaded RFPs are sent to Claude and never stored, only the 
 
 Env: `ANTHROPIC_API_KEY` (required for AI features), `APP_LAUNCH_AT` (sign-in opens at this time),
 `APP_EARLY_ACCESS_EMAILS` (team accounts allowed in early), `DECRYPTS_PER_DAY` (default 25).
+
+## Admin dashboard (at `/admin`)
+
+For the team and VAs to manage members, logins and access. Separate accounts, cookie and sessions
+from members; every admin uses a password plus an authenticator app code, and every action is
+written to an audit log.
+
+- **Owners** (`ADMIN_OWNER_EMAILS`): everything, plus Team (add/disable admins, send setup links) and
+  the audit log. Created on deploy and emailed a one-time setup link (72 hours). If email is not
+  configured the link is printed in the deploy log, or run `npm run admin:link -- you@example.com`
+  in the Render Shell.
+- **VAs** (`ADMIN_VA_EMAILS`): Members (edit profile, tier, disable; send a password reset link,
+  unlock, sign out everywhere) and Access (generate access for an email, change tier, revoke).
+  An owner sends each VA a setup link from Team.
+- Nobody ever sees or sets a member's password: members choose it from a one-time link
+  (reset links last 60 minutes, invites 7 days).
+- "Generate access" approves an email the same way a Whop purchase does and, when the person has
+  no login yet, creates one and sends an invite link.

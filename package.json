@@ -12,7 +12,9 @@
     "build": "node scripts/build-page.js",
     "start": "node src/server.js",
     "db:migrate": "node scripts/migrate.js",
-    "import:whop": "node scripts/import-whop-csv.js"
+    "import:whop": "node scripts/import-whop-csv.js",
+    "admin:seed": "node scripts/seed-admins.js",
+    "admin:link": "node scripts/seed-admins.js --link"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.134.0",
@@ -22,7 +24,8 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "nodemailer": "^6.9.16",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "tailwindcss": "3.4.16"

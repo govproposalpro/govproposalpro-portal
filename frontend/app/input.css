@@ -66,3 +66,9 @@
   .doc .ph { background: #fee !important; color: #900 !important; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+@layer components {
+  .chip { @apply inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-mist-100 transition hover:bg-white/[0.08]; }
+  .step-bar { @apply block h-1.5 rounded-full bg-white/[0.08] transition-colors; }
+  .step.done .step-bar { @apply bg-gradient-to-r from-brand-blue to-brand-red; }
+}

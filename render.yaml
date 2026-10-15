@@ -38,6 +38,15 @@ services:
         value: "2026-10-18T13:00:00Z" # members can sign in from Sunday Oct 18, 9:00 AM Eastern
       - key: APP_EARLY_ACCESS_EMAILS
         sync: false # comma-separated emails allowed to sign in before launch (the team)
+      - key: SAM_API_KEY
+        sync: false # SAM.gov public API key for Sub-Safe vetting (sam.gov > Account Details > API Key)
+      # --- Admin dashboard (at /admin) ---
+      - key: ADMIN_OWNER_EMAILS
+        value: "jalen@contractbros.com,kinno@contractbros.com" # owners; created on deploy, emailed a setup link
+      - key: ADMIN_VA_EMAILS
+        value: "va1@govproposalpro.com,va2@govproposalpro.com,va3@govproposalpro.com,va4@govproposalpro.com,va5@govproposalpro.com"
+      - key: APP_BASE_URL
+        value: "https://access.govproposalpro.com" # used in password reset and setup links
 
 databases:
   - name: govproposalpro-db

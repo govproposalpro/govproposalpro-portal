@@ -11,6 +11,8 @@ const db = require('../../db');
 const ai = require('../ai');
 const { requireAuth, requireFeature } = require('../session');
 const { reserveProposal, proposalUsage } = require('../quota');
+const { aiProfile } = require('../profile');
+const { documentContext } = require('./profile');
 
 const router = express.Router();
 const MAX_PDF_BYTES = 20 * 1024 * 1024;
@@ -192,12 +194,9 @@ router.post(
       }
       res.status(202).json({ id, status: 'working' });
 
-      const u = req.user;
-      const profile = {
-        company: u.business_name, owner: u.full_name, naics_codes: u.naics, capabilities: u.capabilities,
-        certifications: u.certifications, sam_registration: u.sam_status, experience: u.experience_level,
-      };
-      ai.writeProposal({ bid, summary, profile, instructions, title })
+      const profile = aiProfile(req.user);
+      const documents = await documentContext(req.user.id);
+      ai.writeProposal({ bid, summary, profile, documents, instructions, title })
         .then((md) => db.query(
           `UPDATE proposals SET status = 'ready', content_md = $2, completed_at = now() WHERE id = $1`, [id, md]))
         .catch((err) => {
@@ -254,7 +253,7 @@ router.patch('/proposals/:id', requireAuth, requireFeature('proposal_engine'), e
  */
 async function failInterruptedJobs() {
   const msg = 'This was interrupted by a system update. Please run it again; it did not count toward your limit.';
-  for (const table of ['proposals', 'rfp_summaries']) {
+  for (const table of ['proposals', 'rfp_summaries', 'company_documents', 'capability_statements']) {
     await db.query(
       `UPDATE ${table} SET status = 'failed', error = $1, completed_at = now()
         WHERE status = 'working' AND created_at < now() - interval '30 minutes'`,
