@@ -11,6 +11,15 @@ const helmet = require('helmet');
 const registerRouter = require('./routes/register');
 const whopWebhookRouter = require('./routes/whopWebhook');
 const { corsForSignup } = require('./cors');
+const authRouter = require('./app/routes/auth');
+const { router: bidsRouter } = require('./app/routes/bids');
+const { router: aiRouter, failInterruptedJobs } = require('./app/routes/ai');
+const { router: profileRouter } = require('./app/routes/profile');
+const { router: extrasRouter } = require('./app/routes/extras');
+const adminAuthRouter = require('./admin/routes/auth');
+const adminManageRouter = require('./admin/routes/manage');
+const { sameOrigin } = require('./app/session');
+const { runAlertJob } = require('./app/alerts');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const app = express();
@@ -50,6 +59,20 @@ app.use('/api', whopWebhookRouter);
 app.use('/api/register', corsForSignup);
 app.use('/api', registerRouter);
 
+// Dashboard API. Responses are per-member, so never cache them anywhere.
+app.use(['/api/auth', '/api/me', '/api/bids', '/api/decryptor', '/api/proposals', '/api/capability-statements',
+  '/api/vetting', '/api/alerts', '/api/admin'], sameOrigin, (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+app.use('/api', authRouter);
+app.use('/api', profileRouter);
+app.use('/api', bidsRouter);
+app.use('/api', aiRouter);
+app.use('/api', extrasRouter);
+app.use('/api', adminAuthRouter);
+app.use('/api', adminManageRouter);
+
 app.get('/healthz', (_req, res) => res.json({ ok: true }));
 
 app.use('/assets', express.static(path.join(PUBLIC_DIR, 'assets'), { maxAge: '7d', index: false }));
@@ -58,6 +81,26 @@ app.use('/assets', express.static(path.join(PUBLIC_DIR, 'assets'), { maxAge: '7d
 app.get(['/', '/access'], (_req, res) => {
   res.set('Cache-Control', 'no-store');
   res.type('html').send(indexHtml);
+});
+
+// The dashboard: a static single-page app. Its scripts and styles are files on this origin, so
+// the same strict CSP applies (no inline code, no third-party scripts).
+const APP_DIR = path.join(PUBLIC_DIR, 'app');
+const appHtml = fs.readFileSync(path.join(APP_DIR, 'index.html'), 'utf8');
+app.use('/app/static', express.static(path.join(APP_DIR, 'static'), { maxAge: '1h', index: false }));
+app.get(['/app', '/app/*'], (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.type('html').send(appHtml);
+});
+
+// Admin dashboard for the team and VAs: same static-SPA pattern, its own page and bundle.
+const ADMIN_DIR = path.join(PUBLIC_DIR, 'admin');
+const adminHtml = fs.readFileSync(path.join(ADMIN_DIR, 'index.html'), 'utf8');
+app.use('/admin/static', express.static(path.join(ADMIN_DIR, 'static'), { maxAge: '1h', index: false }));
+app.get(['/admin', '/admin/*'], (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.type('html').send(adminHtml);
 });
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
@@ -71,4 +114,12 @@ app.use((err, _req, res, _next) => {
 });
 
 const port = Number.parseInt(process.env.PORT || '3000', 10);
-app.listen(port, () => console.log(`Credential portal listening on :${port}`));
+app.listen(port, () => console.log(`GovProposalPro listening on :${port}`));
+
+const sweep = () => failInterruptedJobs().catch((err) => console.error('[jobs] sweep failed:', err.message));
+setInterval(sweep, 5 * 60 * 1000).unref();
+sweep();
+
+const alerts = () => runAlertJob().catch((err) => console.error('[alerts] job failed:', err.message));
+setInterval(alerts, 60 * 60 * 1000).unref();
+setTimeout(alerts, 60 * 1000).unref();

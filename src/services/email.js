@@ -193,4 +193,30 @@ async function sendWelcomeEmail({ email, tier = null }) {
   return sendViaSmtp({ email, tier });
 }
 
-module.exports = { sendWelcomeEmail, buildWelcomeEmail, buildPurchaseEmail };
+/** Password reset, invite and admin setup links. */
+function buildLinkEmail({ eyebrow, heading, intro, href, cta, expires }) {
+  const subject = heading;
+  const text = `${intro}\n\n${cta}: ${href}\n\nThis link works once and expires in ${expires}. If you did not ask for this, ignore this email.`;
+  const html = layout({
+    eyebrow,
+    heading: escapeHtml(heading),
+    bodyHtml: `<p style="${P}">${escapeHtml(intro)}</p>${button(href, escapeHtml(cta))}
+      <p style="${P}font-size:13px;color:#8E9AC8;">This link works once and expires in ${escapeHtml(expires)}. If you did not ask for this, you can ignore this email.</p>`,
+  });
+  return { subject, text, html };
+}
+
+/** Deadline reminders. items: [{ title, when, detail }] */
+function buildAlertEmail({ heading, intro, items, href }) {
+  const subject = heading;
+  const text = `${intro}\n\n${items.map((i) => `- ${i.title}: ${i.when}${i.detail ? ` (${i.detail})` : ''}`).join('\n')}\n\n${href}`;
+  const rows = items.map((i) => stepRow('&#9200;', escapeHtml(i.title), `<br/><span style="color:#FF8A9A;">${escapeHtml(i.when)}</span>${i.detail ? ` &middot; ${escapeHtml(i.detail)}` : ''}`).replace('&#9200;. ', '&#9200; ')).join('');
+  const html = layout({
+    eyebrow: 'Deadline alert',
+    heading: escapeHtml(heading),
+    bodyHtml: `<p style="${P}">${escapeHtml(intro)}</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>${button(href, 'Open your Command Center')}`,
+  });
+  return { subject, text, html };
+}
+
+module.exports = { sendWelcomeEmail, buildWelcomeEmail, buildPurchaseEmail, buildLinkEmail, buildAlertEmail };
