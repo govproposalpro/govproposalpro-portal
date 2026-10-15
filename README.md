@@ -69,3 +69,32 @@ Set `REQUIRE_PURCHASE=false` only if you deliberately want an open signup.
 
 - **SMTP (default):** set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`. Use a provider with SPF/DKIM set up for your domain (Postmark, SendGrid, Amazon SES, Google Workspace) so it lands in the inbox.
 - **GoHighLevel:** create a workflow with an *Inbound Webhook* trigger, set `EMAIL_PROVIDER=ghl` and `GHL_WEBHOOK_URL`. The app posts `{ email, tier, event: "credentials_secured", launch_date }` and your GHL workflow sends the email.
+
+## Command Center (dashboard at `/app`)
+
+The GovProposalPro app runs in this same service and database, so every login created on the
+signup page works here unchanged.
+
+```
+/app                 Sign in, then the dashboard (static SPA in public/app, built from frontend/app)
+POST /api/auth/login  bcrypt check, 8-strike lockout, purchase check, launch gate -> session cookie
+GET  /api/me          profile, tier, monthly proposal usage, feature locks
+/api/bids             Visual Bid CRM (Kanban CRUD + drag-and-drop reorder)
+/api/decryptor        AI Bid Decryptor: PDF or pasted text -> structured one-page brief (Claude)
+/api/proposals        AI Proposal Engine: Markdown proposal (Claude); Core 10 / Enterprise 50 per month
+```
+
+| Path | What it is |
+| --- | --- |
+| `src/app/tiers.js` | Tier caps and the feature list; the server enforces it and the UI renders locks from it. |
+| `src/app/session.js` | Server-side sessions (HttpOnly `__Host-` cookie, SHA-256 at rest), purchase re-check on every request, same-origin guard. |
+| `src/app/quota.js` | Monthly proposal cap with an advisory lock so parallel clicks can't overshoot it. |
+| `src/app/ai.js` | Claude calls (model `claude-opus-5-5`, adaptive thinking, server-side refusal fallback). |
+| `frontend/app/` | Dashboard source. `npm run build` writes `public/app/`. |
+
+Security notes: a refund or cancellation (Whop webhook sets `revoked_at`) ends every session on the
+member's next request; tier comes from the live purchase record; the CSP allows only same-origin
+scripts and styles; uploaded RFPs are sent to Claude and never stored, only the summary is.
+
+Env: `ANTHROPIC_API_KEY` (required for AI features), `APP_LAUNCH_AT` (sign-in opens at this time),
+`APP_EARLY_ACCESS_EMAILS` (team accounts allowed in early), `DECRYPTS_PER_DAY` (default 25).

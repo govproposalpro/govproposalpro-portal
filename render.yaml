@@ -31,6 +31,13 @@ services:
         sync: false
       - key: WHOP_WEBHOOK_SECRET
         sync: false
+      # --- Command Center (dashboard at /app) ---
+      - key: ANTHROPIC_API_KEY
+        sync: false # Claude API key for the Proposal Engine and Bid Decryptor
+      - key: APP_LAUNCH_AT
+        value: "2026-10-18T13:00:00Z" # members can sign in from Sunday Oct 18, 9:00 AM Eastern
+      - key: APP_EARLY_ACCESS_EMAILS
+        sync: false # comma-separated emails allowed to sign in before launch (the team)
 
 databases:
   - name: govproposalpro-db

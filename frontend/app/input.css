@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { color-scheme: dark; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 0% -10%, rgba(30, 91, 255, 0.20), transparent 60%),
+      radial-gradient(1000px 600px at 110% 0%, rgba(255, 31, 61, 0.14), transparent 60%),
+      #05081A;
+    background-attachment: fixed;
+  }
+  ::selection { background: rgba(30, 91, 255, 0.45); }
+}
+
+@layer components {
+  .card { @apply rounded-3xl border border-white/[0.07] bg-ink-800/70 shadow-bubble backdrop-blur-xl; }
+  .card-hover { @apply transition duration-200 hover:-translate-y-0.5 hover:border-brand-blueSoft/30; }
+  .field {
+    @apply block w-full rounded-2xl border border-mist-300/15 bg-ink-900/70 px-4 py-3 text-[15px] text-mist-100 outline-none transition placeholder:text-mist-400/60;
+  }
+  .field:focus { @apply border-brand-blue shadow-ring; }
+  select.field option { background: #0E1533; color: #EEF1FF; }
+  .label { @apply mb-1.5 block text-[13px] font-medium text-mist-300; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:shadow-ring disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-gradient-to-br from-brand-blue via-[#5B3BFF] to-brand-red text-white shadow-glow hover:shadow-glowHover; }
+  .btn-ghost { @apply btn border border-white/10 bg-white/[0.04] text-mist-100 hover:bg-white/[0.08]; }
+  .btn-danger { @apply btn border border-brand-red/40 bg-brand-red/10 text-brand-redSoft hover:bg-brand-red/20; }
+  .pill { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide; }
+  .nav-link { @apply flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-mist-300 transition hover:bg-white/[0.05] hover:text-white; }
+  .nav-link.active { @apply bg-gradient-to-r from-brand-blue/25 to-brand-red/10 text-white shadow-[inset_0_0_0_1px_rgba(127,162,255,0.25)]; }
+  .kanban-col { @apply flex w-72 shrink-0 flex-col rounded-3xl border border-white/[0.06] bg-ink-900/60 p-3; }
+  .kanban-col.drop { @apply border-brand-blueSoft/60 bg-brand-blue/10; }
+  .bid-card { @apply cursor-grab rounded-2xl border border-white/[0.07] bg-ink-700/80 p-3.5 shadow-bubble transition hover:border-brand-blueSoft/40 active:cursor-grabbing; }
+  .bid-card.dragging { @apply opacity-40; }
+  .spinner { @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/25 border-t-white; }
+  .meter { @apply h-2.5 w-full overflow-hidden rounded-full bg-white/[0.08]; }
+  .meter > span { @apply block h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-red transition-all duration-700; }
+}
+
+/* Rendered proposals and summaries */
+.doc { color: #DCE2FF; font-size: 15px; line-height: 1.7; }
+.doc h1 { font-size: 1.7rem; font-weight: 700; color: #fff; margin: 0 0 1rem; letter-spacing: -0.01em; }
+.doc h2 { font-size: 1.2rem; font-weight: 700; color: #fff; margin: 2rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); }
+.doc h3 { font-size: 1.02rem; font-weight: 650; color: #fff; margin: 1.4rem 0 0.5rem; }
+.doc p { margin: 0.7rem 0; }
+.doc ul, .doc ol { margin: 0.6rem 0 0.6rem 1.3rem; }
+.doc ul { list-style: disc; } .doc ol { list-style: decimal; }
+.doc li { margin: 0.25rem 0; }
+.doc strong { color: #fff; }
+.doc code { background: rgba(255,255,255,0.08); padding: 0.1rem 0.35rem; border-radius: 0.4rem; font-size: 0.9em; }
+.doc hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0; }
+.doc table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 13.5px; }
+.doc th, .doc td { border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
+.doc th { background: rgba(30,91,255,0.15); color: #fff; }
+.doc .ph { background: rgba(255,31,61,0.16); color: #FFB3BE; border-radius: 0.35rem; padding: 0 0.3rem; }
+
+@media print {
+  body { background: #fff !important; }
+  .no-print { display: none !important; }
+  .print-area { box-shadow: none !important; border: 0 !important; background: #fff !important; padding: 0 !important; }
+  .doc, .doc h1, .doc h2, .doc h3, .doc strong { color: #000 !important; }
+  .doc th { background: #eef !important; }
+  .doc th, .doc td { border-color: #999 !important; }
+  .doc .ph { background: #fee !important; color: #900 !important; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
