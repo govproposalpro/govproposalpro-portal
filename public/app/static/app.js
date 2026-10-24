@@ -72,6 +72,24 @@
     check: '<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',
     bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
     shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+    gauge: '<path d="M12 14l4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 13h6"/>',
+    dollar: '<path d="M12 2v20"/><path d="M17 6.5c0-1.9-2.2-3.5-5-3.5s-5 1.6-5 3.5S9.2 10 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5"/>',
+    handshake: '<path d="m11 17 2 2a1.4 1.4 0 0 0 2-2"/><path d="m14 14 2.5 2.5a1.4 1.4 0 0 0 2-2l-3.9-3.9a2 2 0 0 0-2.8 0l-.9.9a1.4 1.4 0 0 1-2-2l2.8-2.8a3.6 3.6 0 0 1 4.3-.6L18 7l3 1v7h-2"/><path d="M3 8l3-1 1 1M3 8v7l6 6a1.4 1.4 0 0 0 2-2"/>',
+    grade: '<path d="M9 11l2 2 4-4"/><rect x="4" y="3" width="16" height="18" rx="2"/>',
+    question: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>',
+    flag: '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+    receipt: '<path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/>',
+    trophy: '<path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+    voice: '<path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+    lockshield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><rect x="9" y="11" width="6" height="5" rx="1"/><path d="M10 11V9.5a2 2 0 0 1 4 0V11"/>',
+    pulse: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    map: '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
+    radar: '<circle cx="12" cy="12" r="9"/><path d="M12 12 18 6"/><circle cx="12" cy="12" r="4"/>',
+    doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
   };
   const icon = (name, cls = 'h-5 w-5') =>
     `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name] || ICON.spark}</svg>`;
@@ -145,16 +163,35 @@
   window.addEventListener('popstate', render);
 
   const ROUTE_OF = {
-    proposal_engine: '/proposals', bid_decryptor: '/decryptor', bid_crm: '/crm', capability_statement: '/capability',
-    subcontracting_check: '/subcontracting', sam_checklist: '/sam-checklist', deadline_alerts: '/alerts', sub_vetting: '/vetting',
+    proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
+    vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
+    section_m: '/section-m', rfi_ghostwriter: '/rfi', milestones: '/milestones', invoicing: '/invoices',
+    capability_statement: '/capability', past_performance: '/portfolio', winning_voice: '/winning-voice', cmmc_checklist: '/cmmc',
+    compliance_pulse: '/pulse', subcontracting_check: '/subcontracting', sam_checklist: '/sam-checklist', sub_vetting: '/vetting',
+    state_directory: '/states', deadline_alerts: '/alerts',
   };
   const ICON_OF = {
-    proposal_engine: 'proposal', bid_decryptor: 'decrypt', bid_crm: 'crm', capability_statement: 'badge',
-    subcontracting_check: 'scale', sam_checklist: 'check', deadline_alerts: 'bell', sub_vetting: 'shield',
+    proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
+    vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
+    section_m: 'grade', rfi_ghostwriter: 'question', milestones: 'flag', invoicing: 'receipt',
+    capability_statement: 'badge', past_performance: 'trophy', winning_voice: 'voice', cmmc_checklist: 'lockshield',
+    compliance_pulse: 'pulse', subcontracting_check: 'scale', sam_checklist: 'check', sub_vetting: 'shield',
+    state_directory: 'map', deadline_alerts: 'bell',
   };
-  const WIN_WORK = ['proposal_engine', 'bid_decryptor', 'bid_crm'];
+  const NAV_GROUPS = [
+    ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker']],
+    ['Subs and pricing', ['vendor_scraper', 'outreach', 'pricing_matrix', 'foia', 'teaming_legal', 'sub_vetting']],
+    ['Review and submit', ['section_m', 'rfi_ghostwriter']],
+    ['After award', ['milestones', 'invoicing']],
+    ['Company and compliance', ['capability_statement', 'past_performance', 'winning_voice', 'cmmc_checklist', 'compliance_pulse',
+      'subcontracting_check', 'sam_checklist', 'state_directory', 'deadline_alerts']],
+  ];
   const ABOUT = {
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
+    invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
+    winning_voice: 'Upload your past winning proposals and every new draft is written in your own proven voice.',
+    cmmc_checklist: 'A 17-point CMMC Level 1 self-assessment based on FAR 52.204-21, with progress you can show a prime or contracting officer.',
+    compliance_pulse: 'The newest FAR, DFARS and agency rule changes from the Federal Register, plus the 2026 rules every bidder must know.',
     vendor_scraper: 'Pulls targeted lists of local, top-rated subcontractors with phone numbers and emails based on the contract location and industry.',
     outreach: 'Auto-fills subcontractor and contract details into proven email templates so you can collect competitive quotes fast.',
     foia: 'Generates and sends FOIA requests for past winning bids and pricing data so you know the price to beat.',
@@ -173,35 +210,39 @@
 
   function navItems() {
     const f = state.me.features;
+    const byKey = new Map(f.map((x) => [x.key, x]));
     const link = (href, ic, label, extra = '') =>
-      `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link">${icon(ic)}<span class="flex-1">${esc(label)}</span>${extra}</a>`;
-    const live = f.filter((x) => x.status === 'live' && x.unlocked);
-    const rest = f.filter((x) => x.status !== 'live' || !x.unlocked);
-    const group = (title, items) => (items.length ? `<p class="mt-5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-mist-500">${title}</p>
-      ${items.map((x) => link(ROUTE_OF[x.key], ICON_OF[x.key], x.name)).join('')}` : '');
+      `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link">${icon(ic, 'h-[18px] w-[18px] shrink-0')}<span class="flex-1 truncate">${esc(label)}</span>${extra}</a>`;
+    const item = (x) => (x.unlocked && x.status === 'live'
+      ? link(ROUTE_OF[x.key], ICON_OF[x.key], x.name)
+      : link('/feature/' + x.key, x.unlocked ? ICON_OF[x.key] : 'lock', x.name,
+        x.unlocked ? '<span class="pill bg-white/[0.08] text-mist-400">Soon</span>' : '<span class="pill bg-gradient-to-r from-brand-blue/30 to-brand-red/30 text-white">Ent</span>'));
     return `
       ${link('/', 'home', 'Command Center')}
-      ${group('Win work', live.filter((x) => WIN_WORK.includes(x.key)))}
-      ${group('Get bid-ready', live.filter((x) => !WIN_WORK.includes(x.key)))}
-      <p class="mt-5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-mist-500">Toolkit</p>
-      ${rest.map((x) => link('/feature/' + x.key, x.unlocked ? 'spark' : 'lock', x.name,
-        x.unlocked ? '<span class="pill bg-brand-blue/15 text-brand-blueSoft">Soon</span>' : '<span class="pill bg-brand-red/15 text-brand-redSoft">Ent</span>')).join('')}
+      ${NAV_GROUPS.map(([title, keys]) => {
+        const items = keys.map((k) => byKey.get(k)).filter(Boolean);
+        return items.length ? `<p class="mt-5 px-3 pb-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-mist-500">${title}</p>${items.map(item).join('')}` : '';
+      }).join('')}
     `;
   }
+
+  const brandLockup = (h = 'h-8') => `<img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="${h} w-auto" />
+    <span class="text-[17px] font-semibold tracking-tight text-white">GovProposal<span class="text-mist-400">Pro</span></span>`;
 
   function renderShell() {
     const me = state.me;
     const ent = me.tier.key === 'enterprise';
+    document.body.classList.toggle('ed-enterprise', ent);
+    document.body.classList.toggle('ed-core', !ent);
     $('#root').innerHTML = `
       <div class="flex min-h-screen">
-        <aside class="no-print sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-white/[0.06] bg-ink-950/60 p-4 backdrop-blur-xl lg:flex">
-          <a href="/app" data-link class="mb-6 block px-2 pt-2"><img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="h-auto w-48" /></a>
-          <nav class="flex-1 space-y-0.5 overflow-y-auto pr-1">${navItems()}</nav>
-          <div class="mt-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3">
-            <div class="flex items-center gap-2">
-              <span class="pill ${ent ? 'bg-gradient-to-r from-brand-blue to-brand-red text-white' : 'bg-brand-blue/20 text-brand-blueSoft'}">${esc(me.tier.label)}</span>
-            </div>
-            <p class="mt-2 truncate text-sm text-mist-100">${esc(me.user.businessName || me.user.fullName || me.user.email)}</p>
+        <aside class="no-print sticky top-0 hidden h-screen w-[17rem] shrink-0 flex-col border-r border-white/[0.07] bg-black/80 px-4 pb-4 pt-5 backdrop-blur-2xl lg:flex">
+          <a href="/app" data-link class="mb-1 flex items-center gap-2.5 px-2">${brandLockup()}</a>
+          <div class="mb-4 px-2"><span class="edition-badge mt-2">${esc(me.tier.label)}</span></div>
+          <nav class="flex-1 space-y-0.5 overflow-y-auto pl-1.5 pr-1">${navItems()}</nav>
+          <div class="mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
+            <p class="truncate text-sm font-medium text-mist-100">${esc(me.user.businessName || me.user.fullName || me.user.email)}</p>
+            <p class="truncate text-xs text-mist-500">${esc(me.user.email)}</p>
             <div class="mt-2 flex gap-2">
               <a href="/app/profile" data-link class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('user', 'h-4 w-4')}Profile</a>
               <button id="logout" class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('out', 'h-4 w-4')}Sign out</button>
@@ -209,11 +250,11 @@
           </div>
         </aside>
         <div class="flex min-w-0 flex-1 flex-col">
-          <header class="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.06] bg-ink-950/80 px-4 py-3 backdrop-blur-xl lg:hidden">
-            <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro" width="1200" height="386" class="h-auto w-36" />
+          <header class="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.07] bg-black/80 px-4 py-3 backdrop-blur-2xl lg:hidden">
+            <a href="/app" data-link class="flex items-center gap-2">${brandLockup('h-7')}<span class="edition-badge !px-2 !py-0.5 !text-[9px]">${ent ? 'Enterprise' : 'Core'}</span></a>
             <button id="menu" class="btn-ghost !p-2" aria-label="Menu">${icon('menu')}</button>
           </header>
-          <div id="mobile-nav" class="no-print fixed inset-0 top-14 z-20 hidden overflow-y-auto bg-ink-950/95 p-4 backdrop-blur-xl lg:hidden">
+          <div id="mobile-nav" class="no-print fixed inset-0 top-14 z-20 hidden overflow-y-auto bg-black/95 p-4 backdrop-blur-2xl lg:hidden">
             <nav class="space-y-0.5">${navItems()}
               <a href="/app/profile" data-link class="nav-link">${icon('user')}<span>Profile</span></a>
               <button id="logout-m" class="nav-link w-full">${icon('out')}<span>Sign out</span></button>
@@ -240,6 +281,8 @@
       a.classList.toggle('active', p === '/' ? path === '/' : path === p || path.startsWith(p + '/'));
     });
   }
+
+  const hasTool = (key) => Boolean(state.me && state.me.features.some((f) => f.key === key && f.unlocked && f.status === 'live'));
 
   async function refreshMe() {
     state.me = await api('/me');
@@ -281,6 +324,26 @@
       else if (path === '/sam-checklist') viewSamChecklist(view);
       else if (path === '/alerts') await viewAlerts(view);
       else if (path === '/vetting') await viewVetting(view);
+      else if (path === '/go-no-go') await viewGoNoGo(view);
+      else if (path === '/matchmaker') await viewMatchmaker(view);
+      else if (path === '/vendors') await viewVendors(view);
+      else if (path === '/outreach') await viewOutreach(view);
+      else if (path === '/foia') await viewFoia(view);
+      else if (path === '/pricing') await viewPricingList(view);
+      else if ((m = path.match(/^\/pricing\/(new|\d+)$/))) await viewPricing(view, m[1]);
+      else if (path === '/teaming') await viewTeaming(view);
+      else if ((m = path.match(/^\/teaming\/(\d+)$/))) await viewLegalDoc(view, m[1]);
+      else if (path === '/section-m') await viewJobs(view, 'section_m');
+      else if (path === '/rfi') await viewJobs(view, 'rfi');
+      else if (path === '/portfolio') await viewJobs(view, 'case_study');
+      else if ((m = path.match(/^\/(section-m|rfi|portfolio)\/(\d+)$/))) await viewJob(view, JOB_KIND_OF[m[1]], m[2]);
+      else if (path === '/milestones') await viewMilestones(view);
+      else if (path === '/invoices') await viewInvoices(view);
+      else if ((m = path.match(/^\/invoices\/(new|\d+)$/))) await viewInvoice(view, m[1]);
+      else if (path === '/winning-voice') await viewWinningVoice(view);
+      else if (path === '/cmmc') await viewCmmc(view);
+      else if (path === '/pulse') await viewPulse(view);
+      else if (path === '/states') await viewStates(view);
       else if (path === '/crm') await viewCrm(view);
       else if (path === '/decryptor') await viewDecryptor(view);
       else if ((m = path.match(/^\/decryptor\/(\d+)$/))) await viewSummary(view, m[1]);
@@ -332,7 +395,7 @@
     $('#root').innerHTML = `
       <main class="flex min-h-screen items-center justify-center px-4 py-12">
         <div class="w-full max-w-md">
-          <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="mx-auto mb-8 h-auto w-72" />
+          <img src="/assets/gpp-logo.png" alt="GovProposalPro" width="900" height="543" class="mx-auto h-auto w-56" /><p class="mb-10 mt-3 text-center text-xs font-medium uppercase tracking-[0.3em] text-mist-500">by Contract Bros</p>
           <form id="login" class="card p-7 sm:p-9" novalidate>
             <h1 class="text-xl font-bold text-white">Sign in to your Command Center</h1>
             <p class="mt-1 text-sm text-mist-400">Use the email and password you created when you secured your access.</p>
@@ -381,8 +444,20 @@
     const pct = Math.min(100, Math.round((usage.used / usage.limit) * 100));
     const won = bids.filter((b) => b.stage === 'won').length;
 
+    const ent = me.tier.key === 'enterprise';
+    const quick = (ent ? [['matchmaker', 'bid_matchmaker', 'Find matched bids'], ['section-m', 'section_m', 'Grade a proposal'], ['pricing', 'pricing_matrix', 'Price with Fringe/G&A'], ['teaming', 'teaming_legal', 'Draft a teaming agreement']]
+      : [['go-no-go', 'go_no_go', 'Go/No-Go a bid'], ['vendors', 'vendor_scraper', 'Find subcontractors'], ['pricing', 'pricing_matrix', 'Price a bid'], ['cmmc', 'cmmc_checklist', 'CMMC Level 1 check']]);
+
     view.innerHTML = `
-      ${pageHead(`Welcome back${first ? ', ' + esc(first) : ''}`, 'Your government contracting command center.',
+      <section class="card relative mb-8 overflow-hidden p-6 sm:p-8">
+        <div class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-40 blur-3xl accent-glow"></div>
+        <span class="edition-badge">${ent ? 'Enterprise Edition' : 'Core Edition'}</span>
+        <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">${ent ? 'Your <span class="accent-text">Enterprise</span> Command Center.' : 'Your <span class="accent-text">Core</span> Command Center.'}</h1>
+        <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? '50 proposals a month, predictive bid matching, legal teaming, compliance grading and your winning voice.' : '10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
+        <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06]">${icon(ICON_OF[key] || 'spark', 'h-4 w-4')}${label}</a>`).join('')}</div>
+        ${ent ? '' : '<p class="mt-5 text-xs text-mist-500">Enterprise adds the Predictive Bid Matchmaker, Section M grading, teaming agreements, RFI Ghostwriter and 50 proposals a month.</p>'}
+      </section>
+      ${pageHead('Today', 'Your pipeline, deadlines and proposals at a glance.',
         '<a href="/app/decryptor" data-link class="btn-ghost">' + icon('decrypt', 'h-4 w-4') + 'Decrypt an RFP</a><a href="/app/proposals/new" data-link class="btn-primary">' + icon('proposal', 'h-4 w-4') + 'New proposal</a>')}
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="card p-5">
@@ -694,7 +769,8 @@
       ${pageHead(esc(d.title || s.fileName), esc([d.agency, d.solicitation_number].filter((x) => x && !/^not stated$/i.test(x)).join(' · ')),
         `<button id="to-bid" class="btn-ghost">${icon('crm', 'h-4 w-4')}${s.bidId ? 'Open in Bid CRM' : 'Add to Bid CRM'}</button>
          <a href="/app/proposals/new?summary=${s.id}${s.bidId ? '&bid=' + s.bidId : ''}" data-link class="btn-primary">${icon('proposal', 'h-4 w-4')}Write proposal</a>`)}
-      <div class="mb-6 rounded-3xl border border-brand-red/25 bg-gradient-to-r from-brand-red/15 to-brand-blue/10 p-5">
+      ${hasTool('go_no_go') ? goNoGoPanel(d) : ''}
+      <div class="mb-6 rounded-[22px] border border-white/[0.08] bg-ink-800 p-5">
         <p class="text-xs font-semibold uppercase tracking-wider text-brand-redSoft">Response due</p>
         <p class="mt-1 text-xl font-bold text-white">${esc(d.response_due || 'Not stated')}</p>
         ${d.questions_due && !/^not stated$/i.test(d.questions_due) ? `<p class="mt-1 text-sm text-mist-300">Questions due: ${esc(d.questions_due)}</p>` : ''}
@@ -847,7 +923,19 @@
       $('#pf-sub').textContent = money2(sub);
       $('#pf-total').textContent = money2(sub + extras);
     };
-    $('#pf-items').insertAdjacentHTML('beforeend', itemRow());
+    // A pricing sheet sent from the Profit Pricing Matrix fills the price table.
+    let handoff = null;
+    try { handoff = JSON.parse(sessionStorage.getItem('gpp-pricing') || 'null'); sessionStorage.removeItem('gpp-pricing'); } catch { handoff = null; }
+    if (handoff && Array.isArray(handoff.items) && handoff.items.length) {
+      $('#pf-items').innerHTML = handoff.items.slice(0, 60).map(itemRow).join('');
+      (handoff.extras || []).slice(0, 20).forEach((x) => $('#pf-extras').insertAdjacentHTML('beforeend', extraRow(x)));
+      if (handoff.title) form.elements.title.value = handoff.title;
+      if (handoff.bidId) form.elements.bidId.value = String(handoff.bidId);
+      recalc();
+      toast('Prices copied from your pricing sheet.');
+    } else {
+      $('#pf-items').insertAdjacentHTML('beforeend', itemRow());
+    }
     $('#pf-add-item').addEventListener('click', () => { $('#pf-items').insertAdjacentHTML('beforeend', itemRow()); recalc(); });
     $('#pf-add-extra').addEventListener('click', () => { $('#pf-extras').insertAdjacentHTML('beforeend', extraRow()); recalc(); });
     form.addEventListener('click', (e) => {
@@ -982,7 +1070,7 @@
     const locked = !f.unlocked;
     view.innerHTML = `
       <div class="card relative mx-auto max-w-2xl overflow-hidden p-10 text-center">
-        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue to-brand-red"></div>
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-[#5B3BFF] to-brand-red"></div>
         <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl ${locked ? 'bg-brand-red/15 text-brand-redSoft' : 'bg-brand-blue/20 text-brand-blueSoft'}">${icon(locked ? 'lock' : 'spark', 'h-7 w-7')}</div>
         <span class="pill ${locked ? 'bg-brand-red/15 text-brand-redSoft' : 'bg-brand-blue/15 text-brand-blueSoft'}">${locked ? 'Enterprise Edition' : 'Rolling out next'}</span>
         <h1 class="mt-3 text-2xl font-bold text-white">${esc(f.name)}</h1>
@@ -1056,7 +1144,7 @@
   const authFrame = (inner) => `
     <main class="flex min-h-screen items-center justify-center px-4 py-12">
       <div class="w-full max-w-md">
-        <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="mx-auto mb-8 h-auto w-72" />
+        <img src="/assets/gpp-logo.png" alt="GovProposalPro" width="900" height="543" class="mx-auto h-auto w-56" /><p class="mb-10 mt-3 text-center text-xs font-medium uppercase tracking-[0.3em] text-mist-500">by Contract Bros</p>
         ${inner}
       </div>
     </main>`;
@@ -1153,7 +1241,7 @@
   const SAM_STATUS = { active: 'Active', in_progress: 'In progress', not_started: 'Not started' };
   const STRUCTURES = { 'Limited Liability Company': 'LLC', Corporation: 'Corporation', 'S Corporation': 'S Corporation', 'Sole Proprietorship': 'Sole proprietorship', Partnership: 'Partnership', Other: 'Other' };
   const EMPLOYEES = { 1: 'Just me', '2-10': '2 to 10', '11-50': '11 to 50', '51-200': '51 to 200', '201+': 'More than 200' };
-  const DOC_KIND = { capability_statement: 'Capability statement', past_performance: 'Past performance', resume: 'Resume', company_overview: 'Company overview', other: 'Other' };
+  const DOC_KIND = { capability_statement: 'Capability statement', past_performance: 'Past performance', resume: 'Resume', company_overview: 'Company overview', winning_proposal: 'Winning proposal (Enterprise)', other: 'Other' };
 
   function fld(name, label, value, o = {}) {
     const id = 'f-' + name;
@@ -1253,18 +1341,20 @@
   }
 
   /** Upload list for company documents. Calls onReady(doc) when a document finishes reading. */
-  async function documentsPanel(box, onReady) {
+  // `only` limits the panel to one kind of document (the Winning Voice page uses it).
+  async function documentsPanel(box, onReady, only) {
     let docs = (await api('/me/documents')).documents;
+    const kinds = Object.entries(DOC_KIND).filter(([v]) => (only ? v === only : v !== 'winning_proposal' || state.me.tier.key === 'enterprise'));
     let file = null;
     const draw = () => {
       box.innerHTML = `
         <div class="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
           <label class="field flex min-w-0 cursor-pointer items-center gap-2 !py-2.5" for="doc-file">${icon('upload', 'h-4 w-4 shrink-0')}<span id="doc-name" class="truncate text-mist-400">${file ? esc(file.name) : 'Choose a PDF, Word file or photo'}</span>
             <input id="doc-file" type="file" accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp" class="sr-only" /></label>
-          <select id="doc-kind" class="field !py-2.5" aria-label="Document type">${Object.entries(DOC_KIND).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+          <select id="doc-kind" class="field !py-2.5 ${only ? 'hidden' : ''}" aria-label="Document type">${kinds.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
           <button type="button" id="doc-up" class="btn-primary">Upload</button>
         </div>
-        <ul class="mt-4 space-y-2">${docs.map((d) => `
+        <ul class="mt-4 space-y-2">${docs.filter((d) => !only || d.kind === only).map((d) => `
           <li class="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
             <div class="flex items-center justify-between gap-3">
               <span class="min-w-0"><span class="block truncate text-sm font-medium text-white">${esc(d.fileName)}</span><span class="text-xs text-mist-500">${esc(DOC_KIND[d.kind] || 'Document')} · ${fmtDate(d.createdAt)}</span></span>
@@ -1873,6 +1963,1628 @@
       btn.innerHTML = icon('shield', 'h-4 w-4') + 'Vet subcontractor';
     });
   }
+
+    // ---- 10-shared.js
+  /* Edition toolkit: shared helpers for the views in frontend/app/tools/. Spliced into app.js. */
+
+  const num = (v) => {
+    const n = Number(String(v ?? '').replace(/[$,%\s]/g, ''));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const money2 = (n) => (Number(n) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  const isEnterprise = () => state.me.tier.key === 'enterprise';
+  const today = () => new Date().toISOString().slice(0, 10);
+  const memberName = () => state.me.user.fullName || '[INSERT: your name]';
+  const memberCompany = () => state.me.user.businessName || '[INSERT: company name]';
+
+  function addBusinessDays(iso, n) {
+    const d = new Date(iso + 'T12:00:00');
+    let left = n;
+    while (left > 0) {
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() !== 0 && d.getDay() !== 6) left--;
+    }
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function copyText(text, done = 'Copied to clipboard.') {
+    try { await navigator.clipboard.writeText(text); toast(done); } catch { toast('Copy failed. Select the text instead.', 'error'); }
+  }
+
+  /** Opens the member's email app with a drafted message. */
+  function mailto({ to = '', bcc = '', subject = '', body = '' }) {
+    const q = [bcc && `bcc=${encodeURIComponent(bcc)}`, `subject=${encodeURIComponent(subject)}`, `body=${encodeURIComponent(body)}`].filter(Boolean).join('&');
+    const addr = to.split(',').map((t) => t.trim()).filter(Boolean).map((t) => encodeURIComponent(t).replace(/%40/g, '@')).join(',');
+    window.location.href = `mailto:${addr}?${q}`;
+  }
+
+  /** Word-compatible download of an HTML fragment. */
+  function wordDoc(title, bodyHtml) {
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(title)}</title>
+      <style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.45}h1{font-size:18pt}h2{font-size:13pt;margin-top:14pt}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:4pt;vertical-align:top}th{background:#EEE}</style></head><body>${bodyHtml}</body></html>`;
+    const slug = title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'document';
+    download(slug + '.doc', new Blob(['﻿', html], { type: 'application/msword' }));
+  }
+
+  function csvDownload(name, rows) {
+    const cell = (v) => {
+      const s = String(v ?? '');
+      return /[",\n]/.test(s) || /^[=+\-@]/.test(s) ? `"${s.replace(/^([=+\-@])/, "'$1").replace(/"/g, '""')}"` : s;
+    };
+    download(name, new Blob([rows.map((r) => r.map(cell).join(',')).join('\r\n')], { type: 'text/csv' }));
+  }
+
+  const loadBids = async () => (await api('/bids')).bids;
+  const loadSubs = async () => (await api('/subs')).items;
+  const bidOptions = (bids, selected, empty = 'None') => `<option value="">${empty}</option>${bids.map((b) =>
+    `<option value="${b.id}" ${String(b.id) === String(selected ?? '') ? 'selected' : ''}>${esc(b.title)}</option>`).join('')}`;
+
+  const verdictPill = (v) => ({
+    go: '<span class="pill bg-emerald-500/15 text-emerald-300">Go</span>',
+    caution: '<span class="pill bg-amber-400/15 text-amber-200">Caution</span>',
+    no_go: '<span class="pill bg-brand-red/20 text-brand-redSoft">No-Go</span>',
+  }[v] || '<span class="pill bg-white/[0.06] text-mist-400">Not scored</span>');
+
+  /** A score ring drawn with CSS only (a conic gradient set through a class per 5 points). */
+  const scoreRing = (score, size = 'h-20 w-20') => {
+    const s = Math.max(0, Math.min(100, Math.round((Number(score) || 0) / 5) * 5));
+    return `<div class="ring-score ring-${s} ${size}"><span>${Number(score) || 0}</span></div>`;
+  };
+
+  const sectionCard = (title, body, cls = '') => `<section class="card p-6 ${cls}"><h2 class="mb-3 font-semibold text-white">${title}</h2>${body}</section>`;
+
+  const lockedTeaser = (title, body) => `
+    <div class="card relative overflow-hidden p-6">
+      <div class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-brand-blue via-[#5B3BFF] to-brand-red"></div>
+      <div class="flex items-start gap-4">
+        <span class="rounded-2xl bg-white/[0.06] p-2.5 text-mist-300">${icon('lock', 'h-5 w-5')}</span>
+        <div><p class="font-semibold text-white">${title} <span class="pill ml-1 bg-gradient-to-r from-brand-blue/30 to-brand-red/30 text-white">Enterprise</span></p>
+          <p class="mt-1 text-sm text-mist-400">${body}</p></div>
+      </div>
+    </div>`;
+
+  /** Polls a list page while any row is still working. */
+  const pollWhileWorking = (rows) => { if (rows.some((r) => r.status === 'working')) every(5000, () => render()); };
+
+  // ---- 20-gonogo.js
+  // ------------------------------------------------------------------ Go/No-Go Indicator
+
+  const STATE_NAMES = {
+    AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
+    DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa',
+    KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota',
+    MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey',
+    NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon',
+    PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah',
+    VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming',
+  };
+
+  /**
+   * Instant checks from the member's profile, no AI: NAICS, set-aside, SAM.gov, location and
+   * deadline. Shown next to the AI verdict, and on their own for briefs decrypted before it existed.
+   */
+  function profileChecks(d) {
+    const u = state.me.user;
+    const stated = (v) => v && !/^not stated$/i.test(v);
+    const checks = [];
+    const myNaics = (u.naics || '').match(/\d{6}/g) || [];
+    const theirNaics = (d.naics || '').match(/\d{6}/g) || [];
+    if (theirNaics.length) {
+      const hit = theirNaics.some((n) => myNaics.includes(n));
+      checks.push({ check: `NAICS ${theirNaics.join(', ')}`, status: hit ? 'pass' : 'fail',
+        detail: hit ? 'It is one of your NAICS codes.' : 'Not in your profile. Add it in SAM.gov and your profile if you can perform the work, and confirm you meet its size standard.' });
+    }
+    const sa = (d.set_aside || '').toLowerCase();
+    if (stated(d.set_aside)) {
+      const has = (c) => u.certifications.includes(c);
+      let need = null;
+      if (/service[- ]disabled|sdvosb/.test(sa)) need = ['sdvosb', 'SDVOSB'];
+      else if (/hubzone/.test(sa)) need = ['hubzone', 'HUBZone'];
+      else if (/8\(a\)|8a\b/.test(sa)) need = ['8a', '8(a)'];
+      else if (/women|wosb/.test(sa)) need = ['wosb', 'WOSB'];
+      else if (/veteran|vosb/.test(sa)) need = ['vosb', 'VOSB'];
+      if (need) {
+        const ok = has(need[0]) || (need[0] === 'vosb' && has('sdvosb'));
+        checks.push({ check: `Set-aside: ${d.set_aside}`, status: ok ? 'pass' : 'fail', detail: ok ? `Your profile lists ${need[1]}.` : `Requires ${need[1]} certification, which is not in your profile.` });
+      } else if (/small/.test(sa)) {
+        checks.push({ check: `Set-aside: ${d.set_aside}`, status: 'unknown', detail: 'Confirm you are small under the size standard for this NAICS code (SBA size standards table).' });
+      } else {
+        checks.push({ check: `Set-aside: ${d.set_aside}`, status: 'pass', detail: 'Open to your business.' });
+      }
+    }
+    const due = Date.parse((d.response_due || '').replace(/(\d)(st|nd|rd|th)\b/g, '$1'));
+    if (u.samStatus === 'active') {
+      const exp = u.samExpiresOn && Date.parse(u.samExpiresOn);
+      checks.push(exp && Number.isFinite(due) && exp < due
+        ? { check: 'SAM.gov registration', status: 'fail', detail: `Your registration expires ${fmtDate(u.samExpiresOn)}, before the response is due. Renew now.` }
+        : { check: 'SAM.gov registration', status: 'pass', detail: u.samExpiresOn ? `Active through ${fmtDate(u.samExpiresOn)}.` : 'Active.' });
+    } else {
+      checks.push({ check: 'SAM.gov registration', status: u.samStatus === 'in_progress' ? 'unknown' : 'fail',
+        detail: u.samStatus === 'in_progress' ? 'In progress. It must be active before award.' : 'You must be registered and active in SAM.gov to be awarded.' });
+    }
+    if (stated(d.place_of_performance)) {
+      const area = `${u.serviceArea || ''} ${u.address || ''}`.toLowerCase();
+      const code = Object.keys(STATE_NAMES).find((c) => new RegExp(`\\b${c}\\b`).test(d.place_of_performance) || d.place_of_performance.toLowerCase().includes(STATE_NAMES[c].toLowerCase()));
+      const local = /nationwide|anywhere|all 50/.test(area) || (code && (new RegExp(`\\b${code.toLowerCase()}\\b`).test(area) || area.includes(STATE_NAMES[code].toLowerCase())));
+      checks.push({ check: `Place of performance: ${d.place_of_performance}`, status: local ? 'pass' : 'unknown',
+        detail: local ? 'Inside the area you serve.' : 'Outside the area in your profile. Line up a local subcontractor or confirm you can staff it.' });
+    }
+    if (Number.isFinite(due)) {
+      const days = Math.ceil((due - Date.now()) / 86400000);
+      checks.push({ check: 'Time to respond', status: days < 0 ? 'fail' : days < 5 ? 'unknown' : 'pass',
+        detail: days < 0 ? 'The response date has passed.' : `${days} day${days === 1 ? '' : 's'} left.` });
+    }
+    return checks;
+  }
+
+  const CHECK_PILL = {
+    pass: '<span class="pill bg-emerald-500/15 text-emerald-300">Pass</span>',
+    fail: '<span class="pill bg-brand-red/20 text-brand-redSoft">Fail</span>',
+    unknown: '<span class="pill bg-amber-400/15 text-amber-200">Check</span>',
+  };
+  const checkTable = (rows) => `<table class="tbl"><tbody>${rows.map((c) => `<tr><td class="w-24">${CHECK_PILL[c.status] || CHECK_PILL.unknown}</td>
+    <td><p class="font-medium text-white">${esc(c.check)}</p><p class="mt-0.5 text-mist-400">${esc(c.detail)}</p></td></tr>`).join('')}</tbody></table>`;
+
+  /** The Go/No-Go panel for one decrypted solicitation. */
+  function goNoGoPanel(d) {
+    const g = d.go_no_go;
+    const quick = profileChecks(d);
+    const fails = quick.filter((c) => c.status === 'fail').length;
+    const verdict = g ? g.verdict : fails ? 'no_go' : quick.some((c) => c.status === 'unknown') ? 'caution' : 'go';
+    const score = g ? g.score : Math.max(5, 90 - fails * 35 - quick.filter((c) => c.status === 'unknown').length * 10);
+    return `
+      <section class="card mb-6 overflow-hidden">
+        <div class="flex flex-wrap items-center gap-5 border-b border-white/[0.06] p-6">
+          ${scoreRing(score)}
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-mist-500">Go/No-Go</p>
+            <p class="mt-1 flex flex-wrap items-center gap-2 text-xl font-semibold text-white">${verdictPill(verdict)} ${esc(g ? g.headline : fails ? 'Profile checks found a disqualifier.' : 'No disqualifiers found in your profile checks.')}</p>
+            ${g && g.disqualifiers && g.disqualifiers.length ? `<ul class="mt-2 space-y-1 text-sm text-brand-redSoft">${g.disqualifiers.map((x) => `<li>• ${esc(x)}</li>`).join('')}</ul>` : ''}
+          </div>
+        </div>
+        <div class="grid gap-0 lg:grid-cols-2">
+          <div class="p-6 lg:border-r lg:border-white/[0.06]"><h3 class="mb-2 text-sm font-semibold text-mist-300">Against your profile</h3>${quick.length ? checkTable(quick) : '<p class="text-sm text-mist-500">Not enough detail in the brief.</p>'}</div>
+          <div class="p-6"><h3 class="mb-2 text-sm font-semibold text-mist-300">From the full solicitation</h3>${g && g.checks && g.checks.length ? checkTable(g.checks)
+            : '<p class="text-sm text-mist-500">Solicitations decrypted from now on include a full legal and technical qualification review here.</p>'}</div>
+        </div>
+      </section>`;
+  }
+
+  async function viewGoNoGo(view) {
+    const { summaries } = await api('/decryptor');
+    const ready = summaries.filter((s) => s.status === 'ready');
+    view.innerHTML = `
+      ${pageHead('Go/No-Go Indicator', 'Every decrypted solicitation, scored against your business profile. Bid on the ones you can win.',
+        `<a href="/app/decryptor" data-link class="btn-primary">${icon('decrypt', 'h-4 w-4')}Decrypt a solicitation</a>`)}
+      ${ready.length ? `<div class="grid gap-3">${ready.map((s) => `
+        <a href="/app/decryptor/${s.id}" data-link class="card card-hover flex items-center gap-5 p-5">
+          ${scoreRing(s.score ?? 0, 'h-14 w-14')}
+          <div class="min-w-0 flex-1">
+            <p class="flex flex-wrap items-center gap-2"><span class="truncate font-semibold text-white">${esc(s.title || s.fileName)}</span>${verdictPill(s.verdict)}</p>
+            <p class="mt-1 truncate text-sm text-mist-400">${esc(s.headline || [s.agency, s.setAside].filter((x) => x && !/^not stated$/i.test(x)).join(' · ') || 'Open to see the profile checks')}</p>
+          </div>
+          <span class="hidden text-right text-xs text-mist-500 sm:block">${s.responseDue ? 'Due<br>' + esc(s.responseDue) : ''}</span>
+        </a>`).join('')}</div>`
+        : emptyState('Nothing to score yet', 'Decrypt a solicitation and the Go/No-Go Indicator checks it against your set-aside status, NAICS codes, SAM.gov registration, location and deadline.',
+          '<a href="/app/decryptor" data-link class="btn-primary">Decrypt a solicitation</a>')}`;
+  }
+
+  // ---- 30-matchmaker.js
+  // ------------------------------------------------------------------ Predictive Bid Matchmaker (Enterprise)
+
+  const toIsoDate = (v) => {
+    const t = Date.parse(v || '');
+    return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : '';
+  };
+
+  async function viewMatchmaker(view) {
+    view.innerHTML = `${pageHead('Predictive Bid Matchmaker', 'Open federal opportunities for your NAICS codes, ranked by how likely you are to win them.')}
+      <div class="card flex items-center justify-center gap-3 p-10 text-mist-400"><span class="spinner"></span>Searching SAM.gov for your matches</div>`;
+    let data;
+    try {
+      data = await api('/matchmaker');
+    } catch (err) {
+      view.innerHTML = pageHead('Predictive Bid Matchmaker', '') + emptyState('SAM.gov did not answer', esc(err.message), '<button id="retry" class="btn-primary">Try again</button>');
+      $('#retry').addEventListener('click', () => render());
+      return;
+    }
+    if (!data.configured) {
+      view.innerHTML = pageHead('Predictive Bid Matchmaker', '') + emptyState('Matchmaker is being switched on', 'Your matches will appear here as soon as the SAM.gov connection is live.');
+      return;
+    }
+    if (data.needsNaics) {
+      view.innerHTML = pageHead('Predictive Bid Matchmaker', '') + emptyState('Add your NAICS codes', 'The Matchmaker searches SAM.gov with the 6-digit NAICS codes in your profile.', '<a href="/app/profile" data-link class="btn-primary">Open profile</a>');
+      return;
+    }
+    let filter = 'all';
+    const draw = () => {
+      const list = data.matches.filter((o) => filter === 'all' || (filter === 'setaside' && o.reasons.some((r) => /you qualify/.test(r))) ||
+        (filter === 'soon' && o.responseDeadline && Date.parse(o.responseDeadline) - Date.now() < 14 * 86400000));
+      view.innerHTML = `
+        ${pageHead('Predictive Bid Matchmaker', `Open opportunities posted in the last 30 days for NAICS ${data.codes.map(esc).join(', ')}, best fit first.`)}
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div class="seg" role="tablist">${[['all', 'All matches'], ['setaside', 'Set-asides you qualify for'], ['soon', 'Due in 2 weeks']].map(([k, l]) =>
+            `<button type="button" data-f="${k}" class="${filter === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+          <p class="text-sm text-mist-500">${list.length} of ${data.matches.length} shown · refreshed every 6 hours</p>
+        </div>
+        ${list.length ? `<div class="grid gap-3">${list.map((o, i) => `
+          <article class="card p-5">
+            <div class="flex flex-wrap items-start gap-5">
+              ${scoreRing(o.score, 'h-14 w-14')}
+              <div class="min-w-0 flex-1">
+                <p class="font-semibold leading-snug text-white">${esc(o.title)}</p>
+                <p class="mt-1 text-sm text-mist-400">${esc([o.agency, o.office].filter(Boolean).join(' · '))}</p>
+                <div class="mt-2.5 flex flex-wrap gap-1.5">
+                  <span class="pill bg-white/[0.06] text-mist-300">${esc(o.type || 'Notice')}</span>
+                  ${o.setAside ? `<span class="pill bg-brand-blue/15 text-brand-blueSoft">${esc(o.setAside)}</span>` : ''}
+                  ${o.state ? `<span class="pill bg-white/[0.06] text-mist-300">${esc([o.city, o.state].filter(Boolean).join(', '))}</span>` : ''}
+                  ${o.responseDeadline ? `<span class="pill bg-white/[0.06] text-mist-300">${icon('cal', 'h-3 w-3')}Due ${fmtDate(toIsoDate(o.responseDeadline))}</span>` : ''}
+                </div>
+                <ul class="mt-3 space-y-1 text-sm text-mist-400">${o.reasons.map((r) => `<li>• ${esc(r)}</li>`).join('')}</ul>
+              </div>
+              <div class="flex shrink-0 flex-col gap-2">
+                <button type="button" class="btn-primary" data-add="${i}">${icon('crm', 'h-4 w-4')}Add to Bid CRM</button>
+                <a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer" class="btn-ghost">Open on SAM.gov</a>
+              </div>
+            </div>
+          </article>`).join('')}</div>`
+          : emptyState('No matches with this filter', 'Try another filter, or add more NAICS codes to your profile.')}`;
+      $$('[data-f]', view).forEach((b) => b.addEventListener('click', () => { filter = b.dataset.f; draw(); }));
+      $$('[data-add]', view).forEach((b) => b.addEventListener('click', async () => {
+        const o = list[Number(b.dataset.add)];
+        b.disabled = true;
+        try {
+          await api('/bids', { method: 'POST', body: {
+            title: o.title.slice(0, 200), agency: o.agency.slice(0, 200), solicitationNumber: (o.solicitationNumber || '').slice(0, 100),
+            naics: o.naics, setAside: (o.setAside || '').slice(0, 60), placeOfPerformance: [o.city, o.state].filter(Boolean).join(', '),
+            dueAt: toIsoDate(o.responseDeadline) || null, stage: 'qualifying',
+            notes: `Found by the Predictive Bid Matchmaker (fit score ${o.score}).\n${o.url}${o.contact ? `\nContact: ${o.contact}` : ''}`,
+          } });
+          b.innerHTML = 'Added';
+          toast('Added to your Bid CRM.');
+        } catch (err) { b.disabled = false; toast(err.message, 'error'); }
+      }));
+    };
+    draw();
+  }
+
+  // ---- 40-subs.js
+  // ------------------------------------------------------------------ Smart Vendor Scraper and saved subcontractors
+
+  const US_STATES = Object.keys(STATE_NAMES);
+
+  function subModal(sub, bids, onSaved) {
+    const s = sub || {};
+    const f = (name, label, value, attrs = '') => `<div><label class="label" for="sm-${name}">${label}</label><input id="sm-${name}" name="${name}" class="field" value="${esc(value ?? '')}" ${attrs} /></div>`;
+    const m = openModal(`
+      <form id="sub-form" novalidate>
+        <div class="mb-5 flex items-start justify-between"><h2 class="text-xl font-semibold text-white">${sub ? 'Subcontractor' : 'Add a subcontractor'}</h2>
+          <button type="button" data-close class="text-2xl leading-none text-mist-400 hover:text-white" aria-label="Close">&times;</button></div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="sm:col-span-2">${f('company', 'Company *', s.company, 'maxlength="200"')}</div>
+          ${f('contactName', 'Contact name', s.contactName, 'maxlength="120"')}${f('trade', 'Trade or service', s.trade, 'maxlength="120" placeholder="e.g. Janitorial"')}
+          ${f('email', 'Email', s.email, 'type="email" maxlength="254"')}${f('phone', 'Phone', s.phone, 'maxlength="40"')}
+          ${f('location', 'Location', s.location, 'maxlength="200"')}${f('website', 'Website', s.website, 'maxlength="200"')}
+          ${f('uei', 'UEI', s.uei, 'maxlength="12"')}${f('quote', 'Their quote ($)', s.quote, 'inputmode="decimal"')}
+          <div class="sm:col-span-2"><label class="label" for="sm-bid">For opportunity</label><select id="sm-bid" name="bidId" class="field">${bidOptions(bids, s.bidId)}</select></div>
+          <div class="sm:col-span-2"><label class="label" for="sm-notes">Notes</label><textarea id="sm-notes" name="notes" rows="3" class="field">${esc(s.notes || '')}</textarea></div>
+        </div>
+        ${errBox('sub-error')}
+        <div class="mt-6 flex flex-wrap justify-between gap-2">
+          <div>${sub ? '<button type="button" id="sub-del" class="btn-danger">Delete</button>' : ''}</div>
+          <div class="flex gap-2"><button type="button" data-close class="btn-ghost">Cancel</button><button type="submit" class="btn-primary">Save</button></div>
+        </div>
+      </form>`);
+    const form = $('#sub-form', m.el);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(form));
+      body.bidId = body.bidId || null;
+      try {
+        if (sub) await api('/subs/' + sub.id, { method: 'PATCH', body });
+        else await api('/subs', { method: 'POST', body: { ...body, source: 'manual' } });
+        m.close();
+        onSaved();
+      } catch (err) { showMsg('sub-error', err.message); }
+    });
+    const del = $('#sub-del', m.el);
+    if (del) del.addEventListener('click', async () => {
+      if (!confirm(`Delete ${sub.company}?`)) return;
+      try { await api('/subs/' + sub.id, { method: 'DELETE' }); m.close(); onSaved(); } catch (err) { toast(err.message, 'error'); }
+    });
+  }
+
+  const subRow = (s, bids) => {
+    const bid = bids.find((b) => b.id === s.bidId);
+    return `<tr data-sub="${s.id}" class="cursor-pointer hover:bg-white/[0.03]">
+      <td><p class="font-medium text-white">${esc(s.company)}</p><p class="text-xs text-mist-500">${esc([s.contactName, s.trade].filter(Boolean).join(' · '))}</p></td>
+      <td class="text-mist-300">${esc([s.email, s.phone].filter(Boolean).join(' · ') || '—')}</td>
+      <td class="text-mist-300">${esc(s.location || '—')}</td>
+      <td class="text-mist-300">${bid ? esc(bid.title) : '—'}</td>
+      <td class="text-right text-white">${s.quote ? money2(s.quote) : '—'}</td></tr>`;
+  };
+
+  async function viewVendors(view) {
+    const [bids, subs] = await Promise.all([loadBids(), loadSubs()]);
+    const myNaics = (state.me.user.naics || '').match(/\d{6}/g) || [];
+    const ent = hasTool('sub_vetting');
+    const homeState = US_STATES.find((c) => new RegExp(`\\b${c}\\b`).test(state.me.user.address || '')) || '';
+    view.innerHTML = `
+      ${pageHead('Smart Vendor Scraper', 'Find subcontractors for the job by NAICS code and location, then save them to quote, team and track.',
+        `<button id="add-sub" class="btn-ghost">${icon('plus', 'h-4 w-4')}Add manually</button>`)}
+      <div class="grid items-start gap-6 xl:grid-cols-5">
+        <section class="card p-6 xl:col-span-3">
+          <h2 class="font-semibold text-white">SAM.gov registered businesses</h2>
+          <p class="mt-1 text-sm text-mist-400">Active registrants ready to work on federal contracts, with UEI and CAGE for your teaming paperwork.</p>
+          <form id="sam-search" class="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]" novalidate>
+            <div><label class="label" for="vs-naics">NAICS code</label><input id="vs-naics" class="field" list="vs-naics-list" inputmode="numeric" maxlength="6" value="${esc(myNaics[0] || '')}" placeholder="e.g. 561720" />
+              <datalist id="vs-naics-list">${myNaics.map((n) => `<option value="${n}">`).join('')}</datalist></div>
+            <div><label class="label" for="vs-state">State where the work is</label><select id="vs-state" class="field"><option value="">Choose</option>${US_STATES.map((c) => `<option value="${c}" ${c === homeState ? 'selected' : ''}>${STATE_NAMES[c]}</option>`).join('')}</select></div>
+            <div class="flex items-end"><button class="btn-primary w-full" type="submit">${icon('users', 'h-4 w-4')}Search</button></div>
+          </form>
+          <div id="sam-results" class="mt-5"></div>
+        </section>
+        <div class="xl:col-span-2">
+          ${ent ? `<section class="card p-6">
+              <h2 class="font-semibold text-white">Top-rated local businesses</h2>
+              <p class="mt-1 text-sm text-mist-400">Highly reviewed private companies near the job, with phone and website. Many are not in SAM.gov yet and make great subs.</p>
+              <form id="places-search" class="mt-4 space-y-3" novalidate>
+                <div><label class="label" for="ps-trade">Trade or service</label><input id="ps-trade" class="field" maxlength="80" placeholder="e.g. commercial janitorial" /></div>
+                <div><label class="label" for="ps-where">City and state, or ZIP code</label><input id="ps-where" class="field" maxlength="120" placeholder="e.g. Dallas, TX" /></div>
+                <button class="btn-primary w-full" type="submit">${icon('target', 'h-4 w-4')}Find top-rated subs</button>
+              </form>
+              <div id="places-results" class="mt-5"></div>
+            </section>`
+            : lockedTeaser('Top-rated local subcontractors', 'Enterprise adds the best-reviewed private businesses near the job, with phone numbers and websites, ranked by rating.')}
+        </div>
+      </div>
+      <section class="card mt-6 p-6">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 class="font-semibold text-white">Your subcontractors (${subs.length})</h2>
+          <div class="flex gap-2">${subs.length ? '<button id="subs-csv" class="btn-ghost !py-1.5 !text-xs">Export CSV</button>' : ''}<a href="/app/outreach" data-link class="btn-ghost !py-1.5 !text-xs">${icon('mail', 'h-3.5 w-3.5')}Request quotes</a></div></div>
+        ${subs.length ? `<div class="overflow-x-auto"><table class="tbl min-w-[760px]"><thead><tr><th>Company</th><th>Contact</th><th>Location</th><th>Opportunity</th><th class="text-right">Quote</th></tr></thead>
+          <tbody>${subs.map((s) => subRow(s, bids)).join('')}</tbody></table></div>`
+          : '<p class="text-sm text-mist-500">Search above and save the ones you like, or add a sub you already know.</p>'}
+      </section>`;
+
+    $('#add-sub').addEventListener('click', () => subModal(null, bids, render));
+    $$('[data-sub]', view).forEach((tr) => tr.addEventListener('click', () => subModal(subs.find((s) => String(s.id) === tr.dataset.sub), bids, render)));
+    const csv = $('#subs-csv');
+    if (csv) csv.addEventListener('click', () => csvDownload('subcontractors.csv', [['Company', 'Contact', 'Email', 'Phone', 'Trade', 'Location', 'Website', 'UEI', 'CAGE', 'Quote', 'Source'],
+      ...subs.map((s) => [s.company, s.contactName, s.email, s.phone, s.trade, s.location, s.website, s.uei, s.cage, s.quote, s.source])]));
+
+    const save = async (btn, body) => {
+      btn.disabled = true;
+      try { await api('/subs', { method: 'POST', body }); btn.textContent = 'Saved'; toast(`${body.company} saved to your subcontractors.`); } catch (err) { btn.disabled = false; toast(err.message, 'error'); }
+    };
+
+    $('#sam-search').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const out = $('#sam-results');
+      const naics = $('#vs-naics').value.trim();
+      const st = $('#vs-state').value;
+      out.innerHTML = '<div class="flex items-center gap-2 text-sm text-mist-400"><span class="spinner"></span>Searching SAM.gov</div>';
+      try {
+        const r = await api(`/vendors/search?naics=${encodeURIComponent(naics)}&state=${encodeURIComponent(st)}`);
+        if (!r.configured) { out.innerHTML = '<p class="text-sm text-amber-200">SAM.gov search is being switched on. Try again shortly.</p>'; return; }
+        if (!r.entities.length) { out.innerHTML = '<p class="text-sm text-mist-500">No active registrants for that NAICS code in that state. Try a related code or a neighboring state.</p>'; return; }
+        out.innerHTML = `<p class="mb-2 text-xs text-mist-500">Showing ${r.entities.length} of ${r.total.toLocaleString()} active registrants.</p>
+          <ul class="space-y-2">${r.entities.map((x, i) => `<li class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+            <span class="min-w-0"><span class="block font-medium text-white">${esc(x.company)}</span>
+              <span class="text-xs text-mist-500">${esc([x.location, x.uei && 'UEI ' + x.uei, x.cage && 'CAGE ' + x.cage, x.contactName].filter(Boolean).join(' · '))}</span></span>
+            <span class="flex gap-2">${x.website ? `<a class="btn-ghost !px-3 !py-1.5 !text-xs" href="${esc(/^https?:/.test(x.website) ? x.website : 'https://' + x.website)}" target="_blank" rel="noopener noreferrer">Website</a>` : ''}
+              <button type="button" class="btn-primary !px-3 !py-1.5 !text-xs" data-save-sam="${i}">Save</button></span></li>`).join('')}</ul>`;
+        $$('[data-save-sam]', out).forEach((b) => b.addEventListener('click', () => {
+          const x = r.entities[Number(b.dataset.saveSam)];
+          save(b, { company: x.company, contactName: x.contactName || null, uei: x.uei || null, cage: x.cage || null, location: x.location || null,
+            website: x.website || null, trade: `NAICS ${naics}`, source: 'sam' });
+        }));
+      } catch (err) { out.innerHTML = `<p class="text-sm text-brand-redSoft">${esc(err.message)}</p>`; }
+    });
+
+    const ps = $('#places-search');
+    if (ps) ps.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const out = $('#places-results');
+      out.innerHTML = '<div class="flex items-center gap-2 text-sm text-mist-400"><span class="spinner"></span>Finding top-rated businesses</div>';
+      try {
+        const trade = $('#ps-trade').value.trim();
+        const r = await api(`/vendors/top-rated?trade=${encodeURIComponent(trade)}&where=${encodeURIComponent($('#ps-where').value.trim())}`);
+        if (!r.configured) { out.innerHTML = '<p class="text-sm text-amber-200">Top-rated search is being switched on. Try again shortly.</p>'; return; }
+        if (!r.places.length) { out.innerHTML = '<p class="text-sm text-mist-500">No businesses found. Try a broader trade or a nearby city.</p>'; return; }
+        out.innerHTML = `<ul class="space-y-2">${r.places.map((p, i) => `<li class="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+          <div class="flex items-start justify-between gap-3"><span class="min-w-0"><span class="block font-medium text-white">${esc(p.company)}</span>
+            <span class="text-xs text-amber-200">${p.rating ? `★ ${p.rating.toFixed(1)}` : 'No rating'} <span class="text-mist-500">(${p.reviews} reviews)</span></span>
+            <span class="block text-xs text-mist-500">${esc(p.location)}</span>
+            ${p.phone ? `<span class="block text-xs text-mist-300">${esc(p.phone)}</span>` : ''}</span>
+            <button type="button" class="btn-primary shrink-0 !px-3 !py-1.5 !text-xs" data-save-pl="${i}">Save</button></div>
+          <div class="mt-2 flex gap-3 text-xs">${p.website ? `<a class="accent-text hover:text-white" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">Website</a>` : ''}${p.mapsUrl ? `<a class="accent-text hover:text-white" href="${esc(p.mapsUrl)}" target="_blank" rel="noopener noreferrer">Map and reviews</a>` : ''}</div></li>`).join('')}</ul>
+          <p class="mt-3 text-[11px] text-mist-500">Business listings from Google. Ask each sub for their email when you call.</p>`;
+        $$('[data-save-pl]', out).forEach((b) => b.addEventListener('click', () => {
+          const p = r.places[Number(b.dataset.savePl)];
+          save(b, { company: p.company, phone: p.phone || null, website: p.website || null, location: p.location || null, rating: p.rating, trade, source: 'places' });
+        }));
+      } catch (err) { out.innerHTML = `<p class="text-sm text-brand-redSoft">${esc(err.message)}</p>`; }
+    });
+  }
+
+  // ------------------------------------------------------------------ 1-Click Outreach Sequences
+
+  const OUTREACH_STEPS = [
+    { key: 'rfq', label: 'Request for quote', day: 0 },
+    { key: 'follow', label: 'Follow-up', day: 3 },
+    { key: 'last', label: 'Last call', day: 6 },
+  ];
+
+  function outreachEmail(stepKey, sub, bid) {
+    const u = state.me.user;
+    const hi = sub && sub.contactName ? `Hi ${sub.contactName.split(' ')[0]},` : 'Hello,';
+    const job = bid ? bid.title : '[INSERT: project name]';
+    const where = bid && bid.placeOfPerformance ? ` in ${bid.placeOfPerformance}` : '';
+    const quoteBy = bid && bid.dueAt ? fmtDate(addBusinessDays(new Date(Date.parse(bid.dueAt) - 5 * 86400000).toISOString().slice(0, 10), 0)) : '[INSERT: quote deadline]';
+    const sol = bid && bid.solicitationNumber ? ` (solicitation ${bid.solicitationNumber})` : '';
+    const agency = bid && bid.agency ? ` for ${bid.agency}` : '';
+    const sig = [memberName(), u.contactTitle, memberCompany(), u.phone, u.email].filter(Boolean).join('\n');
+    if (stepKey === 'rfq') return {
+      subject: `Quote request: ${job}${sol}`,
+      body: `${hi}
+
+${memberCompany()} is preparing a bid on a government contract${agency}: ${job}${sol}${where}. We are looking for a qualified ${sub && sub.trade ? sub.trade.replace(/^NAICS /, 'NAICS ') + ' ' : ''}partner to perform the work as our subcontractor, and your company stood out.
+
+Could you send us a quote by ${quoteBy}? Please include:
+• Your price (unit prices or a lump sum) and what it covers
+• Your availability and start date
+• Proof of insurance and any licenses or certifications required
+• Your UEI if you are registered in SAM.gov (not required to quote)
+
+I'm happy to send the scope of work and drawings, or set up a quick call.
+
+Thank you,
+${sig}`,
+    };
+    if (stepKey === 'follow') return {
+      subject: `Following up: quote for ${job}`,
+      body: `${hi}
+
+Following up on my note about ${job}${sol}${where}. We would still like to include your company in our bid. Could you send a quote, or let me know if you need anything from us, by ${quoteBy}?
+
+Thank you,
+${sig}`,
+    };
+    return {
+      subject: `Last call: quote for ${job}`,
+      body: `${hi}
+
+We are finalizing pricing for ${job}${sol} and need quotes by ${quoteBy}. If you would like to be considered, please reply with your price and availability. If now is not a good time, no problem; we will keep you in mind for the next one.
+
+Thank you,
+${sig}`,
+    };
+  }
+
+  async function viewOutreach(view) {
+    const [bids, subs] = await Promise.all([loadBids(), loadSubs()]);
+    const params = new URLSearchParams(location.search);
+    let bidId = params.get('bid') || (bids.find((b) => !['won', 'lost', 'submitted'].includes(b.stage)) || {}).id || '';
+    const draw = () => {
+      const bid = bids.find((b) => String(b.id) === String(bidId)) || null;
+      const list = subs.filter((s) => !bid || !s.bidId || s.bidId === bid.id);
+      view.innerHTML = `
+        ${pageHead('1-Click Outreach Sequences', 'Three-step quote requests, filled in with the contract and each subcontractor. Send from your own email so replies come to you.')}
+        <div class="card mb-6 grid gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div><label class="label" for="ob-bid">Opportunity</label><select id="ob-bid" class="field">${bidOptions(bids, bidId, 'General (no opportunity)')}</select></div>
+          <button id="ob-all" class="btn-primary" ${list.some((s) => s.email) ? '' : 'disabled'}>${icon('mail', 'h-4 w-4')}Email all with an address (BCC)</button>
+        </div>
+        ${list.length ? `<div class="grid gap-3">${list.map((s) => {
+          const sent = s.outreach || {};
+          const next = OUTREACH_STEPS.find((st) => !sent[st.key]);
+          const firstSent = sent.rfq;
+          return `<article class="card p-5" data-sub="${s.id}">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0"><p class="font-semibold text-white">${esc(s.company)}</p>
+                <p class="text-sm text-mist-400">${esc([s.contactName, s.email || 'No email yet', s.phone].filter(Boolean).join(' · '))}</p></div>
+              ${s.quote ? `<span class="pill bg-emerald-500/15 text-emerald-300">Quoted ${money2(s.quote)}</span>` : next ? `<span class="pill bg-white/[0.06] text-mist-300">Next: ${next.label}${firstSent && next.day ? ` · ${fmtDate(addBusinessDays(firstSent, next.day))}` : ''}</span>` : '<span class="pill bg-white/[0.06] text-mist-400">Sequence done</span>'}
+            </div>
+            <ol class="mt-4 grid gap-2 sm:grid-cols-3">${OUTREACH_STEPS.map((st) => `
+              <li class="rounded-2xl border ${sent[st.key] ? 'border-emerald-400/20 bg-emerald-500/5' : 'border-white/[0.06] bg-white/[0.02]'} p-3">
+                <p class="text-xs font-semibold uppercase tracking-wider ${sent[st.key] ? 'text-emerald-300' : 'text-mist-500'}">Day ${st.day} · ${st.label}</p>
+                <p class="mt-1 text-xs text-mist-500">${sent[st.key] ? `Sent ${fmtDate(sent[st.key])}` : 'Not sent'}</p>
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                  <button type="button" class="btn-ghost !px-2.5 !py-1 !text-xs" data-send="${st.key}" ${s.email ? '' : 'disabled title="Add their email first"'}>Open email</button>
+                  <button type="button" class="btn-ghost !px-2.5 !py-1 !text-xs" data-copy="${st.key}">Copy</button>
+                  <button type="button" class="btn-ghost !px-2.5 !py-1 !text-xs" data-mark="${st.key}">${sent[st.key] ? 'Undo' : 'Mark sent'}</button>
+                </div></li>`).join('')}</ol>
+            <div class="mt-3 flex items-center gap-2"><label class="text-xs text-mist-500" for="q-${s.id}">Quote received ($)</label>
+              <input id="q-${s.id}" class="field !w-40 !py-1.5 !text-sm" inputmode="decimal" value="${esc(s.quote ?? '')}" data-quote /></div>
+          </article>`;
+        }).join('')}</div>`
+          : emptyState('No subcontractors yet', 'Find subs with the Smart Vendor Scraper or add one you know, then come back to request quotes.', '<a href="/app/vendors" data-link class="btn-primary">Find subcontractors</a>')}`;
+
+      $('#ob-bid').addEventListener('change', (e) => { bidId = e.target.value; draw(); });
+      const patchOutreach = async (s, key, on) => {
+        const next = { ...(s.outreach || {}) };
+        if (on) next[key] = today(); else delete next[key];
+        await api('/subs/' + s.id, { method: 'PATCH', body: { outreach: next } });
+        s.outreach = next;
+      };
+      $$('[data-sub]', view).forEach((card) => {
+        const s = subs.find((x) => String(x.id) === card.dataset.sub);
+        $$('[data-send]', card).forEach((b) => b.addEventListener('click', async () => {
+          const mail = outreachEmail(b.dataset.send, s, bid);
+          mailto({ to: s.email, ...mail });
+          try { await patchOutreach(s, b.dataset.send, true); setTimeout(draw, 400); } catch (err) { toast(err.message, 'error'); }
+        }));
+        $$('[data-copy]', card).forEach((b) => b.addEventListener('click', () => {
+          const mail = outreachEmail(b.dataset.copy, s, bid);
+          copyText(`Subject: ${mail.subject}\n\n${mail.body}`, 'Email copied. Paste it into your email app.');
+        }));
+        $$('[data-mark]', card).forEach((b) => b.addEventListener('click', async () => {
+          try { await patchOutreach(s, b.dataset.mark, !(s.outreach || {})[b.dataset.mark]); draw(); } catch (err) { toast(err.message, 'error'); }
+        }));
+        $('[data-quote]', card).addEventListener('change', async (e) => {
+          try { await api('/subs/' + s.id, { method: 'PATCH', body: { quote: e.target.value } }); s.quote = e.target.value ? num(e.target.value) : null; toast('Quote saved.'); draw(); } catch (err) { toast(err.message, 'error'); }
+        });
+      });
+      $('#ob-all').addEventListener('click', async () => {
+        const targets = list.filter((s) => s.email && !(s.outreach || {}).rfq);
+        const pool = targets.length ? targets : list.filter((s) => s.email);
+        const mail = outreachEmail('rfq', null, bid);
+        mailto({ bcc: pool.map((s) => s.email).join(','), ...mail });
+        try { await Promise.all(pool.map((s) => patchOutreach(s, 'rfq', true))); setTimeout(draw, 400); } catch (err) { toast(err.message, 'error'); }
+      });
+    };
+    draw();
+  }
+
+  // ---- 50-foia.js
+  // ------------------------------------------------------------------ FOIA Automator
+
+  const FOIA_AGENCIES = [
+    'Department of Veterans Affairs', 'Department of Defense', 'Department of the Army', 'Department of the Navy', 'Department of the Air Force',
+    'Defense Logistics Agency', 'General Services Administration', 'Department of Homeland Security', 'Department of Health and Human Services',
+    'Department of Agriculture', 'Department of the Interior', 'Department of Energy', 'Department of Justice', 'Department of Transportation',
+    'Department of Commerce', 'Department of State', 'Department of the Treasury', 'Department of Labor', 'Department of Education',
+    'Department of Housing and Urban Development', 'Environmental Protection Agency', 'National Aeronautics and Space Administration',
+    'Small Business Administration', 'Social Security Administration', 'U.S. Army Corps of Engineers', 'Federal Bureau of Prisons',
+    'National Park Service', 'U.S. Forest Service', 'Indian Health Service', 'U.S. Coast Guard',
+  ];
+
+  const FOIA_WANTS = {
+    award: 'A copy of the awarded contract, including the price schedule (Section B) and any modifications',
+    proposal: 'The winning offeror\'s price proposal and technical proposal, with exempt material redacted',
+    abstract: 'The price abstract or bid tabulation listing every offeror\'s total price',
+    evaluation: 'The source selection decision document and the evaluation of the winning offer',
+  };
+
+  const STATUS_PILL = {
+    draft: '<span class="pill bg-white/[0.06] text-mist-300">Draft</span>',
+    sent: '<span class="pill bg-brand-blue/15 text-brand-blueSoft">Sent</span>',
+    received: '<span class="pill bg-emerald-500/15 text-emerald-300">Received</span>',
+  };
+
+  function foiaLetter(f) {
+    const u = state.me.user;
+    const wants = (f.wants || []).map((k) => `- ${FOIA_WANTS[k]}`).join('\n');
+    return `${fmtDate(today())}
+
+FOIA Officer
+${f.agency}${f.office ? `\n${f.office}` : ''}
+
+Re: Freedom of Information Act Request, ${f.subject}
+
+Dear FOIA Officer:
+
+Under the Freedom of Information Act, 5 U.S.C. § 552, I request copies of the following records relating to ${f.contractNumber ? `contract number ${f.contractNumber}` : 'the contract described below'}${f.solicitationNumber ? `, awarded under solicitation ${f.solicitationNumber}` : ''}${f.awardee ? `, awarded to ${f.awardee}` : ''}:
+
+${wants || '- [INSERT: the records you want]'}
+${f.extra ? `\nAdditional detail: ${f.extra}\n` : ''}
+I understand that information protected under Exemption 4 (trade secrets and confidential commercial information) may be withheld. Please release all reasonably segregable portions, including unit and total prices, which are routinely released once a contract is awarded.
+
+I am a small business requesting these records for commercial use, and I agree to pay fees up to $${num(f.feeLimit) || 50}. Please contact me before incurring fees above that amount. I prefer to receive the records electronically by email.
+
+If you deny any part of this request, please cite the specific exemption and tell me how to appeal.
+
+Thank you for your help.
+
+Sincerely,
+
+${memberName()}
+${memberCompany()}
+${[u.address].filter(Boolean).join('\n')}
+${[u.phone, u.email].filter(Boolean).join(' · ')}`;
+  }
+
+  function foiaModal(item, bids, onSaved) {
+    const f = Object.assign({ wants: ['award', 'abstract'], feeLimit: 50 }, item ? item.data : {}, item ? { agency: item.agency, subject: item.subject } : {});
+    openModal(`
+      <h2 class="text-lg font-semibold text-white">${item ? 'Edit FOIA request' : 'New FOIA request'}</h2>
+      <p class="mt-1 text-sm text-mist-400">Ask for the winning price on a past contract so you know the price to beat next time.</p>
+      <form id="foia-form" class="mt-5 space-y-4" novalidate>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div><label class="label" for="ff-agency">Agency</label><input id="ff-agency" name="agency" class="field" list="ff-agencies" maxlength="200" required value="${esc(f.agency)}" />
+            <datalist id="ff-agencies">${FOIA_AGENCIES.map((a) => `<option value="${esc(a)}"></option>`).join('')}</datalist></div>
+          <div><label class="label" for="ff-office">Office or contracting activity (optional)</label><input id="ff-office" name="office" class="field" maxlength="200" value="${esc(f.office)}" /></div>
+          <div class="sm:col-span-2"><label class="label" for="ff-subject">What contract is this about?</label><input id="ff-subject" name="subject" class="field" maxlength="300" required placeholder="e.g. Grounds maintenance, VA Medical Center Tampa" value="${esc(f.subject)}" /></div>
+          <div><label class="label" for="ff-contract">Contract or award number</label><input id="ff-contract" name="contractNumber" class="field" maxlength="80" value="${esc(f.contractNumber)}" /></div>
+          <div><label class="label" for="ff-sol">Solicitation number</label><input id="ff-sol" name="solicitationNumber" class="field" maxlength="80" value="${esc(f.solicitationNumber)}" /></div>
+          <div><label class="label" for="ff-awardee">Awardee (if known)</label><input id="ff-awardee" name="awardee" class="field" maxlength="200" value="${esc(f.awardee)}" /></div>
+          <div><label class="label" for="ff-bid">Link to opportunity</label><select id="ff-bid" name="bidId" class="field">${bidOptions(bids, item && item.bidId)}</select></div>
+        </div>
+        <fieldset><legend class="label">Records to request</legend><div class="grid gap-2">${Object.entries(FOIA_WANTS).map(([k, l]) =>
+          `<label class="flex items-start gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm text-mist-200"><input type="checkbox" name="wants" value="${k}" class="mt-0.5" ${f.wants.includes(k) ? 'checked' : ''} />${esc(l)}</label>`).join('')}</div></fieldset>
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div class="sm:col-span-2"><label class="label" for="ff-extra">Anything else (optional)</label><input id="ff-extra" name="extra" class="field" maxlength="500" value="${esc(f.extra)}" /></div>
+          <div><label class="label" for="ff-fee">Fee limit ($)</label><input id="ff-fee" name="feeLimit" class="field" inputmode="decimal" value="${esc(f.feeLimit)}" /></div>
+        </div>
+        <p id="ff-error" class="hidden text-sm text-brand-redSoft" role="alert"></p>
+        <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" data-close>Cancel</button><button type="submit" class="btn-primary">Write the letter</button></div>
+      </form>`);
+    const form = $('#foia-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = (n) => form.elements[n].value.trim();
+      const data = { office: v('office'), contractNumber: v('contractNumber'), solicitationNumber: v('solicitationNumber'), awardee: v('awardee'),
+        extra: v('extra'), feeLimit: v('feeLimit'), wants: $$('[name=wants]:checked', form).map((c) => c.value) };
+      const body = { agency: v('agency'), subject: v('subject'), bidId: v('bidId') ? Number(v('bidId')) : null, data,
+        letter: foiaLetter({ ...data, agency: v('agency'), subject: v('subject') }) };
+      try {
+        const saved = item ? await api('/foia/' + item.id, { method: 'PATCH', body }) : await api('/foia', { method: 'POST', body });
+        $('[data-close]').click();
+        onSaved(saved.item);
+      } catch (err) { const el = $('#ff-error'); el.textContent = err.message; el.classList.remove('hidden'); }
+    });
+  }
+
+  async function viewFoia(view) {
+    const [{ items }, bids] = await Promise.all([api('/foia'), loadBids()]);
+    let openId = null;
+    // Rendered into a fresh element so its click handler goes away with the page.
+    view.innerHTML = '<div></div>';
+    const root = view.firstElementChild;
+    const draw = () => {
+      root.innerHTML = `
+        ${pageHead('FOIA Automator', 'Request the winning price on past contracts. Agencies must answer within 20 business days.',
+          `<a href="https://www.foia.gov/agency-search.html" target="_blank" rel="noopener noreferrer" class="btn-ghost">Find an agency's FOIA office</a>
+           <button id="foia-new" class="btn-primary">${icon('plus', 'h-4 w-4')}New request</button>`)}
+        ${items.length ? `<div class="grid gap-3">${items.map((r) => {
+          const due = r.sentOn ? addBusinessDays(r.sentOn, 20) : null;
+          const late = due && r.status === 'sent' && daysUntil(due) < 0;
+          return `<article class="card p-5">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0"><p class="flex flex-wrap items-center gap-2 font-semibold text-white">${esc(r.subject)} ${STATUS_PILL[r.status] || ''}</p>
+                <p class="mt-1 text-sm text-mist-400">${esc(r.agency)}${r.sentOn ? ` · sent ${fmtDate(r.sentOn)}` : ''}${due && r.status === 'sent' ? ` · <span class="${late ? 'text-brand-redSoft' : ''}">answer due ${fmtDate(due)}${late ? ' (overdue, follow up)' : ''}</span>` : ''}</p></div>
+              <div class="flex flex-wrap gap-2">
+                <button class="btn-ghost !py-2" data-view="${r.id}">${openId === r.id ? 'Hide letter' : 'Letter'}</button>
+                <button class="btn-ghost !py-2" data-edit="${r.id}">Edit</button>
+                ${r.status === 'draft' ? `<button class="btn-primary !py-2" data-sent="${r.id}">Mark sent</button>` : r.status === 'sent' ? `<button class="btn-primary !py-2" data-got="${r.id}">Records received</button>` : ''}
+                <button class="btn-ghost !py-2" data-del="${r.id}" aria-label="Delete">&times;</button>
+              </div>
+            </div>
+            ${openId === r.id ? `<div class="mt-4"><pre class="whitespace-pre-wrap rounded-2xl border border-white/[0.06] bg-ink-900 p-5 font-sans text-sm leading-relaxed text-mist-200">${esc(r.letter)}</pre>
+              <div class="mt-3 flex flex-wrap gap-2"><button class="btn-ghost" data-copy="${r.id}">Copy</button><button class="btn-ghost" data-word="${r.id}">Download Word</button>
+              <button class="btn-ghost" data-mail="${r.id}">${icon('mail', 'h-4 w-4')}Open in email</button></div>
+              <p class="mt-2 text-xs text-mist-500">Most agencies take requests by email or through their online portal. Find the address with the agency's FOIA office link above.</p></div>` : ''}
+          </article>`;
+        }).join('')}</div>`
+          : emptyState('No FOIA requests yet', 'Pick a contract like the ones you bid on and request its winning price. Knowing the price to beat is the fastest way to win.', '<button id="foia-new2" class="btn-primary">Write your first request</button>')}`;
+    };
+    draw();
+    const find = (id) => items.find((r) => r.id === String(id));
+    const saved = (it) => { const i = items.findIndex((r) => r.id === it.id); if (i >= 0) items[i] = it; else items.unshift(it); openId = it.id; draw(); };
+    root.addEventListener('click', async (e) => {
+      const t = e.target.closest('button');
+      if (!t) return;
+      const d = t.dataset;
+      try {
+        if (t.id === 'foia-new' || t.id === 'foia-new2') foiaModal(null, bids, saved);
+        else if (d.view) { openId = openId === d.view ? null : d.view; draw(); }
+        else if (d.edit) foiaModal(find(d.edit), bids, saved);
+        else if (d.sent) saved((await api('/foia/' + d.sent, { method: 'PATCH', body: { status: 'sent', sentOn: today() } })).item);
+        else if (d.got) saved((await api('/foia/' + d.got, { method: 'PATCH', body: { status: 'received' } })).item);
+        else if (d.copy) copyText(find(d.copy).letter);
+        else if (d.word) { const r = find(d.word); wordDoc('FOIA request ' + r.subject, `<pre style="font-family:Calibri,Arial,sans-serif;white-space:pre-wrap">${esc(r.letter)}</pre>`); }
+        else if (d.mail) { const r = find(d.mail); mailto({ subject: `FOIA Request: ${r.subject}`, body: r.letter }); }
+        else if (d.del && confirm('Delete this FOIA request?')) { await api('/foia/' + d.del, { method: 'DELETE' }); items.splice(items.findIndex((r) => r.id === String(d.del)), 1); draw(); }
+      } catch (err) { toast(err.message, 'error'); }
+    });
+  }
+
+  // ---- 60-pricing.js
+  // ------------------------------------------------------------------ Profit Pricing Matrix (+ Fringe/G&A engine for Enterprise)
+
+  const pct = (v) => num(v) / 100;
+  const blankSheet = () => ({ overheadPct: 10, markupPct: 15, items: [{ item: '0001', description: '', unit: 'Each', quantity: '1', cost: '' }], extras: [],
+    labor: [], fringePct: 30, laborOverheadPct: 40, gaPct: 10, feePct: 8 });
+
+  /** Every number on the sheet, computed the same way for the screen, CSV and proposal hand-off. */
+  function priceSheet(d) {
+    const oh = pct(d.overheadPct);
+    const mk = pct(d.markupPct);
+    const lines = (d.items || []).map((it) => {
+      const qty = num(it.quantity);
+      const cost = num(it.cost);
+      const unitPrice = Math.round(cost * (1 + oh) * (1 + mk) * 100) / 100;
+      return { ...it, qty, costTotal: qty * cost, unitPrice, total: qty * unitPrice };
+    });
+    const wrap = (1 + pct(d.fringePct)) * (1 + pct(d.laborOverheadPct)) * (1 + pct(d.gaPct)) * (1 + pct(d.feePct));
+    const labor = (d.labor || []).map((l) => {
+      const hours = num(l.hours);
+      const rate = num(l.rate);
+      const fringe = rate * pct(d.fringePct);
+      const overhead = (rate + fringe) * pct(d.laborOverheadPct);
+      const ga = (rate + fringe + overhead) * pct(d.gaPct);
+      const fee = (rate + fringe + overhead + ga) * pct(d.feePct);
+      const loaded = Math.round((rate + fringe + overhead + ga + fee) * 100) / 100;
+      return { ...l, hours, rate, fringe, overhead, ga, fee, loaded, costTotal: hours * (rate + fringe + overhead + ga), total: hours * loaded };
+    });
+    const extras = (d.extras || []).map((x) => ({ ...x, value: num(x.amount) }));
+    const extrasTotal = extras.reduce((t, x) => t + x.value, 0);
+    const price = lines.reduce((t, l) => t + l.total, 0) + labor.reduce((t, l) => t + l.total, 0) + extrasTotal;
+    const cost = lines.reduce((t, l) => t + l.costTotal, 0) + labor.reduce((t, l) => t + l.costTotal, 0) + extrasTotal;
+    return { lines, labor, extras, wrap, price: Math.round(price * 100) / 100, cost, profit: price - cost, margin: price ? (price - cost) / price : 0 };
+  }
+
+  async function viewPricingList(view) {
+    const { items } = await api('/pricing');
+    view.innerHTML = `
+      ${pageHead('Profit Pricing Matrix', 'Turn supplier and subcontractor quotes into a winning price with your overhead and markup built in.',
+        `<a href="/app/pricing/new" data-link class="btn-primary">${icon('plus', 'h-4 w-4')}New pricing sheet</a>`)}
+      ${isEnterprise() ? '' : `<div class="mb-6">${lockedTeaser('Fringe/G&A Calculation Engine', 'Price labor the way DCAA expects: base rate plus fringe, overhead, G&A and fee, with the full wrap rate shown line by line.')}</div>`}
+      ${items.length ? `<div class="card overflow-x-auto p-5"><table class="tbl"><thead><tr><th>Sheet</th><th class="text-right">Total price</th><th>Updated</th></tr></thead><tbody>${items.map((s) => `
+        <tr><td><a href="/app/pricing/${s.id}" data-link class="font-medium text-white hover:text-brand-blueSoft">${esc(s.title)}</a></td>
+          <td class="text-right text-white">${money2(s.total)}</td><td class="text-mist-400">${fmtDate(s.updatedAt)}</td></tr>`).join('')}</tbody></table></div>`
+        : emptyState('No pricing sheets yet', 'Start with your sub or supplier quote. The matrix adds your overhead and profit and formats the price table for your proposal.', '<a href="/app/pricing/new" data-link class="btn-primary">Build a pricing sheet</a>')}`;
+  }
+
+  async function viewPricing(view, id) {
+    const ent = isEnterprise();
+    const [bids, { items: sheets }] = await Promise.all([loadBids(), id === 'new' ? { items: [] } : api('/pricing')]);
+    let item = id === 'new' ? null : sheets.find((s) => s.id === String(id));
+    if (id !== 'new' && !item) { view.innerHTML = emptyState('Pricing sheet not found', '', '<a href="/app/pricing" data-link class="btn-ghost">Back</a>'); return; }
+    const d = Object.assign(blankSheet(), item ? item.data : {});
+    const params = new URLSearchParams(location.search);
+    let title = item ? item.title : 'Pricing sheet';
+    let bidId = item ? item.bidId : params.get('bid');
+
+    const itemRow = (it, i) => `<tr data-row="items" data-i="${i}">
+      <td><input class="field !w-20 !px-3 !py-2" data-k="item" maxlength="20" value="${esc(it.item)}" /></td>
+      <td><input class="field !min-w-[220px] !py-2" data-k="description" maxlength="300" placeholder="What you are providing" value="${esc(it.description)}" /></td>
+      <td><input class="field !w-24 !px-3 !py-2" data-k="unit" maxlength="30" value="${esc(it.unit)}" /></td>
+      <td><input class="field !w-20 !px-3 !py-2" data-k="quantity" inputmode="decimal" value="${esc(it.quantity)}" /></td>
+      <td><input class="field !w-28 !px-3 !py-2" data-k="cost" inputmode="decimal" placeholder="0.00" value="${esc(it.cost)}" /></td>
+      <td class="text-right text-mist-300" data-out="unit">-</td><td class="text-right font-medium text-white" data-out="total">-</td>
+      <td><button type="button" class="btn-ghost !px-2.5 !py-2" data-del="items" aria-label="Remove line">&times;</button></td></tr>`;
+    const laborRow = (l, i) => `<tr data-row="labor" data-i="${i}">
+      <td><input class="field !min-w-[180px] !py-2" data-k="category" maxlength="120" placeholder="e.g. Project Manager" value="${esc(l.category)}" /></td>
+      <td><input class="field !w-24 !px-3 !py-2" data-k="hours" inputmode="decimal" value="${esc(l.hours)}" /></td>
+      <td><input class="field !w-28 !px-3 !py-2" data-k="rate" inputmode="decimal" placeholder="0.00" value="${esc(l.rate)}" /></td>
+      <td class="text-right text-mist-400" data-out="fringe">-</td><td class="text-right text-mist-400" data-out="overhead">-</td>
+      <td class="text-right text-mist-400" data-out="ga">-</td><td class="text-right text-mist-400" data-out="fee">-</td>
+      <td class="text-right text-mist-200" data-out="loaded">-</td><td class="text-right font-medium text-white" data-out="total">-</td>
+      <td><button type="button" class="btn-ghost !px-2.5 !py-2" data-del="labor" aria-label="Remove labor category">&times;</button></td></tr>`;
+    const extraRow = (x, i) => `<div class="flex gap-2" data-row="extras" data-i="${i}"><input class="field !py-2" data-k="label" maxlength="100" placeholder="e.g. Freight" value="${esc(x.label)}" />
+      <input class="field !w-36 !py-2" data-k="amount" inputmode="decimal" placeholder="0.00" value="${esc(x.amount)}" /><button type="button" class="btn-ghost !px-2.5" data-del="extras" aria-label="Remove charge">&times;</button></div>`;
+    const rateField = (k, label, help) => `<div><label class="label" for="pr-${k}">${label}</label><div class="relative"><input id="pr-${k}" class="field !pr-9" data-rate="${k}" inputmode="decimal" value="${esc(d[k])}" /><span class="absolute right-4 top-1/2 -translate-y-1/2 text-mist-500">%</span></div>${help ? `<p class="mt-1 text-xs text-mist-500">${help}</p>` : ''}</div>`;
+
+    view.innerHTML = `<div>
+      <div class="no-print">${pageHead(esc(title), ent ? 'Materials and subs, plus fully loaded labor rates.' : 'Your cost, your overhead, your profit, and the price you bid.',
+        `<button id="pr-csv" class="btn-ghost">CSV</button><button id="pr-print" class="btn-ghost">Print</button>
+         <button id="pr-send" class="btn-ghost">${icon('spark', 'h-4 w-4')}Use in a proposal</button><button id="pr-save" class="btn-primary">Save</button>`)}</div>
+      <div class="print-area space-y-6">
+        <section class="card p-6">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div><label class="label" for="pr-title">Sheet name</label><input id="pr-title" class="field" maxlength="200" value="${esc(title)}" /></div>
+            <div><label class="label" for="pr-bid">Opportunity</label><select id="pr-bid" class="field">${bidOptions(bids, bidId)}</select></div>
+          </div>
+        </section>
+        <section class="card p-6">
+          <h2 class="font-semibold text-white">Materials, supplies and subcontracts</h2>
+          <p class="mt-1 text-sm text-mist-400">Enter each line at your cost (the supplier or sub quote). Overhead and profit are added on top.</p>
+          <div class="mt-4 grid gap-4 sm:grid-cols-3">${rateField('overheadPct', 'Overhead on quotes', 'Your allowable indirect costs: insurance, bonding, admin.')}${rateField('markupPct', 'Profit markup', 'Most small-dollar bids land between 10% and 25%.')}</div>
+          <div class="mt-5 overflow-x-auto"><table class="tbl min-w-[760px]"><thead><tr><th>Item</th><th>Description</th><th>Unit</th><th>Qty</th><th>Your unit cost</th><th class="text-right">Bid unit price</th><th class="text-right">Line total</th><th></th></tr></thead>
+            <tbody id="pr-items"></tbody></table></div>
+          <button type="button" class="btn-ghost no-print mt-3" data-add="items">${icon('plus', 'h-4 w-4')}Add line</button>
+        </section>
+        ${ent ? `<section class="card p-6">
+          <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="font-semibold text-white">Labor, fully loaded</h2><span class="edition-badge">Fringe/G&amp;A engine</span></div>
+          <p class="mt-1 text-sm text-mist-400">Base hourly wage, then fringe on wages, overhead on wages and fringe, G&amp;A on the total cost, and fee last. This is the order DCAA expects.</p>
+          <div class="mt-4 grid gap-4 sm:grid-cols-4">${rateField('fringePct', 'Fringe', 'Taxes, health, PTO, retirement.')}${rateField('laborOverheadPct', 'Overhead', 'Facilities, supervision, equipment.')}${rateField('gaPct', 'G&amp;A', 'Company-wide admin costs.')}${rateField('feePct', 'Fee / profit', '')}</div>
+          <p class="mt-3 text-sm text-mist-300">Wrap rate <span id="pr-wrap" class="font-semibold text-white">-</span> <span class="text-mist-500">(every $1.00 of wages bills at this amount)</span></p>
+          <div class="mt-4 overflow-x-auto"><table class="tbl min-w-[900px]"><thead><tr><th>Labor category</th><th>Hours</th><th>Base rate</th><th class="text-right">Fringe</th><th class="text-right">Overhead</th><th class="text-right">G&amp;A</th><th class="text-right">Fee</th><th class="text-right">Billed rate</th><th class="text-right">Total</th><th></th></tr></thead>
+            <tbody id="pr-labor"></tbody></table></div>
+          <button type="button" class="btn-ghost no-print mt-3" data-add="labor">${icon('plus', 'h-4 w-4')}Add labor category</button>
+        </section>` : `<div class="no-print">${lockedTeaser('Fringe/G&A Calculation Engine', 'Enterprise prices labor with fringe, overhead, G&A and fee stacked the way DCAA expects, and shows your wrap rate.')}</div>`}
+        <section class="card p-6">
+          <h2 class="font-semibold text-white">Other charges at cost</h2>
+          <div id="pr-extras" class="mt-3 space-y-2"></div>
+          <button type="button" class="btn-ghost no-print mt-3" data-add="extras">${icon('plus', 'h-4 w-4')}Add a charge</button>
+        </section>
+        <section class="card grid gap-4 p-6 sm:grid-cols-4">
+          <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Your cost</p><p id="pr-cost" class="mt-1 text-xl font-semibold text-white">-</p></div>
+          <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Profit</p><p id="pr-profit" class="mt-1 text-xl font-semibold text-emerald-300">-</p></div>
+          <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Margin</p><p id="pr-margin" class="mt-1 text-xl font-semibold text-white">-</p></div>
+          <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Bid price</p><p id="pr-price" class="mt-1 text-2xl font-bold accent-text">-</p></div>
+        </section>
+      </div></div>`;
+    const page = view.firstElementChild;
+
+    const drawRows = () => {
+      $('#pr-items').innerHTML = d.items.map(itemRow).join('');
+      if (ent) $('#pr-labor').innerHTML = d.labor.map(laborRow).join('');
+      $('#pr-extras').innerHTML = d.extras.map(extraRow).join('');
+      recalc();
+    };
+    const recalc = () => {
+      const r = priceSheet(d);
+      $$('[data-row=items]', view).forEach((tr, i) => {
+        const l = r.lines[i];
+        $('[data-out=unit]', tr).textContent = l && l.cost !== '' ? money2(l.unitPrice) : '-';
+        $('[data-out=total]', tr).textContent = l && l.cost !== '' ? money2(l.total) : '-';
+      });
+      if (ent) {
+        $('#pr-wrap').textContent = '$' + r.wrap.toFixed(4);
+        $$('[data-row=labor]', view).forEach((tr, i) => {
+          const l = r.labor[i];
+          ['fringe', 'overhead', 'ga', 'fee', 'loaded'].forEach((k) => { $(`[data-out=${k}]`, tr).textContent = l.rate ? money2(l[k]) : '-'; });
+          $('[data-out=total]', tr).textContent = l.rate ? money2(l.total) : '-';
+        });
+      }
+      $('#pr-cost').textContent = money2(r.cost);
+      $('#pr-profit').textContent = money2(r.profit);
+      $('#pr-margin').textContent = (r.margin * 100).toFixed(1) + '%';
+      $('#pr-price').textContent = money2(r.price);
+      return r;
+    };
+    drawRows();
+
+    page.addEventListener('input', (e) => {
+      const t = e.target;
+      if (t.id === 'pr-title') title = t.value;
+      else if (t.id === 'pr-bid') bidId = t.value;
+      else if (t.dataset.rate) d[t.dataset.rate] = t.value;
+      else if (t.dataset.k) { const row = t.closest('[data-row]'); d[row.dataset.row][Number(row.dataset.i)][t.dataset.k] = t.value; }
+      else return;
+      recalc();
+    });
+    $('#pr-bid').addEventListener('change', (e) => { bidId = e.target.value; });
+    $('.print-area', view).addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.dataset.add === 'items') d.items.push({ item: String(d.items.length + 1).padStart(4, '0'), description: '', unit: 'Each', quantity: '1', cost: '' });
+      else if (b.dataset.add === 'labor') d.labor.push({ category: '', hours: '', rate: '' });
+      else if (b.dataset.add === 'extras') d.extras.push({ label: '', amount: '' });
+      else if (b.dataset.del) d[b.dataset.del].splice(Number(b.closest('[data-row]').dataset.i), 1);
+      else return;
+      drawRows();
+    });
+
+    const save = async () => {
+      const r = priceSheet(d);
+      const body = { title: title.trim() || 'Pricing sheet', bidId: bidId ? Number(bidId) : null, data: d, total: r.price };
+      if (item) item = (await api('/pricing/' + item.id, { method: 'PATCH', body })).item;
+      else {
+        item = (await api('/pricing', { method: 'POST', body })).item;
+        history.replaceState(null, '', '/app/pricing/' + item.id);
+      }
+      return item;
+    };
+    $('#pr-save').addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      try { await save(); toast('Pricing sheet saved.'); } catch (err) { toast(err.message, 'error'); }
+      e.target.disabled = false;
+    });
+    $('#pr-print').addEventListener('click', () => window.print());
+    $('#pr-csv').addEventListener('click', () => {
+      const r = priceSheet(d);
+      const rows = [['Item', 'Description', 'Unit', 'Quantity', 'Unit cost', 'Bid unit price', 'Line total']];
+      r.lines.forEach((l) => rows.push([l.item, l.description, l.unit, l.qty, num(l.cost).toFixed(2), l.unitPrice.toFixed(2), l.total.toFixed(2)]));
+      if (r.labor.length) {
+        rows.push([], ['Labor category', 'Hours', 'Base rate', 'Fringe', 'Overhead', 'G&A', 'Fee', 'Billed rate', 'Total']);
+        r.labor.forEach((l) => rows.push([l.category, l.hours, l.rate.toFixed(2), l.fringe.toFixed(2), l.overhead.toFixed(2), l.ga.toFixed(2), l.fee.toFixed(2), l.loaded.toFixed(2), l.total.toFixed(2)]));
+      }
+      r.extras.forEach((x) => rows.push([x.label, '', '', '', '', '', x.value.toFixed(2)]));
+      rows.push([], ['Total cost', r.cost.toFixed(2)], ['Profit', r.profit.toFixed(2)], ['Bid price', r.price.toFixed(2)]);
+      csvDownload((title || 'pricing').replace(/[^a-z0-9]+/gi, '-') + '.csv', rows);
+    });
+    $('#pr-send').addEventListener('click', async () => {
+      const r = priceSheet(d);
+      const items = [
+        ...r.lines.filter((l) => l.description).map((l) => ({ item: l.item, description: l.description, unit: l.unit, quantity: String(l.qty), unitPrice: l.unitPrice.toFixed(2) })),
+        ...r.labor.filter((l) => l.category).map((l, i) => ({ item: `L${String(i + 1).padStart(3, '0')}`, description: l.category, unit: 'Hour', quantity: String(l.hours), unitPrice: l.loaded.toFixed(2) })),
+      ];
+      if (!items.length) { toast('Add at least one line with a description first.', 'error'); return; }
+      try { await save(); } catch (err) { toast(err.message, 'error'); return; }
+      try {
+        sessionStorage.setItem('gpp-pricing', JSON.stringify({ title, bidId, items, extras: r.extras.filter((x) => x.label && x.value).map((x) => ({ label: x.label, amount: x.value.toFixed(2) })) }));
+      } catch { /* storage blocked: the member re-enters prices */ }
+      navigate('/proposals/new');
+    });
+  }
+
+  // ---- 70-teaming.js
+  // ------------------------------------------------------------------ Auto-Teaming Legal Engine (Enterprise)
+
+  const LEGAL_KIND = { nda: 'Mutual NDA', teaming: 'Teaming Agreement' };
+
+  function legalDefaults(kind, sub, bid) {
+    const u = state.me.user;
+    return {
+      primeName: u.businessName || '', primeAddress: u.address || '', primeSigner: u.fullName || '', primeTitle: 'Owner',
+      subName: sub ? sub.company : '', subAddress: sub ? sub.location || '' : '', subSigner: sub ? sub.contactName || '' : '', subTitle: '',
+      effective: today(), governingState: '', termYears: kind === 'nda' ? '2' : '',
+      solicitation: bid ? [bid.title, bid.solicitationNumber].filter(Boolean).join(', ') : '', agency: bid ? bid.agency || '' : '',
+      purpose: bid ? `preparing a proposal for ${bid.title}` : 'evaluating and pursuing federal contract opportunities together',
+      subScope: sub && sub.trade ? sub.trade : '', subShare: '', exclusive: true, setAside: Boolean(bid && bid.setAside),
+    };
+  }
+
+  const F = (v, ph) => (String(v || '').trim() ? esc(v) : `<span class="cap-ph">[INSERT: ${ph}]</span>`);
+
+  function ndaHtml(t) {
+    return `<h1>Mutual Non-Disclosure Agreement</h1>
+      <p>This Mutual Non-Disclosure Agreement (the "Agreement") is made effective ${F(t.effective && fmtDate(t.effective), 'date')} between <b>${F(t.primeName, 'your company')}</b>, located at ${F(t.primeAddress, 'address')}, and <b>${F(t.subName, 'other company')}</b>, located at ${F(t.subAddress, 'address')} (each a "Party").</p>
+      <h2>1. Purpose</h2><p>The Parties wish to share information for the purpose of ${F(t.purpose, 'purpose')} (the "Purpose").</p>
+      <h2>2. Confidential Information</h2><p>"Confidential Information" means any non-public business, technical, pricing, cost, customer or proposal information disclosed by one Party to the other, in any form, that is marked confidential or that a reasonable person would understand to be confidential. It does not include information that is or becomes public through no fault of the receiving Party, was already known to the receiving Party, is independently developed, or is received lawfully from a third party without restriction.</p>
+      <h2>3. Obligations</h2><p>The receiving Party will use Confidential Information only for the Purpose, protect it with at least reasonable care, and share it only with employees and advisors who need it for the Purpose and are bound by similar obligations. A Party may disclose information required by law or court order after giving prompt notice, where lawful.</p>
+      <h2>4. Pricing and proposal data</h2><p>Each Party's pricing, labor rates and proposal content are Confidential Information and will not be used to compete against the disclosing Party on the opportunity described in the Purpose.</p>
+      <h2>5. Non-solicitation</h2><p>During the term, neither Party will use Confidential Information to solicit the other Party's government customer on the opportunity described above, or its employees, without written consent.</p>
+      <h2>6. Term and return</h2><p>This Agreement lasts ${F(t.termYears, 'number')} years from the effective date. Obligations survive for two years after it ends. On request, each Party will return or destroy the other's Confidential Information.</p>
+      <h2>7. No obligation</h2><p>This Agreement does not create a partnership, joint venture or obligation to enter into any further agreement. All information is provided "as is".</p>
+      <h2>8. Governing law</h2><p>This Agreement is governed by the laws of the State of ${F(t.governingState, 'state')}.</p>
+      ${sigBlock(t)}`;
+  }
+
+  function teamingHtml(t) {
+    return `<h1>Teaming Agreement</h1>
+      <p>This Teaming Agreement (the "Agreement") is made effective ${F(t.effective && fmtDate(t.effective), 'date')} between <b>${F(t.primeName, 'your company')}</b>, located at ${F(t.primeAddress, 'address')} ("Prime"), and <b>${F(t.subName, 'subcontractor')}</b>, located at ${F(t.subAddress, 'address')} ("Subcontractor"), under FAR Subpart 9.6, Contractor Team Arrangements.</p>
+      <h2>1. Opportunity</h2><p>The Parties will team to pursue ${F(t.solicitation, 'solicitation title and number')}${t.agency ? ` issued by ${esc(t.agency)}` : ''} (the "Opportunity"). Prime will submit the proposal as prime contractor.</p>
+      <h2>2. Responsibilities</h2><p>Prime will lead the proposal, own the customer relationship and price the bid. Subcontractor will provide the technical, pricing and past performance information Prime reasonably requests, on time, for the following scope: ${F(t.subScope, 'subcontractor scope of work')}.</p>
+      <h2>3. Workshare</h2><p>If Prime is awarded the contract, Prime will offer Subcontractor a subcontract for the scope above, estimated at ${F(t.subShare, 'percent')}% of the contract value, subject to the customer's approval and final negotiation.${t.setAside ? ' Both Parties acknowledge that this Opportunity is set aside and that Prime must comply with the limitations on subcontracting in FAR 52.219-14 (or the clause stated in the solicitation), so the workshare will be adjusted as needed to keep Prime compliant.' : ''}</p>
+      <h2>4. Exclusivity</h2><p>${t.exclusive ? 'Neither Party will join another team, or submit its own proposal, for the Opportunity while this Agreement is in effect.' : 'This Agreement is not exclusive. Each Party may participate in other proposals for the Opportunity, but will not share the other Party\'s information with them.'}</p>
+      <h2>5. Proprietary information</h2><p>Information exchanged under this Agreement is confidential, will be marked as proprietary where appropriate, and will be used only for the Opportunity. Each Party bears its own proposal costs.</p>
+      <h2>6. Term</h2><p>This Agreement ends on the earliest of: execution of the subcontract; the customer's award to another offeror or cancellation of the Opportunity; Prime's decision not to bid, given in writing; one year from the effective date; or mutual written agreement.</p>
+      <h2>7. Compliance</h2><p>Each Party will comply with applicable law, including the Procurement Integrity Act, the Anti-Kickback Act and organizational conflict of interest rules, and will notify the other promptly if it is suspended, debarred or loses its SAM.gov registration.</p>
+      <h2>8. Independent contractors</h2><p>The Parties are independent contractors. Nothing here creates a partnership, joint venture or agency.</p>
+      <h2>9. Governing law</h2><p>This Agreement is governed by the laws of the State of ${F(t.governingState, 'state')}.</p>
+      ${sigBlock(t)}`;
+  }
+
+  const sigBlock = (t) => `<h2>Signatures</h2><table><tr>
+      <td><b>${F(t.primeName, 'your company')}</b><br><br>Signature: ______________________<br>Name: ${F(t.primeSigner, 'name')}<br>Title: ${F(t.primeTitle, 'title')}<br>Date: ____________</td>
+      <td><b>${F(t.subName, 'other company')}</b><br><br>Signature: ______________________<br>Name: ${F(t.subSigner, 'name')}<br>Title: ${F(t.subTitle, 'title')}<br>Date: ____________</td></tr></table>`;
+
+  const LEGAL_NOTE = 'A starting draft, not legal advice. Have an attorney review it before you sign.';
+
+  async function viewTeaming(view) {
+    const [{ items }, bids, subs] = await Promise.all([api('/legal'), loadBids(), loadSubs()]);
+    view.innerHTML = `
+      ${pageHead('Auto-Teaming Legal Engine', 'Mutual NDAs and FAR 9.6 teaming agreements, filled in from your profile, your sub and the opportunity.',
+        `<button id="lg-new" class="btn-primary">${icon('plus', 'h-4 w-4')}New agreement</button>`)}
+      ${items.length ? `<div class="card overflow-x-auto p-5"><table class="tbl"><thead><tr><th>Agreement</th><th>Type</th><th>Updated</th></tr></thead><tbody>${items.map((x) => `
+        <tr><td><a href="/app/teaming/${x.id}" data-link class="font-medium text-white hover:text-brand-blueSoft">${esc(x.title)}</a></td><td class="text-mist-300">${LEGAL_KIND[x.kind]}</td><td class="text-mist-400">${fmtDate(x.updatedAt)}</td></tr>`).join('')}</tbody></table></div>`
+        : emptyState('No agreements yet', 'Sign an NDA before you share pricing with a sub, then a teaming agreement before you submit together.', '<button id="lg-new2" class="btn-primary">Draft your first agreement</button>')}
+      <p class="mt-4 text-xs text-mist-500">${LEGAL_NOTE}</p>`;
+    const open = () => {
+      openModal(`
+        <h2 class="text-lg font-semibold text-white">New agreement</h2>
+        <form id="lg-form" class="mt-5 space-y-4">
+          <div class="seg" role="radiogroup">${Object.entries(LEGAL_KIND).map(([k, l], i) => `<label class="cursor-pointer"><input type="radio" name="kind" value="${k}" class="sr-only" ${i ? '' : 'checked'} /><span>${l}</span></label>`).join('')}</div>
+          <div><label class="label" for="lg-sub">Other company (from your subcontractors)</label>
+            <select id="lg-sub" name="sub" class="field"><option value="">Type it in on the next page</option>${subs.map((s) => `<option value="${s.id}">${esc(s.company)}</option>`).join('')}</select></div>
+          <div><label class="label" for="lg-bid">Opportunity</label><select id="lg-bid" name="bid" class="field">${bidOptions(bids, null)}</select></div>
+          <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" data-close>Cancel</button><button class="btn-primary">Draft it</button></div>
+        </form>`);
+      $('#lg-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target.elements;
+        const kind = $('[name=kind]:checked', e.target).value;
+        const sub = subs.find((s) => String(s.id) === f.sub.value);
+        const bid = bids.find((b) => String(b.id) === f.bid.value);
+        try {
+          const { item } = await api('/legal', { method: 'POST', body: {
+            kind, bidId: bid ? bid.id : null, data: legalDefaults(kind, sub, bid),
+            title: `${LEGAL_KIND[kind]}${sub ? ' with ' + sub.company : ''}`.slice(0, 200) } });
+          $('[data-close]').click();
+          navigate('/teaming/' + item.id);
+        } catch (err) { toast(err.message, 'error'); }
+      });
+    };
+    $$('#lg-new, #lg-new2', view).forEach((b) => b.addEventListener('click', open));
+  }
+
+  async function viewLegalDoc(view, id) {
+    const { items } = await api('/legal');
+    const doc = items.find((x) => x.id === String(id));
+    if (!doc) { view.innerHTML = emptyState('Agreement not found', '', '<a href="/app/teaming" data-link class="btn-ghost">Back</a>'); return; }
+    const t = Object.assign(legalDefaults(doc.kind), doc.data);
+    const html = () => (doc.kind === 'nda' ? ndaHtml(t) : teamingHtml(t));
+    const inp = (k, label, o = {}) => `<div class="${o.wide ? 'sm:col-span-2' : ''}"><label class="label" for="lg-${k}">${label}</label><input id="lg-${k}" data-k="${k}" class="field !py-2" ${o.type ? `type="${o.type}"` : ''} maxlength="300" value="${esc(t[k])}" /></div>`;
+    view.innerHTML = `<div>
+      <div class="no-print">${pageHead(esc(doc.title), LEGAL_NOTE,
+        `<a href="/app/teaming" data-link class="btn-ghost">All agreements</a><button id="lg-word" class="btn-ghost">Download Word</button><button id="lg-print" class="btn-ghost">Print / PDF</button><button id="lg-save" class="btn-primary">Save</button>`)}</div>
+      <div class="grid gap-6 xl:grid-cols-[380px,1fr]">
+        <form id="lg-edit" class="no-print card space-y-4 p-6" novalidate>
+          <h2 class="font-semibold text-white">Your company</h2>
+          <div class="grid gap-3 sm:grid-cols-2">${inp('primeName', 'Company', { wide: true })}${inp('primeAddress', 'Address', { wide: true })}${inp('primeSigner', 'Signer')}${inp('primeTitle', 'Title')}</div>
+          <h2 class="pt-2 font-semibold text-white">${doc.kind === 'nda' ? 'Other company' : 'Subcontractor'}</h2>
+          <div class="grid gap-3 sm:grid-cols-2">${inp('subName', 'Company', { wide: true })}${inp('subAddress', 'Address', { wide: true })}${inp('subSigner', 'Signer')}${inp('subTitle', 'Title')}</div>
+          <h2 class="pt-2 font-semibold text-white">Terms</h2>
+          <div class="grid gap-3 sm:grid-cols-2">${inp('effective', 'Effective date', { type: 'date' })}${inp('governingState', 'Governing state')}
+            ${doc.kind === 'nda' ? `${inp('termYears', 'Term (years)')}${inp('purpose', 'Purpose', { wide: true })}`
+              : `${inp('solicitation', 'Solicitation', { wide: true })}${inp('agency', 'Agency', { wide: true })}${inp('subScope', 'Subcontractor scope', { wide: true })}${inp('subShare', 'Workshare %')}
+                <label class="flex items-center gap-2 text-sm text-mist-200"><input type="checkbox" data-k="exclusive" ${t.exclusive ? 'checked' : ''} />Exclusive</label>
+                <label class="flex items-center gap-2 text-sm text-mist-200 sm:col-span-2"><input type="checkbox" data-k="setAside" ${t.setAside ? 'checked' : ''} />Set-aside (adds the FAR 52.219-14 limit)</label>`}
+          </div>
+        </form>
+        <article class="card print-area p-6 sm:p-10"><div id="lg-doc" class="doc"></div></article>
+      </div></div>`;
+    const draw = () => { $('#lg-doc').innerHTML = html(); };
+    draw();
+    $('#lg-edit').addEventListener('input', (e) => {
+      const k = e.target.dataset.k;
+      if (!k) return;
+      t[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      draw();
+    });
+    $('#lg-print').addEventListener('click', () => window.print());
+    $('#lg-word').addEventListener('click', () => wordDoc(doc.title, html().replace(/<span class="cap-ph">/g, '<span style="background:#FFE4E8">')));
+    $('#lg-save').addEventListener('click', async () => {
+      try { await api('/legal/' + doc.id, { method: 'PATCH', body: { data: t } }); toast('Saved.'); } catch (err) { toast(err.message, 'error'); }
+    });
+  }
+
+  // ---- 80-jobs.js
+  // ------------------------------------------------------------------ Section M Grader, RFI Ghostwriter, Past Performance Portfolio (Enterprise)
+
+  const JOB_KIND_OF = { 'section-m': 'section_m', rfi: 'rfi', portfolio: 'case_study' };
+  const JOB_PATH = { section_m: '/section-m', rfi: '/rfi', case_study: '/portfolio' };
+  const JOB_COPY = {
+    section_m: { title: 'Section M Compliance Grader', sub: 'Grade a finished proposal against the solicitation\'s evaluation criteria before the government does.', start: 'Grade a proposal', noun: 'grades' },
+    rfi: { title: 'RFI Ghostwriter', sub: 'Turn the gaps and ambiguities in a solicitation into clear questions for the contracting officer.', start: 'Draft RFI questions', noun: 'RFI drafts' },
+    case_study: { title: 'Past Performance Portfolio', sub: 'Turn completed work into polished case studies, capability statement bullets and proposal-ready paragraphs.', start: 'Build a case study', noun: 'case studies' },
+  };
+  const STATUS_TONE = { strong: 'bg-emerald-500/15 text-emerald-300', adequate: 'bg-brand-blue/15 text-brand-blueSoft', weak: 'bg-amber-400/15 text-amber-200', missing: 'bg-brand-red/20 text-brand-redSoft' };
+
+  async function startJobModal(kind) {
+    const go = async (body) => {
+      const { id } = await api('/jobs/' + kind, { method: 'POST', body });
+      $('[data-close]').click();
+      navigate(`${JOB_PATH[kind]}/${id}`);
+    };
+    let html;
+    if (kind === 'section_m') {
+      const [{ proposals }, { summaries }] = await Promise.all([api('/proposals'), api('/decryptor')]);
+      const ready = proposals.filter((p) => p.status === 'ready');
+      if (!ready.length) { toast('Generate a proposal first, then grade it here.', 'error'); return; }
+      html = `<div><label class="label" for="jb-p">Proposal</label><select id="jb-p" name="proposalId" class="field">${ready.map((p) => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select></div>
+        <div><label class="label" for="jb-s">Grade against (optional)</label><select id="jb-s" name="rfpSummaryId" class="field"><option value="">The solicitation the proposal was written from</option>${summaries.filter((s) => s.status === 'ready').map((s) => `<option value="${s.id}">${esc(s.title || s.fileName)}</option>`).join('')}</select></div>`;
+    } else if (kind === 'rfi') {
+      const { summaries } = await api('/decryptor');
+      const ready = summaries.filter((s) => s.status === 'ready');
+      if (!ready.length) { toast('Decrypt the solicitation first, then draft your questions here.', 'error'); return; }
+      html = `<div><label class="label" for="jb-s">Solicitation</label><select id="jb-s" name="rfpSummaryId" class="field">${ready.map((s) => `<option value="${s.id}">${esc(s.title || s.fileName)}</option>`).join('')}</select></div>
+        <div><label class="label" for="jb-n">What are you unsure about? (optional)</label><textarea id="jb-n" name="notes" rows="4" class="field" maxlength="4000" placeholder="e.g. Is a site visit required? Can we quote an equal brand?"></textarea></div>`;
+    } else {
+      const pp = state.me.user.pastPerformance || [];
+      html = `${pp.length ? `<div><label class="label" for="jb-pp">Start from your profile</label><select id="jb-pp" class="field"><option value="">Type a project below</option>${pp.map((p, i) => `<option value="${i}">${esc(p.title || p.customer)}</option>`).join('')}</select></div>` : ''}
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="sm:col-span-2"><label class="label" for="jb-t">Project name</label><input id="jb-t" name="title" class="field" maxlength="200" /></div>
+          <div><label class="label" for="jb-c">Customer</label><input id="jb-c" name="customer" class="field" maxlength="200" /></div>
+          <div><label class="label" for="jb-no">Contract number</label><input id="jb-no" name="contractNumber" class="field" maxlength="80" /></div>
+          <div><label class="label" for="jb-v">Value</label><input id="jb-v" name="value" class="field" maxlength="60" /></div>
+          <div><label class="label" for="jb-pe">Period</label><input id="jb-pe" name="period" class="field" maxlength="80" /></div>
+          <div class="sm:col-span-2"><label class="label" for="jb-r">Your role</label><select id="jb-r" name="role" class="field"><option value="prime">Prime</option><option value="sub">Subcontractor</option><option value="commercial">Commercial client</option></select></div>
+          <div class="sm:col-span-2"><label class="label" for="jb-d">What you delivered</label><textarea id="jb-d" name="description" rows="4" class="field" maxlength="4000"></textarea></div>
+          <div class="sm:col-span-2"><label class="label" for="jb-res">Results (numbers help: on time, under budget, ratings)</label><textarea id="jb-res" name="results" rows="3" class="field" maxlength="3000"></textarea></div>
+        </div>`;
+    }
+    openModal(`<h2 class="text-lg font-semibold text-white">${JOB_COPY[kind].start}</h2>
+      <form id="jb-form" class="mt-5 space-y-4" novalidate>${html}
+        <p id="jb-err" class="hidden text-sm text-brand-redSoft" role="alert"></p>
+        <div class="flex items-center justify-between gap-2"><p class="text-xs text-mist-500">Takes about a minute.</p><div class="flex gap-2"><button type="button" class="btn-ghost" data-close>Cancel</button><button class="btn-primary">${icon('spark', 'h-4 w-4')}Start</button></div></div>
+      </form>`);
+    const form = $('#jb-form');
+    const pick = $('#jb-pp');
+    if (pick) pick.addEventListener('change', () => {
+      const p = (state.me.user.pastPerformance || [])[Number(pick.value)];
+      if (!p) return;
+      ['title', 'customer', 'value', 'period', 'role', 'description'].forEach((k) => { if (form.elements[k]) form.elements[k].value = p[k] || ''; });
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = (n) => (form.elements[n] ? form.elements[n].value.trim() : '');
+      const btn = $('button:not([data-close])', form);
+      btn.disabled = true;
+      try {
+        if (kind === 'section_m') await go({ proposalId: Number(v('proposalId')), rfpSummaryId: v('rfpSummaryId') ? Number(v('rfpSummaryId')) : null });
+        else if (kind === 'rfi') await go({ rfpSummaryId: Number(v('rfpSummaryId')), notes: v('notes') });
+        else await go({ project: { title: v('title'), customer: v('customer'), contractNumber: v('contractNumber'), value: v('value'), period: v('period'), role: v('role'), description: v('description'), results: v('results') } });
+      } catch (err) { btn.disabled = false; const el = $('#jb-err'); el.textContent = err.message; el.classList.remove('hidden'); }
+    });
+  }
+
+  async function viewJobs(view, kind) {
+    const { jobs } = await api('/jobs/' + kind);
+    const c = JOB_COPY[kind];
+    view.innerHTML = `
+      ${pageHead(c.title, c.sub, `<button id="jb-new" class="btn-primary">${icon('spark', 'h-4 w-4')}${c.start}</button>`)}
+      ${jobs.length ? `<ul class="grid gap-2">${jobs.map((j) => `<li><a href="/app${JOB_PATH[kind]}/${j.id}" data-link class="row-link flex items-center justify-between gap-3">
+          <span class="flex min-w-0 items-center gap-3">${kind === 'section_m' && j.result ? scoreRing(j.result.overall_score, 'h-11 w-11') : ''}<span class="truncate font-medium text-white">${esc(j.title)}</span></span>
+          <span class="flex shrink-0 items-center gap-3 text-xs text-mist-500">${fmtDate(j.createdAt)} ${statusPill(j.status)}</span></a></li>`).join('')}</ul>`
+        : emptyState(`No ${c.noun} yet`, c.sub, `<button id="jb-new2" class="btn-primary">${c.start}</button>`)}`;
+    $$('#jb-new, #jb-new2', view).forEach((b) => b.addEventListener('click', () => startJobModal(kind).catch((err) => toast(err.message, 'error'))));
+    pollWhileWorking(jobs);
+  }
+
+  function gradeView(r) {
+    return `
+      <section class="card mb-6 flex flex-wrap items-center gap-6 p-6">${scoreRing(r.overall_score)}<div class="min-w-0 flex-1"><p class="text-xs font-semibold uppercase tracking-[0.16em] text-mist-500">Predicted evaluation score</p><p class="mt-1 text-lg text-white">${esc(r.verdict)}</p></div></section>
+      ${r.quick_fixes.length ? sectionCard('Fix these first', `<ol class="list-decimal space-y-1.5 pl-5 text-mist-200">${r.quick_fixes.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>`, 'mb-6') : ''}
+      <section class="card mb-6 overflow-x-auto p-5"><table class="tbl min-w-[720px]"><thead><tr><th>Criterion</th><th>Weight</th><th>Score</th><th>Where it stands</th><th>How to raise it</th></tr></thead><tbody>${r.criteria.map((c) => `
+        <tr><td class="font-medium text-white">${esc(c.criterion)}</td><td class="text-mist-400">${esc(c.weight)}</td>
+          <td><span class="pill ${STATUS_TONE[c.status] || ''}">${c.score}/10 ${esc(c.status)}</span></td><td class="text-mist-300">${esc(c.evidence)}</td><td class="text-mist-300">${esc(c.fix)}</td></tr>`).join('')}</tbody></table></section>
+      ${r.missing_requirements.length ? sectionCard('Not answered yet', `<ul class="space-y-1.5 text-brand-redSoft">${r.missing_requirements.map((x) => `<li>• ${esc(x)}</li>`).join('')}</ul>`) : ''}`;
+  }
+
+  const rfiText = (r) => `${r.greeting}\n\n${r.intro}\n\n${r.questions.map((q, i) => `${i + 1}. (${q.reference}) ${q.question}`).join('\n\n')}\n\n${r.closing}`;
+
+  const caseText = (r) => `${r.title}\n${r.client}\n\n${r.contract_facts.map((f) => `${f.label}: ${f.value}`).join('\n')}\n\nChallenge\n${r.challenge}\n\nSolution\n${r.solution}\n\nResults\n${r.results.map((x) => `- ${x}`).join('\n')}`;
+
+  async function viewJob(view, kind, id) {
+    const { job } = await api(`/jobs/${kind}/${id}`);
+    const c = JOB_COPY[kind];
+    const back = `<a href="/app${JOB_PATH[kind]}" data-link class="btn-ghost">All ${c.noun}</a>`;
+    if (job.status === 'working') {
+      view.innerHTML = pageHead(esc(job.title), '', back) + working(`Working on your ${c.noun.replace(/s$/, '')}`, 'This page refreshes on its own.');
+      every(4000, () => render());
+      return;
+    }
+    if (job.status === 'failed') {
+      view.innerHTML = pageHead(esc(job.title), '', back) + emptyState('That did not finish', esc(job.error || 'Please try again.'), `<button id="jb-again" class="btn-primary">Try again</button>`);
+      $('#jb-again').addEventListener('click', () => startJobModal(kind).catch((err) => toast(err.message, 'error')));
+      return;
+    }
+    const r = job.result;
+    const del = '<button id="jb-del" class="btn-ghost">Delete</button>';
+    if (kind === 'section_m') {
+      view.innerHTML = `<div class="no-print">${pageHead(esc(job.title), `Graded ${fmtDate(job.completedAt)}`, `${back}${del}<button id="jb-print" class="btn-ghost">Print</button>
+        ${job.input.proposalId ? `<a href="/app/proposals/${job.input.proposalId}" data-link class="btn-primary">Open the proposal</a>` : ''}`)}</div><div class="print-area">${gradeView(r)}</div>`;
+      $('#jb-print').addEventListener('click', () => window.print());
+    } else if (kind === 'rfi') {
+      let co = {};
+      try { co = ((await api('/decryptor/' + job.input.rfpSummaryId)).summary.summary || {}).contracting_officer || {}; } catch { co = {}; }
+      const coEmail = co.email && /@/.test(co.email) ? co.email : '';
+      view.innerHTML = `${pageHead(esc(job.title), coEmail ? `To ${esc([co.name, co.email].filter(Boolean).join(', '))}` : 'Check the solicitation for where questions go and the deadline.',
+        `${back}${del}<button id="jb-copy" class="btn-ghost">Copy</button><button id="jb-save" class="btn-ghost">Save edits</button><button id="jb-mail" class="btn-primary">${icon('mail', 'h-4 w-4')}Open in email</button>`)}
+        <section class="card space-y-4 p-6">
+          <div><label class="label" for="rf-subject">Subject</label><input id="rf-subject" class="field" maxlength="300" value="${esc(r.subject)}" /></div>
+          <div><label class="label" for="rf-body">Email</label><textarea id="rf-body" rows="22" class="field leading-relaxed">${esc(rfiText(r))}</textarea></div>
+          <p class="text-xs text-mist-500">Send before the question deadline in the solicitation. The contracting officer's answers are usually posted as an amendment for every bidder.</p>
+        </section>`;
+      $('#jb-copy').addEventListener('click', () => copyText(`Subject: ${$('#rf-subject').value}\n\n${$('#rf-body').value}`));
+      $('#jb-mail').addEventListener('click', () => mailto({ to: coEmail, subject: $('#rf-subject').value, body: $('#rf-body').value }));
+      $('#jb-save').addEventListener('click', async () => {
+        try { await api(`/jobs/${kind}/${id}`, { method: 'PATCH', body: { result: { ...r, subject: $('#rf-subject').value, edited: $('#rf-body').value } } }); toast('Saved.'); } catch (err) { toast(err.message, 'error'); }
+      });
+      if (r.edited) $('#rf-body').value = r.edited;
+    } else {
+      view.innerHTML = `<div class="no-print">${pageHead(esc(r.title), esc(r.client), `${back}${del}<button id="jb-word" class="btn-ghost">Download Word</button><button id="jb-print" class="btn-primary">Print / PDF</button>`)}</div>
+        <div class="print-area grid gap-6 lg:grid-cols-[1fr,340px]">
+          <article class="card doc p-6 sm:p-10">
+            <h1>${esc(r.title)}</h1><p><b>${esc(r.client)}</b></p>
+            <table><tbody>${r.contract_facts.map((f) => `<tr><th>${esc(f.label)}</th><td>${phInline(f.value)}</td></tr>`).join('')}</tbody></table>
+            <h2>Challenge</h2><p>${phInline(r.challenge)}</p><h2>Solution</h2><p>${phInline(r.solution)}</p>
+            <h2>Results</h2><ul>${r.results.map((x) => `<li>${phInline(x)}</li>`).join('')}</ul>
+          </article>
+          <aside class="no-print space-y-4">
+            ${sectionCard('Proposal paragraph', `<p class="text-sm leading-relaxed text-mist-200">${phInline(r.proposal_paragraph)}</p><button class="btn-ghost mt-3 !py-2" data-copy="proposal_paragraph">Copy</button>`)}
+            ${sectionCard('Capability statement line', `<p class="text-sm text-mist-200">${phInline(r.capability_bullet)}</p><button class="btn-ghost mt-3 !py-2" data-copy="capability_bullet">Copy</button>`)}
+            ${sectionCard('Matches solicitations about', `<div class="flex flex-wrap gap-1.5">${r.relevance_tags.map((t) => `<span class="pill bg-white/[0.06] text-mist-300">${esc(t)}</span>`).join('')}</div>`)}
+          </aside>
+        </div>`;
+      $$('[data-copy]', view).forEach((b) => b.addEventListener('click', () => copyText(r[b.dataset.copy])));
+      $('#jb-print').addEventListener('click', () => window.print());
+      $('#jb-word').addEventListener('click', () => wordDoc(r.title, `<pre style="font-family:Calibri,Arial,sans-serif;white-space:pre-wrap">${esc(caseText(r))}</pre>`));
+    }
+    $('#jb-del').addEventListener('click', async () => {
+      if (!confirm('Delete this?')) return;
+      try { await api(`/jobs/${kind}/${id}`, { method: 'DELETE' }); navigate(JOB_PATH[kind]); } catch (err) { toast(err.message, 'error'); }
+    });
+  }
+
+  // ---- 90-postaward.js
+  // ------------------------------------------------------------------ Post-Award Milestone Tracker and Simplified Invoicing Engine
+
+  const STANDARD_MILESTONES = [
+    ['Post-award kickoff with the contracting officer', 5],
+    ['Send insurance certificates and any bonds', 10],
+    ['Register in the payment system named in the contract (PIEE/WAWF or IPP)', 10],
+    ['Subcontract signed and sub notified to proceed', 7],
+    ['Mid-point quality check with the COR', 30],
+    ['Final delivery or completion of work', 60],
+    ['Final invoice and release of claims', 65],
+  ];
+
+  async function viewMilestones(view) {
+    const [{ items }, bids, subs] = await Promise.all([api('/milestones'), loadBids(), loadSubs()]);
+    const contracts = bids.filter((b) => ['won', 'awarded', 'active'].includes(b.stage) || items.some((m) => m.bidId === b.id));
+    const pick = contracts.length ? contracts : bids;
+    let showDone = false;
+    view.innerHTML = '<div></div>';
+    const root = view.firstElementChild;
+    const subName = (sid) => (subs.find((s) => s.id === sid) || {}).company;
+    const draw = () => {
+      const groups = pick.map((b) => ({ b, list: items.filter((m) => m.bidId === b.id && (showDone || m.status === 'open')) })).filter((g) => g.list.length || items.every((m) => m.bidId !== g.b.id));
+      const open = items.filter((m) => m.status === 'open');
+      const late = open.filter((m) => m.dueOn && daysUntil(m.dueOn) < 0).length;
+      root.innerHTML = `
+        ${pageHead('Post-Award Milestone Tracker', 'Every deliverable, sub check-in and invoice date for the contracts you have won.',
+          `<a href="/app/invoices" data-link class="btn-ghost">${icon('receipt', 'h-4 w-4')}Invoices</a><button id="ms-new" class="btn-primary" ${bids.length ? '' : 'disabled'}>${icon('plus', 'h-4 w-4')}Add milestone</button>`)}
+        ${bids.length ? `
+        <div class="mb-6 grid gap-3 sm:grid-cols-3">
+          <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Open</p><p class="mt-1 text-2xl font-semibold text-white">${open.length}</p></div>
+          <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Overdue</p><p class="mt-1 text-2xl font-semibold ${late ? 'text-brand-redSoft' : 'text-white'}">${late}</p></div>
+          <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Still to bill</p><p class="mt-1 text-2xl font-semibold text-white">${money2(open.reduce((t, m) => t + (m.amount || 0), 0))}</p></div>
+        </div>
+        <label class="mb-4 flex items-center gap-2 text-sm text-mist-300"><input type="checkbox" id="ms-done" ${showDone ? 'checked' : ''} />Show completed</label>
+        <div class="space-y-6">${groups.map(({ b, list }) => `
+          <section class="card p-6">
+            <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="font-semibold text-white">${esc(b.title)}</h2>
+              <button class="btn-ghost !py-2" data-std="${b.id}">Add standard milestones</button></div>
+            ${list.length ? `<ul class="mt-4 divide-y divide-white/[0.06]">${list.map((m) => {
+              const d = m.dueOn ? daysUntil(m.dueOn) : null;
+              return `<li class="flex flex-wrap items-center gap-3 py-3">
+                <button class="rounded-full border ${m.status === 'done' ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300' : 'border-white/20 text-transparent hover:border-white/50'} p-1" data-toggle="${m.id}" aria-label="${m.status === 'done' ? 'Mark open' : 'Mark done'}">${icon('check', 'h-3.5 w-3.5')}</button>
+                <div class="min-w-0 flex-1"><p class="${m.status === 'done' ? 'text-mist-500 line-through' : 'text-white'}">${esc(m.title)}</p>
+                  <p class="text-xs text-mist-500">${[m.dueOn && (m.status === 'done' ? `Done ${fmtDate(m.doneOn)}` : `<span class="${d < 0 ? 'text-brand-redSoft' : d <= 3 ? 'text-amber-200' : ''}">Due ${fmtDate(m.dueOn)} (${d < 0 ? `${-d} days late` : daysLabel(d)})</span>`),
+                    m.subContactId && subName(m.subContactId) && `Sub: ${esc(subName(m.subContactId))}`, m.amount && money2(m.amount)].filter(Boolean).join(' · ')}</p></div>
+                ${m.amount && m.status === 'done' ? `<a href="/app/invoices/new?bid=${b.id}&milestone=${m.id}" data-link class="btn-ghost !py-1.5 !text-xs">Invoice it</a>` : ''}
+                <button class="btn-ghost !px-2.5 !py-1.5" data-del="${m.id}" aria-label="Delete">&times;</button></li>`;
+            }).join('')}</ul>` : '<p class="mt-3 text-sm text-mist-500">No open milestones.</p>'}
+          </section>`).join('')}</div>`
+        : emptyState('Win one first', 'Milestones hang off the opportunities in your Bid CRM. Add the contract there and move it to Won.', '<a href="/app/crm" data-link class="btn-primary">Open Bid CRM</a>')}`;
+    };
+    draw();
+    const msModal = () => {
+      openModal(`<h2 class="text-lg font-semibold text-white">Add milestone</h2>
+        <form id="ms-form" class="mt-5 grid gap-4 sm:grid-cols-2" novalidate>
+          <div class="sm:col-span-2"><label class="label" for="ms-bid">Contract</label><select id="ms-bid" name="bidId" class="field">${bidOptions(pick, pick[0] && pick[0].id, 'Choose')}</select></div>
+          <div class="sm:col-span-2"><label class="label" for="ms-title">Milestone</label><input id="ms-title" name="title" class="field" maxlength="200" placeholder="e.g. Deliver 40 patio umbrellas" /></div>
+          <div><label class="label" for="ms-due">Due</label><input id="ms-due" name="dueOn" type="date" class="field" /></div>
+          <div><label class="label" for="ms-amt">Amount to bill when done (optional)</label><input id="ms-amt" name="amount" class="field" inputmode="decimal" /></div>
+          <div class="sm:col-span-2"><label class="label" for="ms-sub">Subcontractor responsible (optional)</label><select id="ms-sub" name="subContactId" class="field"><option value="">None</option>${subs.map((s) => `<option value="${s.id}">${esc(s.company)}</option>`).join('')}</select></div>
+          <p id="ms-err" class="hidden text-sm text-brand-redSoft sm:col-span-2" role="alert"></p>
+          <div class="flex justify-end gap-2 sm:col-span-2"><button type="button" class="btn-ghost" data-close>Cancel</button><button class="btn-primary">Add</button></div>
+        </form>`);
+      $('#ms-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target.elements;
+        try {
+          const { item } = await api('/milestones', { method: 'POST', body: { bidId: f.bidId.value ? Number(f.bidId.value) : null, title: f.title.value, dueOn: f.dueOn.value || null,
+            amount: f.amount.value || null, subContactId: f.subContactId.value ? Number(f.subContactId.value) : null } });
+          items.push(item);
+          $('[data-close]').click();
+          draw();
+        } catch (err) { const el = $('#ms-err'); el.textContent = err.message; el.classList.remove('hidden'); }
+      });
+    };
+    root.addEventListener('change', (e) => { if (e.target.id === 'ms-done') { showDone = e.target.checked; draw(); } });
+    root.addEventListener('click', async (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      const d = b.dataset;
+      try {
+        if (b.id === 'ms-new') msModal();
+        else if (d.std) {
+          b.disabled = true;
+          const start = today();
+          const have = new Set(items.filter((m) => m.bidId === d.std).map((m) => m.title));
+          for (const [title, days] of STANDARD_MILESTONES.filter(([t]) => !have.has(t))) {
+            items.push((await api('/milestones', { method: 'POST', body: { bidId: Number(d.std), title, dueOn: addBusinessDays(start, Math.round(days * 5 / 7)) } })).item);
+          }
+          toast('Standard milestones added. Adjust the dates to your contract.');
+          draw();
+        } else if (d.toggle) {
+          const m = items.find((x) => x.id === String(d.toggle));
+          const done = m.status !== 'done';
+          Object.assign(m, (await api('/milestones/' + m.id, { method: 'PATCH', body: { status: done ? 'done' : 'open', doneOn: done ? today() : null } })).item);
+          draw();
+        } else if (d.del && confirm('Delete this milestone?')) {
+          await api('/milestones/' + d.del, { method: 'DELETE' });
+          items.splice(items.findIndex((x) => x.id === String(d.del)), 1);
+          draw();
+        }
+      } catch (err) { b.disabled = false; toast(err.message, 'error'); }
+    });
+  }
+
+  const INV_PILL = {
+    draft: '<span class="pill bg-white/[0.06] text-mist-300">Draft</span>',
+    submitted: '<span class="pill bg-brand-blue/15 text-brand-blueSoft">Submitted</span>',
+    paid: '<span class="pill bg-emerald-500/15 text-emerald-300">Paid</span>',
+  };
+
+  async function viewInvoices(view) {
+    const [{ items }, bids] = await Promise.all([api('/invoices'), loadBids()]);
+    const bidTitle = (id) => (bids.find((b) => b.id === id) || {}).title || '';
+    const outstanding = items.filter((i) => i.status === 'submitted');
+    view.innerHTML = `
+      ${pageHead('Simplified Invoicing Engine', 'Public vouchers (SF-1034, with SF-1035 continuation) ready to upload to the payment system in your contract.',
+        `<a href="/app/invoices/new" data-link class="btn-primary">${icon('plus', 'h-4 w-4')}New voucher</a>`)}
+      <div class="mb-6 grid gap-3 sm:grid-cols-3">
+        <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Waiting on payment</p><p class="mt-1 text-2xl font-semibold text-white">${money2(outstanding.reduce((t, i) => t + i.total, 0))}</p></div>
+        <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Paid</p><p class="mt-1 text-2xl font-semibold text-emerald-300">${money2(items.filter((i) => i.status === 'paid').reduce((t, i) => t + i.total, 0))}</p></div>
+        <div class="tile"><p class="text-xs uppercase tracking-wider text-mist-500">Drafts</p><p class="mt-1 text-2xl font-semibold text-white">${items.filter((i) => i.status === 'draft').length}</p></div>
+      </div>
+      ${items.length ? `<div class="card overflow-x-auto p-5"><table class="tbl"><thead><tr><th>Voucher</th><th>Contract</th><th class="text-right">Amount</th><th>Status</th><th>Payment due</th></tr></thead><tbody>${items.map((i) => {
+        const sub = i.data && i.data.submittedOn;
+        const due = sub ? new Date(Date.parse(sub + 'T12:00:00') + 30 * 86400000).toISOString().slice(0, 10) : null;
+        return `<tr><td><a href="/app/invoices/${i.id}" data-link class="font-medium text-white hover:text-brand-blueSoft">${esc(i.number)}</a></td><td class="text-mist-300">${esc(bidTitle(i.bidId) || (i.data && i.data.contractNumber) || '')}</td>
+          <td class="text-right text-white">${money2(i.total)}</td><td>${INV_PILL[i.status]}</td>
+          <td class="${due && i.status === 'submitted' && daysUntil(due) < 0 ? 'text-brand-redSoft' : 'text-mist-400'}">${due && i.status === 'submitted' ? fmtDate(due) : ''}</td></tr>`;
+      }).join('')}</tbody></table></div>
+      <p class="mt-3 text-xs text-mist-500">Under the Prompt Payment Act the government generally owes payment 30 days after it receives a proper invoice, with interest when it pays late.</p>`
+        : emptyState('No vouchers yet', 'Finish a milestone, then invoice it here. The voucher fills in your company details and the contract for you.', '<a href="/app/invoices/new" data-link class="btn-primary">Create a voucher</a>')}`;
+  }
+
+  async function viewInvoice(view, id) {
+    const params = new URLSearchParams(location.search);
+    const [{ items }, bids, { items: ms }] = await Promise.all([api('/invoices'), loadBids(), api('/milestones')]);
+    let inv = id === 'new' ? null : items.find((i) => i.id === String(id));
+    if (id !== 'new' && !inv) { view.innerHTML = emptyState('Voucher not found', '', '<a href="/app/invoices" data-link class="btn-ghost">Back</a>'); return; }
+    const u = state.me.user;
+    const year = new Date().getFullYear();
+    const bid = bids.find((b) => String(b.id) === String(inv ? inv.bidId : params.get('bid')));
+    const milestone = ms.find((m) => String(m.id) === params.get('milestone'));
+    const d = Object.assign({
+      date: today(), contractNumber: bid ? bid.solicitationNumber || '' : '', orderNumber: '', agency: bid ? bid.agency || '' : '', payingOffice: '',
+      periodFrom: '', periodTo: '', payeeName: u.businessName || '', payeeAddress: u.address || '', uei: u.uei || '', cage: u.cageCode || '',
+      lines: milestone ? [{ date: milestone.doneOn || today(), description: milestone.title, quantity: '1', unit: 'Lot', unitPrice: String(milestone.amount || '') }]
+        : [{ date: today(), description: '', quantity: '1', unit: 'Each', unitPrice: '' }],
+    }, inv ? inv.data : {});
+    let number = inv ? inv.number : `${year}-${String(items.filter((i) => i.number.startsWith(String(year))).length + 1).padStart(3, '0')}`;
+    let bidId = bid ? bid.id : null;
+    let status = inv ? inv.status : 'draft';
+    const total = () => d.lines.reduce((t, l) => t + num(l.quantity) * num(l.unitPrice), 0);
+
+    const inp = (k, label, o = {}) => `<div class="${o.cls || ''}"><label class="label" for="iv-${k}">${label}</label><input id="iv-${k}" data-f="${k}" class="field !py-2" ${o.type ? `type="${o.type}"` : ''} maxlength="300" value="${esc(d[k])}" /></div>`;
+    const lineRow = (l, i) => `<tr data-i="${i}"><td><input type="date" class="field !w-40 !px-3 !py-2" data-l="date" value="${esc(l.date)}" /></td>
+      <td><input class="field !min-w-[220px] !py-2" data-l="description" maxlength="300" value="${esc(l.description)}" /></td>
+      <td><input class="field !w-20 !px-3 !py-2" data-l="quantity" inputmode="decimal" value="${esc(l.quantity)}" /></td>
+      <td><input class="field !w-20 !px-3 !py-2" data-l="unit" maxlength="20" value="${esc(l.unit)}" /></td>
+      <td><input class="field !w-28 !px-3 !py-2" data-l="unitPrice" inputmode="decimal" value="${esc(l.unitPrice)}" /></td>
+      <td class="text-right text-white" data-amt>-</td><td><button type="button" class="btn-ghost !px-2.5 !py-2" data-rm="${i}" aria-label="Remove line">&times;</button></td></tr>`;
+
+    // The printed public voucher. Lines past the eighth go on an SF-1035 continuation sheet.
+    const voucher = () => {
+      const lines = d.lines.filter((l) => l.description);
+      const row = (l) => `<tr><td>${esc(l.date ? fmtDate(l.date) : '')}</td><td>${esc(l.description)}</td><td class="r">${esc(l.quantity)}</td><td>${esc(l.unit)}</td><td class="r">${money2(num(l.unitPrice))}</td><td class="r">${money2(num(l.quantity) * num(l.unitPrice))}</td></tr>`;
+      const head = '<tr><th>Date of delivery or service</th><th>Articles or services</th><th>Quantity</th><th>Unit</th><th>Unit price</th><th>Amount</th></tr>';
+      return `<div class="sf">
+        <div class="sf-top"><div><p class="sf-form">Standard Form 1034</p><h1>Public Voucher for Purchases and Services Other Than Personal</h1></div><div class="sf-no">Voucher no.<br><b>${esc(number)}</b></div></div>
+        <table class="sf-grid"><tr><td><span>U.S. department, bureau or establishment</span>${F(d.agency, 'agency')}</td><td><span>Date voucher prepared</span>${esc(fmtDate(d.date))}</td><td><span>Contract number and date</span>${F(d.contractNumber, 'contract number')}</td></tr>
+          <tr><td><span>Paying office</span>${F(d.payingOffice, 'paying office from the contract')}</td><td><span>Requisition or order number</span>${esc(d.orderNumber) || '&nbsp;'}</td><td><span>Period of service</span>${d.periodFrom ? `${esc(fmtDate(d.periodFrom))} to ${esc(fmtDate(d.periodTo))}` : '&nbsp;'}</td></tr>
+          <tr><td colspan="2"><span>Payee's name and address</span><b>${F(d.payeeName, 'company')}</b><br>${F(d.payeeAddress, 'address')}</td><td><span>UEI / CAGE</span>${F(d.uei, 'UEI')} / ${esc(d.cage) || '-'}</td></tr></table>
+        <table class="sf-lines">${head}${lines.slice(0, 8).map(row).join('')}<tr class="sf-total"><td colspan="5">${lines.length > 8 ? 'Total (including SF-1035 continuation)' : 'Total'}</td><td class="r">${money2(total())}</td></tr></table>
+        <p class="sf-cert">Pursuant to authority vested in me, I certify that this voucher is correct and proper for payment.</p>
+        <table class="sf-grid"><tr><td><span>Payee signature</span>&nbsp;<br>&nbsp;</td><td><span>Name and title</span>${F(u.fullName, 'name')}</td><td><span>Date</span>&nbsp;</td></tr></table>
+        ${lines.length > 8 ? `<div class="sf-break"></div><div class="sf-top"><div><p class="sf-form">Standard Form 1035</p><h1>Public Voucher for Purchases and Services Other Than Personal, Continuation Sheet</h1></div><div class="sf-no">Voucher no.<br><b>${esc(number)}</b></div></div>
+          <table class="sf-lines">${head}${lines.slice(8).map(row).join('')}</table>` : ''}
+      </div>`;
+    };
+
+    view.innerHTML = `<div>
+      <div class="no-print">${pageHead(`Voucher ${esc(number)}`, 'Fill it in, print or save as PDF, then upload it to the payment system your contract names (usually PIEE/WAWF or IPP).',
+        `<a href="/app/invoices" data-link class="btn-ghost">All vouchers</a><button id="iv-print" class="btn-ghost">Print / PDF</button><button id="iv-save" class="btn-primary">Save</button>`)}
+      <div class="grid gap-6">
+        <section class="card p-6"><div class="grid gap-4 sm:grid-cols-3">
+          <div><label class="label" for="iv-number">Voucher number</label><input id="iv-number" class="field !py-2" maxlength="40" value="${esc(number)}" /></div>
+          <div><label class="label" for="iv-bid">Contract in your CRM</label><select id="iv-bid" class="field !py-2">${bidOptions(bids, bidId)}</select></div>
+          <div><label class="label" for="iv-status">Status</label><select id="iv-status" class="field !py-2">${Object.keys(INV_PILL).map((s) => `<option value="${s}" ${s === status ? 'selected' : ''}>${s[0].toUpperCase() + s.slice(1)}</option>`).join('')}</select></div>
+          ${inp('date', 'Date prepared', { type: 'date' })}${inp('contractNumber', 'Contract number')}${inp('orderNumber', 'Order or requisition number')}
+          ${inp('agency', 'Agency')}${inp('payingOffice', 'Paying office')}<div class="grid grid-cols-2 gap-2">${inp('periodFrom', 'Service from', { type: 'date' })}${inp('periodTo', 'to', { type: 'date' })}</div>
+          ${inp('payeeName', 'Payee')}${inp('payeeAddress', 'Payee address', { cls: 'sm:col-span-2' })}${inp('uei', 'UEI')}${inp('cage', 'CAGE')}
+        </div></section>
+        <section class="card p-6"><h2 class="font-semibold text-white">Articles or services</h2>
+          <div class="mt-3 overflow-x-auto"><table class="tbl min-w-[760px]"><thead><tr><th>Date</th><th>Description</th><th>Qty</th><th>Unit</th><th>Unit price</th><th class="text-right">Amount</th><th></th></tr></thead><tbody id="iv-lines"></tbody></table></div>
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-3"><button type="button" id="iv-add" class="btn-ghost">${icon('plus', 'h-4 w-4')}Add line</button><p class="text-lg font-semibold text-white">Total <span id="iv-total" class="accent-text">-</span></p></div>
+        </section>
+      </div></div>
+      <article class="print-area mt-6 hidden print:block"><div id="iv-voucher"></div></article></div>`;
+    const page = view.firstElementChild;
+    const drawLines = () => { $('#iv-lines').innerHTML = d.lines.map(lineRow).join(''); recalc(); };
+    const recalc = () => {
+      $$('#iv-lines tr').forEach((tr, i) => { const l = d.lines[i]; $('[data-amt]', tr).textContent = l.unitPrice !== '' ? money2(num(l.quantity) * num(l.unitPrice)) : '-'; });
+      $('#iv-total').textContent = money2(total());
+    };
+    drawLines();
+    page.addEventListener('input', (e) => {
+      const t = e.target;
+      if (t.dataset.f) d[t.dataset.f] = t.value;
+      else if (t.dataset.l) d.lines[Number(t.closest('tr').dataset.i)][t.dataset.l] = t.value;
+      else if (t.id === 'iv-number') number = t.value;
+      recalc();
+    });
+    $('#iv-bid').addEventListener('change', (e) => {
+      bidId = e.target.value || null;
+      const b = bids.find((x) => x.id === String(bidId));
+      if (b && !d.agency) { d.agency = b.agency || ''; $('#iv-agency').value = d.agency; }
+    });
+    $('#iv-status').addEventListener('change', (e) => { status = e.target.value; });
+    $('#iv-add').addEventListener('click', () => { d.lines.push({ date: today(), description: '', quantity: '1', unit: 'Each', unitPrice: '' }); drawLines(); });
+    $('#iv-lines').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (b) { d.lines.splice(Number(b.dataset.rm), 1); drawLines(); } });
+    $('#iv-print').addEventListener('click', () => { $('#iv-voucher').innerHTML = voucher(); window.print(); });
+    $('#iv-save').addEventListener('click', async (e) => {
+      if (status === 'submitted' && !d.submittedOn) d.submittedOn = today();
+      if (status === 'draft') delete d.submittedOn;
+      const body = { number: number.trim(), bidId, status, data: d, total: Math.round(total() * 100) / 100 };
+      e.target.disabled = true;
+      try {
+        if (inv) inv = (await api('/invoices/' + inv.id, { method: 'PATCH', body })).item;
+        else { inv = (await api('/invoices', { method: 'POST', body })).item; history.replaceState(null, '', '/app/invoices/' + inv.id); }
+        toast('Voucher saved.');
+      } catch (err) { toast(err.message, 'error'); }
+      e.target.disabled = false;
+    });
+  }
+
+  // ---- 95-company.js
+  // ------------------------------------------------------------------ Winning Voice, CMMC Level 1, Compliance Pulse, Per-State Directory
+
+  async function viewWinningVoice(view) {
+    view.innerHTML = `
+      ${pageHead('Past Performance RAG: your winning voice', 'Upload proposals you have won. Every new proposal borrows their tone, structure and proof points, so it sounds like you at your best.')}
+      <div class="grid gap-6 lg:grid-cols-[1fr,320px]">
+        <section class="card p-6"><h2 class="mb-4 font-semibold text-white">Winning proposals</h2><div id="wv-docs"></div></section>
+        <aside class="space-y-4">
+          ${sectionCard('How it works', `<ol class="list-decimal space-y-2 pl-5 text-sm text-mist-300">
+            <li>Upload the proposals that won (Word works best; PDF is fine).</li>
+            <li>We keep the text private to your account.</li>
+            <li>When you write a new proposal, the engine picks the three closest matches and writes in their voice.</li></ol>`)}
+          ${sectionCard('Never copied', '<p class="text-sm text-mist-300">Facts, prices and names always come from the new solicitation and your profile. Only the style carries over.</p>')}
+        </aside>
+      </div>`;
+    await documentsPanel($('#wv-docs'), () => toast('Ready. Your next proposal will use it.'), 'winning_proposal');
+  }
+
+  const CMMC_INFO = [
+    ['AC.L1-3.1.1', 'Authorized access control', 'Limit system access to authorized users, processes acting for them, and devices.', 'Keep a list of who and which devices may use company systems. Everyone gets their own login; remove access the day someone leaves.'],
+    ['AC.L1-3.1.2', 'Transaction and function control', 'Limit users to the transactions and functions they are permitted to run.', 'Staff use standard accounts. Only owners or IT have admin rights.'],
+    ['AC.L1-3.1.20', 'External connections', 'Verify and control connections to and use of external systems.', 'Write down which outside systems (personal laptops, cloud apps) may touch contract information, and block the rest.'],
+    ['AC.L1-3.1.22', 'Control public information', 'Control information posted or processed on publicly accessible systems.', 'Name who may post to your website and social media, and review posts so no contract information goes public.'],
+    ['IA.L1-3.5.1', 'Identification', 'Identify system users, processes acting for users, and devices.', 'No shared accounts. Keep an inventory of computers and phones that access company email and files.'],
+    ['IA.L1-3.5.2', 'Authentication', 'Authenticate users, processes or devices before allowing access.', 'Strong unique passwords, changed from defaults. Turn on multi-factor sign-in for email and cloud storage.'],
+    ['MP.L1-3.8.3', 'Media disposal', 'Sanitize or destroy media containing Federal Contract Information before disposal or reuse.', 'Shred paper. Wipe or physically destroy old drives, USB sticks and phones, and keep a log.'],
+    ['PE.L1-3.10.1', 'Limit physical access', 'Limit physical access to systems, equipment and operating environments to authorized people.', 'Lock the office or the room where work computers and files are kept.'],
+    ['PE.L1-3.10.3', 'Escort visitors', 'Escort visitors and monitor visitor activity.', 'Visitors sign in and are accompanied while near work computers or paperwork.'],
+    ['PE.L1-3.10.4', 'Physical access logs', 'Maintain audit logs of physical access.', 'Keep the visitor sign-in sheet or a door-access log.'],
+    ['PE.L1-3.10.5', 'Manage physical access devices', 'Control and manage physical access devices.', 'Track who holds keys, fobs and codes. Collect them or change codes when people leave.'],
+    ['SC.L1-3.13.1', 'Boundary protection', 'Monitor, control and protect communications at external and key internal boundaries.', 'Use a firewall on your router and on every computer. Change the router\'s default password.'],
+    ['SC.L1-3.13.5', 'Public-access system separation', 'Separate publicly accessible system components from internal networks.', 'Put guest Wi-Fi on its own network. Host your website with a provider, not on the office network.'],
+    ['SI.L1-3.14.1', 'Flaw remediation', 'Identify, report and correct system flaws in a timely manner.', 'Turn on automatic updates for operating systems, browsers and apps.'],
+    ['SI.L1-3.14.2', 'Malicious code protection', 'Provide protection from malicious code at appropriate locations.', 'Run antivirus (Microsoft Defender counts) on every computer.'],
+    ['SI.L1-3.14.4', 'Update malicious code protection', 'Update malicious code protection when new releases are available.', 'Let antivirus update itself automatically and check it monthly.'],
+    ['SI.L1-3.14.5', 'System and file scanning', 'Perform periodic scans and real-time scans of files from external sources.', 'Schedule a weekly full scan and keep real-time scanning on for downloads and USB drives.'],
+  ];
+  const CMMC_STATUS = { met: 'Met', partial: 'In progress', not_met: 'Not met' };
+
+  async function viewCmmc(view) {
+    const { checklist } = await api('/me/cmmc');
+    view.innerHTML = '<div></div>';
+    const root = view.firstElementChild;
+    let filter = 'all';
+    const draw = () => {
+      const met = CMMC_INFO.filter(([id]) => (checklist[id] || {}).status === 'met').length;
+      const partial = CMMC_INFO.filter(([id]) => (checklist[id] || {}).status === 'partial').length;
+      const pctMet = Math.round((met / CMMC_INFO.length) * 100);
+      const rows = CMMC_INFO.filter(([id]) => filter === 'all' || (filter === 'open' ? (checklist[id] || {}).status !== 'met' : (checklist[id] || {}).status === 'met'));
+      root.innerHTML = `
+        <div class="no-print">${pageHead('CMMC Level 1 Readiness', 'The 17 practices behind FAR 52.204-21. Meet all 17 and you can post your annual self-assessment in SPRS.',
+          '<button id="cm-print" class="btn-ghost">Print record</button><a href="https://www.sprs.csd.disa.mil/" target="_blank" rel="noopener noreferrer" class="btn-primary">Open SPRS</a>')}</div>
+        <section class="card mb-6 flex flex-wrap items-center gap-6 p-6">
+          ${scoreRing(pctMet)}
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-mist-500">Progress</p>
+            <p class="mt-1 text-xl font-semibold text-white">${met} of 17 practices met${partial ? ` <span class="text-base font-normal text-mist-400">· ${partial} in progress</span>` : ''}</p>
+            <div class="meter mt-3"><span id="cm-meter"></span></div>
+            <p class="mt-2 text-sm text-mist-400">${met === 17 ? 'Ready. A senior official affirms compliance in SPRS each year.' : 'Level 1 is pass/fail: every practice must be met. There are no POA&Ms at Level 1.'}</p>
+          </div>
+        </section>
+        <div class="no-print mb-4 seg">${[['all', 'All 17'], ['open', 'Still to do'], ['met', 'Met']].map(([k, l]) => `<button type="button" data-f="${k}" class="${filter === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+        <div class="print-area grid gap-3">${rows.map(([id, name, req, how]) => {
+          const c = checklist[id] || {};
+          return `<article class="card p-5" data-p="${id}">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0 flex-1"><p class="text-xs font-semibold tracking-wider text-mist-500">${id}</p><p class="mt-0.5 font-semibold text-white">${esc(name)}</p>
+                <p class="mt-1 text-sm text-mist-300">${esc(req)}</p><p class="mt-2 text-sm text-mist-400"><span class="text-mist-500">How small businesses meet it:</span> ${esc(how)}</p></div>
+              <div class="seg no-print">${Object.entries(CMMC_STATUS).map(([k, l]) => `<button type="button" data-s="${k}" class="${c.status === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+              ${c.status ? `<span class="hidden print:inline">${CMMC_STATUS[c.status]}${c.on ? ` (${fmtDate(c.on)})` : ''}</span>` : ''}
+            </div>
+            <textarea class="field no-print mt-3 !py-2 text-sm" rows="2" maxlength="2000" data-note placeholder="Evidence: what you do and where the proof is (e.g. Defender on all 4 PCs, screenshot in shared drive)">${esc(c.note || '')}</textarea>
+            ${c.note ? `<p class="hidden text-sm print:block">Evidence: ${esc(c.note)}</p>` : ''}
+          </article>`;
+        }).join('')}</div>`;
+      $('#cm-meter').style.width = pctMet + '%';
+    };
+    draw();
+    const save = async (id, status, note) => {
+      await api('/me/cmmc', { method: 'PATCH', body: { practice: id, status, note } });
+      checklist[id] = status ? { status, note, on: today() } : undefined;
+      if (!status) delete checklist[id];
+    };
+    root.addEventListener('click', async (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.id === 'cm-print') { window.print(); return; }
+      if (b.dataset.f) { filter = b.dataset.f; draw(); return; }
+      if (b.dataset.s) {
+        const card = b.closest('[data-p]');
+        const id = card.dataset.p;
+        const cur = checklist[id] || {};
+        try { await save(id, cur.status === b.dataset.s ? null : b.dataset.s, $('[data-note]', card).value); draw(); } catch (err) { toast(err.message, 'error'); }
+      }
+    });
+    root.addEventListener('focusout', async (e) => {
+      if (!e.target.matches('[data-note]')) return;
+      const id = e.target.closest('[data-p]').dataset.p;
+      const cur = checklist[id] || {};
+      if ((cur.note || '') === e.target.value) return;
+      try { await save(id, cur.status || 'partial', e.target.value); toast('Evidence saved.'); } catch (err) { toast(err.message, 'error'); }
+    });
+  }
+
+  async function viewPulse(view) {
+    const { pinned, feed } = await api('/pulse');
+    const regs = [...new Set(feed.map((f) => f.regulation).filter(Boolean))];
+    let filter = 'all';
+    view.innerHTML = '<div></div>';
+    const root = view.firstElementChild;
+    const draw = () => {
+      const list = feed.filter((f) => filter === 'all' || f.regulation === filter);
+      root.innerHTML = `
+        ${pageHead('Live Compliance Pulse', 'The 2026 rules that decide awards, plus every new acquisition rule from the Federal Register, refreshed every few hours.')}
+        <div class="mb-8 grid gap-4 md:grid-cols-2">${pinned.map((p) => `
+          <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="card card-hover block p-6">
+            <span class="pill bg-white/[0.08] text-mist-200">${esc(p.tag)}</span>
+            <p class="mt-3 text-lg font-semibold leading-snug text-white">${esc(p.title)}</p>
+            <p class="mt-2 text-sm leading-relaxed text-mist-400">${esc(p.body)}</p></a>`).join('')}</div>
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 class="text-lg font-semibold text-white">New and proposed rules</h2>
+          ${regs.length > 1 ? `<div class="seg">${['all', ...regs].map((r) => `<button type="button" data-f="${esc(r)}" class="${filter === r ? 'on' : ''}">${r === 'all' ? 'All' : esc(r)}</button>`).join('')}</div>` : ''}</div>
+        ${list.length ? `<div class="grid gap-3">${list.map((f) => `
+          <a href="${esc(f.url)}" target="_blank" rel="noopener noreferrer" class="card card-hover block p-5">
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <span class="pill ${f.type === 'Rule' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-400/15 text-amber-200'}">${f.type === 'Rule' ? 'Final rule' : 'Proposed rule'}</span>
+              ${f.regulation ? `<span class="pill bg-white/[0.06] text-mist-300">${esc(f.regulation)}${f.parts.length ? ' Part ' + f.parts.map(esc).join(', ') : ''}</span>` : ''}
+              <span class="text-mist-500">Published ${fmtDate(f.published)}${f.effective ? ` · effective ${fmtDate(f.effective)}` : ''}${f.commentsClose ? ` · comments close ${fmtDate(f.commentsClose)}` : ''}</span></div>
+            <p class="mt-2 font-semibold leading-snug text-white">${esc(f.title)}</p>
+            ${f.abstract ? `<p class="mt-1.5 line-clamp-3 text-sm text-mist-400">${esc(f.abstract)}</p>` : ''}</a>`).join('')}</div>`
+          : emptyState('Nothing new right now', 'No acquisition rules were published in the last 120 days for this filter.')}`;
+    };
+    draw();
+    root.addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; draw(); } });
+  }
+
+  async function viewStates(view) {
+    const { states } = await api('/states');
+    view.innerHTML = `
+      ${pageHead('Per-State Directory', 'Where each state posts its bids. Register as a vendor in your state first, then the states next door.')}
+      <input id="st-q" class="field mb-6 max-w-md" placeholder="Search a state" aria-label="Search a state" />
+      <div id="st-grid" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
+      <p class="mt-6 text-xs text-mist-500">Cities, counties, school districts and universities post their own bids too. Search "[city] bid opportunities" for local work.</p>`;
+    const home = (state.me.user.address || '').toUpperCase();
+    const draw = (q) => {
+      const s = q.trim().toLowerCase();
+      const list = states.filter(([code, name, office]) => !s || name.toLowerCase().includes(s) || code.toLowerCase() === s || office.toLowerCase().includes(s));
+      list.sort((a, b) => (new RegExp(`\\b${b[0]}\\b`).test(home) - new RegExp(`\\b${a[0]}\\b`).test(home)));
+      $('#st-grid').innerHTML = list.map(([code, name, office, url]) => `
+        <a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="card card-hover flex items-center gap-4 p-5">
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06] text-sm font-bold text-white">${esc(code)}</span>
+          <span class="min-w-0"><span class="block font-semibold text-white">${esc(name)}${new RegExp(`\\b${code}\\b`).test(home) ? ' <span class="pill ml-1 bg-brand-blue/15 text-brand-blueSoft">Your state</span>' : ''}</span>
+            <span class="block truncate text-sm text-mist-400">${esc(office)}</span></span></a>`).join('') || '<p class="text-mist-500">No match.</p>';
+    };
+    draw('');
+    $('#st-q').addEventListener('input', (e) => draw(e.target.value));
+  }
+
 
   render();
 })();

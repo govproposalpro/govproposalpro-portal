@@ -110,6 +110,14 @@ scripts and styles; uploaded RFPs are sent to Claude and never stored, only the 
 Env: `ANTHROPIC_API_KEY` (required for AI features), `APP_LAUNCH_AT` (sign-in opens at this time),
 `APP_EARLY_ACCESS_EMAILS` (team accounts allowed in early), `DECRYPTS_PER_DAY` (default 25), `DOCS_PER_DAY` (default 15), `AI_DAILY_CALL_CAP` (site-wide Claude calls per day, default 300).
 
+## Landing page and contract-win popups
+
+- `govproposalpro.com/` (any host that is not `access.*`) serves the landing page from `frontend/site/`; `access.govproposalpro.com/` and `/access` serve signup.
+- Buy buttons use `SITE_CTA_URL`, `WHOP_CORE_CHECKOUT_URL` and `WHOP_ENTERPRISE_CHECKOUT_URL` (https only).
+- Win popups read `/api/public/wins` (40 random published wins, CORS open, rate limited). Manage them in Admin > Contract wins. The 500 starting wins in `db/seed/contract-wins.json` load once when the table is empty.
+- To show the popups on a site hosted elsewhere (for example GoHighLevel), paste `<script src="https://access.govproposalpro.com/embed/wins.js" defer></script>` into its footer.
+- Product images in `public/assets/site/` are screenshots of the real app.
+
 ## Admin dashboard (at `/admin`)
 
 For the team and VAs to manage members, logins and access. Separate accounts, cookie and sessions

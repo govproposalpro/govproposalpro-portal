@@ -16,6 +16,9 @@ const { router: bidsRouter } = require('./app/routes/bids');
 const { router: aiRouter, failInterruptedJobs } = require('./app/routes/ai');
 const { router: profileRouter } = require('./app/routes/profile');
 const { router: extrasRouter } = require('./app/routes/extras');
+const { router: toolsRouter } = require('./app/routes/tools');
+const { router: aiJobsRouter } = require('./app/routes/aijobs');
+const { publicRouter: winsPublicRouter } = require('./app/wins');
 const adminAuthRouter = require('./admin/routes/auth');
 const adminManageRouter = require('./admin/routes/manage');
 const { sameOrigin } = require('./app/session');
@@ -58,10 +61,12 @@ app.use(
 app.use('/api', whopWebhookRouter);
 app.use('/api/register', corsForSignup);
 app.use('/api', registerRouter);
+app.use('/api', winsPublicRouter);
 
 // Dashboard API. Responses are per-member, so never cache them anywhere.
 app.use(['/api/auth', '/api/me', '/api/bids', '/api/decryptor', '/api/proposals', '/api/capability-statements',
-  '/api/vetting', '/api/alerts', '/api/admin'], sameOrigin, (_req, res, next) => {
+  '/api/vetting', '/api/alerts', '/api/admin', '/api/subs', '/api/foia', '/api/pricing', '/api/milestones', '/api/invoices',
+  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs'], sameOrigin, (_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
@@ -70,15 +75,45 @@ app.use('/api', profileRouter);
 app.use('/api', bidsRouter);
 app.use('/api', aiRouter);
 app.use('/api', extrasRouter);
+app.use('/api', toolsRouter);
+app.use('/api', aiJobsRouter);
 app.use('/api', adminAuthRouter);
 app.use('/api', adminManageRouter);
 
 app.get('/healthz', (_req, res) => res.json({ ok: true }));
 
 app.use('/assets', express.static(path.join(PUBLIC_DIR, 'assets'), { maxAge: '7d', index: false }));
+app.get('/favicon.ico', (_req, res) => res.sendFile(path.join(PUBLIC_DIR, 'assets', 'gpp-favicon.png'), { maxAge: '7d' }));
 
-// Served at both / and /access so the page works on a custom domain path too.
-app.get(['/', '/access'], (_req, res) => {
+// The marketing site (landing page). Its CSS and JS are files on this origin, like the dashboard.
+const SITE_DIR = path.join(PUBLIC_DIR, 'site');
+// Buy buttons point at the Whop checkout links in the environment; until they are set they
+// scroll to the edition comparison and the signup page.
+const checkoutUrl = (name, fallback) => {
+  const v = (process.env[name] || '').trim();
+  return /^https:\/\/[^\s"'<>]+$/.test(v) ? v : fallback;
+};
+const siteHtml = fs.readFileSync(path.join(SITE_DIR, 'index.html'), 'utf8')
+  .replaceAll('__CTA_URL__', checkoutUrl('SITE_CTA_URL', '#editions'))
+  .replaceAll('__CORE_URL__', checkoutUrl('WHOP_CORE_CHECKOUT_URL', '/access'))
+  .replaceAll('__ENTERPRISE_URL__', checkoutUrl('WHOP_ENTERPRISE_CHECKOUT_URL', '/access'));
+app.use('/site/static', express.static(path.join(SITE_DIR, 'static'), { maxAge: '1h', index: false }));
+
+// Contract-win popups for any page, including the main site on another host: paste
+// <script src="https://access.govproposalpro.com/embed/wins.js" defer></script>.
+app.get('/embed/wins.js', (_req, res) => {
+  res.set({ 'Cache-Control': 'public, max-age=3600', 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy': 'cross-origin' });
+  res.sendFile(path.join(SITE_DIR, 'static', 'wins.js'));
+});
+
+// access.* (the signup link in purchase emails and the setup PDF) opens the signup page at /;
+// every other host (govproposalpro.com, www) opens the landing page there. /access is always signup.
+const isAccessHost = (req) => /^access\./i.test(req.hostname || '');
+app.get('/', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.type('html').send(isAccessHost(req) ? indexHtml : siteHtml);
+});
+app.get('/access', (_req, res) => {
   res.set('Cache-Control', 'no-store');
   res.type('html').send(indexHtml);
 });

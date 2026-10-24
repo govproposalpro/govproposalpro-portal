@@ -40,6 +40,14 @@ services:
         sync: false # comma-separated emails allowed to sign in before launch (the team)
       - key: SAM_API_KEY
         sync: false # SAM.gov public API key for Sub-Safe vetting (sam.gov > Account Details > API Key)
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false # optional, Enterprise top-rated subs (Google Places API New)
+      - key: SITE_CTA_URL
+        sync: false # landing page "Get access" button (https)
+      - key: WHOP_CORE_CHECKOUT_URL
+        sync: false # landing page "Get Core" button (https Whop checkout link)
+      - key: WHOP_ENTERPRISE_CHECKOUT_URL
+        sync: false # landing page "Get Enterprise" button
       # --- Admin dashboard (at /admin) ---
       - key: ADMIN_OWNER_EMAILS
         value: "jalen@contractbros.com,kinno@contractbros.com" # owners; created on deploy, emailed a setup link

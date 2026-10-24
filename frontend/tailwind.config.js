@@ -4,23 +4,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Dark "command center" surfaces
-        ink: { 950: '#05081A', 900: '#080D24', 800: '#0E1533', 700: '#151E45', 600: '#1E2A5C', 500: '#2B3A78' },
-        // Brand: the logo's blue and red
+        // Apple-style dark surfaces: true black, then layered graphite
+        ink: { 950: '#000000', 900: '#0A0A0C', 800: '#141416', 700: '#1C1C1E', 600: '#2C2C2E', 500: '#3A3A3C' },
+        // Brand: the logo's blue and red, used sparingly as accents
         brand: {
-          blue: '#1E5BFF', blueDeep: '#2A1B8F', blueSoft: '#7FA2FF',
-          red: '#FF1F3D', redDeep: '#D0003F', redSoft: '#FF8A9A',
+          blue: '#0A66FF', blueDeep: '#2A1B8F', blueSoft: '#4DA3FF',
+          red: '#FF2D46', redDeep: '#D0003F', redSoft: '#FF6B7E',
         },
-        mist: { 100: '#EEF1FF', 300: '#BAC4EA', 400: '#8E9AC8', 500: '#6B78A8' },
+        // Text greys (Apple's #F5F5F7 / #A1A1A6 / #86868B scale)
+        mist: { 100: '#F5F5F7', 300: '#D2D2D7', 400: '#A1A1A6', 500: '#86868B' },
       },
       fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Inter', 'Helvetica', 'Arial', 'sans-serif'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', '"Segoe UI"', 'Inter', 'Helvetica', 'Arial', 'sans-serif'],
       },
       boxShadow: {
-        bubble: '0 1px 0 rgba(255,255,255,0.06) inset, 0 24px 60px -12px rgba(0,0,0,0.6)',
-        glow: '0 10px 30px -6px rgba(255,31,61,0.45), 0 6px 24px -8px rgba(30,91,255,0.55)',
-        glowHover: '0 14px 40px -4px rgba(255,31,61,0.6), 0 8px 32px -6px rgba(30,91,255,0.7)',
-        ring: '0 0 0 4px rgba(30,91,255,0.25)',
+        bubble: '0 1px 0 rgba(255,255,255,0.04) inset, 0 20px 50px -20px rgba(0,0,0,0.8)',
+        glow: '0 8px 24px -10px rgba(10,102,255,0.6)',
+        glowHover: '0 10px 30px -8px rgba(10,102,255,0.75)',
+        ring: '0 0 0 4px rgba(10,102,255,0.3)',
       },
     },
   },

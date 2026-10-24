@@ -3,44 +3,85 @@
 @tailwind utilities;
 
 @layer base {
-  html { color-scheme: dark; }
+  html { color-scheme: dark; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  /* Edition accents: Core is the logo blue; Enterprise wears the full blue-to-red of the mark. */
   body {
-    background:
-      radial-gradient(1200px 600px at 0% -10%, rgba(30, 91, 255, 0.20), transparent 60%),
-      radial-gradient(1000px 600px at 110% 0%, rgba(255, 31, 61, 0.14), transparent 60%),
-      #05081A;
-    background-attachment: fixed;
+    --accent: #0A66FF;
+    --accent-bg: #0A66FF;
+    --accent-hover: #2E7DFF;
+    --accent-soft: rgba(10, 102, 255, 0.14);
+    --accent-text: #4DA3FF;
+    background: #000;
+    letter-spacing: -0.003em;
   }
-  ::selection { background: rgba(30, 91, 255, 0.45); }
+  body.ed-enterprise {
+    --accent-bg: linear-gradient(120deg, #0A66FF 0%, #5B3BFF 50%, #FF2D46 100%);
+    --accent-hover: linear-gradient(120deg, #2E7DFF 0%, #6E52FF 50%, #FF4A60 100%);
+    --accent-soft: rgba(91, 59, 255, 0.16);
+    --accent-text: #9DB4FF;
+  }
+  body.ed-enterprise::before {
+    content: ''; position: fixed; inset: 0 0 auto 0; height: 420px; pointer-events: none; z-index: 0;
+    background: radial-gradient(600px 220px at 20% -40px, rgba(10,102,255,0.16), transparent 70%), radial-gradient(600px 220px at 85% -40px, rgba(255,45,70,0.12), transparent 70%);
+  }
+  body.ed-core::before {
+    content: ''; position: fixed; inset: 0 0 auto 0; height: 360px; pointer-events: none; z-index: 0;
+    background: radial-gradient(700px 220px at 30% -60px, rgba(10,102,255,0.13), transparent 70%);
+  }
+  #root { position: relative; z-index: 1; }
+  ::selection { background: rgba(10, 102, 255, 0.45); }
+  h1, h2, h3 { letter-spacing: -0.022em; }
 }
 
 @layer components {
-  .card { @apply rounded-3xl border border-white/[0.07] bg-ink-800/70 shadow-bubble backdrop-blur-xl; }
-  .card-hover { @apply transition duration-200 hover:-translate-y-0.5 hover:border-brand-blueSoft/30; }
+  .card { @apply rounded-[22px] border border-white/[0.07] bg-ink-800/90 shadow-bubble; }
+  .card-hover { @apply transition duration-300 hover:-translate-y-0.5 hover:border-white/20; }
   .field {
-    @apply block w-full rounded-2xl border border-mist-300/15 bg-ink-900/70 px-4 py-3 text-[15px] text-mist-100 outline-none transition placeholder:text-mist-400/60;
+    @apply block w-full rounded-xl border border-white/[0.12] bg-ink-900 px-4 py-3 text-[15px] text-mist-100 outline-none transition placeholder:text-mist-500;
   }
   .field:focus { @apply border-brand-blue shadow-ring; }
-  select.field option { background: #0E1533; color: #EEF1FF; }
-  .label { @apply mb-1.5 block text-[13px] font-medium text-mist-300; }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:shadow-ring disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-primary { @apply btn bg-gradient-to-br from-brand-blue via-[#5B3BFF] to-brand-red text-white shadow-glow hover:shadow-glowHover; }
-  .btn-ghost { @apply btn border border-white/10 bg-white/[0.04] text-mist-100 hover:bg-white/[0.08]; }
+  select.field option { background: #1C1C1E; color: #F5F5F7; }
+  .label { @apply mb-1.5 block text-[13px] font-medium text-mist-400; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition duration-200 focus:outline-none focus-visible:shadow-ring disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn text-white; background: var(--accent-bg); }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .btn-ghost { @apply btn border border-white/[0.14] bg-white/[0.04] text-mist-100 hover:border-white/25 hover:bg-white/[0.09]; }
   .btn-danger { @apply btn border border-brand-red/40 bg-brand-red/10 text-brand-redSoft hover:bg-brand-red/20; }
+  .btn-white { @apply btn bg-white text-black hover:bg-mist-300; }
   .pill { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide; }
-  .nav-link { @apply flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-mist-300 transition hover:bg-white/[0.05] hover:text-white; }
-  .nav-link.active { @apply bg-gradient-to-r from-brand-blue/25 to-brand-red/10 text-white shadow-[inset_0_0_0_1px_rgba(127,162,255,0.25)]; }
-  .kanban-col { @apply flex w-72 shrink-0 flex-col rounded-3xl border border-white/[0.06] bg-ink-900/60 p-3; }
+  .nav-link { @apply relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13.5px] text-mist-400 transition hover:bg-white/[0.06] hover:text-white; }
+  .nav-link.active { @apply bg-white/[0.08] text-white; }
+  .nav-link.active::before { content: ''; position: absolute; left: -6px; top: 9px; bottom: 9px; width: 3px; border-radius: 3px; background: var(--accent-bg); }
+  .edition-badge { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]; }
+  .ed-core .edition-badge { @apply bg-brand-blue/15 text-brand-blueSoft ring-1 ring-brand-blue/30; }
+  .ed-enterprise .edition-badge { @apply text-white ring-1 ring-white/20; background: linear-gradient(120deg, rgba(10,102,255,0.35), rgba(255,45,70,0.35)); }
+  .accent-text { color: var(--accent-text); }
+  .accent-glow { background: var(--accent-bg); }
+  .ed-enterprise .accent-text { background: linear-gradient(120deg, #4DA3FF, #9D7BFF 55%, #FF6B7E); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .accent-grad { background: var(--accent-bg); }
+  .kanban-col { @apply flex w-72 shrink-0 flex-col rounded-[22px] border border-white/[0.06] bg-ink-900 p-3; }
   .kanban-col.drop { @apply border-brand-blueSoft/60 bg-brand-blue/10; }
-  .bid-card { @apply cursor-grab rounded-2xl border border-white/[0.07] bg-ink-700/80 p-3.5 shadow-bubble transition hover:border-brand-blueSoft/40 active:cursor-grabbing; }
+  .bid-card { @apply cursor-grab rounded-2xl border border-white/[0.07] bg-ink-700 p-3.5 transition hover:border-white/20 active:cursor-grabbing; }
   .bid-card.dragging { @apply opacity-40; }
   .spinner { @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/25 border-t-white; }
-  .meter { @apply h-2.5 w-full overflow-hidden rounded-full bg-white/[0.08]; }
-  .meter > span { @apply block h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-red transition-all duration-700; }
+  .meter { @apply h-2 w-full overflow-hidden rounded-full bg-white/[0.08]; }
+  .meter > span { @apply block h-full rounded-full transition-all duration-700; background: var(--accent-bg); }
+  .tile { @apply rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3; }
+  .row-link { @apply flex items-center justify-between gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.02] px-4 py-3 transition hover:border-white/20; }
+  .tbl { @apply w-full text-left text-sm; }
+  .tbl th { @apply pb-2 pr-4 text-xs font-semibold uppercase tracking-wider text-mist-500; }
+  .tbl td { @apply py-2.5 pr-4 align-top text-mist-100; }
+  .tbl tbody tr { @apply border-t border-white/[0.06]; }
+  .seg { @apply inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1; }
+  .seg button { @apply rounded-full px-3 py-1 text-xs font-semibold text-mist-400 transition; }
+  .seg button.on { @apply bg-white text-black; }
+  .seg label > span { @apply block rounded-full px-3 py-1 text-xs font-semibold text-mist-400 transition; }
+  .seg label > input:checked + span { @apply bg-white text-black; }
+  .seg label > input:focus-visible + span { @apply shadow-ring; }
 }
 
 /* Rendered proposals and summaries */
-.doc { color: #DCE2FF; font-size: 15px; line-height: 1.7; }
+.doc { color: #E8E8ED; font-size: 15px; line-height: 1.7; }
 .doc h1 { font-size: 1.7rem; font-weight: 700; color: #fff; margin: 0 0 1rem; letter-spacing: -0.01em; }
 .doc h2 { font-size: 1.2rem; font-weight: 700; color: #fff; margin: 2rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); }
 .doc h3 { font-size: 1.02rem; font-weight: 650; color: #fff; margin: 1.4rem 0 0.5rem; }
@@ -53,8 +94,8 @@
 .doc hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0; }
 .doc table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 13.5px; }
 .doc th, .doc td { border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
-.doc th { background: rgba(30,91,255,0.15); color: #fff; }
-.doc .ph { background: rgba(255,31,61,0.16); color: #FFB3BE; border-radius: 0.35rem; padding: 0 0.3rem; }
+.doc th { background: rgba(255,255,255,0.06); color: #fff; }
+.doc .ph { background: rgba(255,45,70,0.16); color: #FFB3BE; border-radius: 0.35rem; padding: 0 0.3rem; }
 
 @media print {
   body { background: #fff !important; }
@@ -70,7 +111,7 @@
 @layer components {
   .chip { @apply inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-mist-100 transition hover:bg-white/[0.08]; }
   .step-bar { @apply block h-1.5 rounded-full bg-white/[0.08] transition-colors; }
-  .step.done .step-bar { @apply bg-gradient-to-r from-brand-blue to-brand-red; }
+  .step.done .step-bar { background: var(--accent-bg); }
 }
 
 /* Member capability statement page (their document: neutral print colors, not the app theme) */
@@ -101,3 +142,48 @@
   .cap, .cap-head, .cap-side { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .cap-ph { background: none; }
 }
+
+/* Score ring: a conic gradient whose sweep is set per 5 points (scoreRing in tools/10-shared.js). */
+.ring-score { --p: 0; --c: #FF2D46; position: relative; display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 9999px;
+  background: conic-gradient(var(--c) calc(var(--p) * 1%), rgba(255,255,255,0.08) 0); }
+.ring-score::before { content: ''; position: absolute; inset: 5px; border-radius: 9999px; background: #141416; }
+.ring-score > span { position: relative; font-weight: 700; color: #fff; font-size: 0.95rem; }
+.ring-0 { --p: 0; }
+.ring-5 { --p: 5; }
+.ring-10 { --p: 10; }
+.ring-15 { --p: 15; }
+.ring-20 { --p: 20; }
+.ring-25 { --p: 25; }
+.ring-30 { --p: 30; }
+.ring-35 { --p: 35; }
+.ring-40 { --p: 40; }
+.ring-45 { --p: 45; }
+.ring-50 { --p: 50; }
+.ring-55 { --p: 55; }
+.ring-60 { --p: 60; }
+.ring-65 { --p: 65; }
+.ring-70 { --p: 70; }
+.ring-75 { --p: 75; }
+.ring-80 { --p: 80; }
+.ring-85 { --p: 85; }
+.ring-90 { --p: 90; }
+.ring-95 { --p: 95; }
+.ring-100 { --p: 100; }
+.ring-40, .ring-45, .ring-50, .ring-55, .ring-60, .ring-65 { --c: #FFC14D; }
+.ring-70, .ring-75, .ring-80, .ring-85, .ring-90, .ring-95, .ring-100 { --c: #34D399; }
+
+/* SF-1034 / SF-1035 public voucher, printed from the Simplified Invoicing Engine. */
+.sf { color: #000; background: #fff; font: 11px/1.35 Arial, Helvetica, sans-serif; }
+.sf-top { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 6px; }
+.sf-top h1 { font-size: 15px; font-weight: 700; margin: 0; }
+.sf-form { font-size: 10px; font-weight: 700; text-transform: uppercase; margin: 0 0 2px; }
+.sf-no { border: 1px solid #000; padding: 4px 10px; text-align: center; font-size: 10px; }
+.sf table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+.sf td, .sf th { border: 1px solid #000; padding: 4px 6px; vertical-align: top; text-align: left; }
+.sf th { background: #eee; font-size: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.sf-grid td span { display: block; font-size: 9px; text-transform: uppercase; color: #333; margin-bottom: 2px; }
+.sf .r { text-align: right; white-space: nowrap; }
+.sf-total td { font-weight: 700; }
+.sf-cert { margin: 10px 0 6px; font-style: italic; }
+.sf .cap-ph { background: none; color: #000; font-style: normal; }
+.sf-break { break-after: page; page-break-after: always; }

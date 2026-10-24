@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const db = require('../../db');
 const ai = require('../ai');
 const { requireAuth } = require('../session');
+const { hasFeature } = require('../tiers');
 const { parseProfileUpdate } = require('../profile');
 
 const router = express.Router();
@@ -23,7 +24,7 @@ const docLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: `You can upload ${DOCS_PER_DAY} documents a day. Try again tomorrow.` },
 });
-const DOC_KINDS = ['capability_statement', 'past_performance', 'resume', 'company_overview', 'other'];
+const DOC_KINDS = ['capability_statement', 'past_performance', 'resume', 'company_overview', 'winning_proposal', 'other'];
 
 router.patch('/me/profile', requireAuth, express.json({ limit: '128kb' }), async (req, res, next) => {
   try {
@@ -85,6 +86,9 @@ router.post('/me/documents', requireAuth, docLimiter, express.json({ limit: '28m
     if (!ai.enabled()) return res.status(503).json({ error: 'Document reading is being switched on. Please try again shortly.' });
     const b = req.body || {};
     const kind = DOC_KINDS.includes(b.kind) ? b.kind : 'other';
+    if (kind === 'winning_proposal' && !hasFeature(req.user.tier, 'winning_voice')) {
+      return res.status(403).json({ error: 'Winning Voice is part of the Enterprise Edition.', upgrade: true });
+    }
     let pdfBase64 = null;
     let image = null;
     let text = null;
@@ -127,8 +131,9 @@ router.post('/me/documents', requireAuth, docLimiter, express.json({ limit: '28m
 
     ai.readCompanyDocument({ pdfBase64, image, text, kind })
       .then((r) => db.query(
-        `UPDATE company_documents SET status = 'ready', summary = $2, extracted = $3, completed_at = now() WHERE id = $1`,
-        [id, r.summary, r.extracted]))
+        `UPDATE company_documents SET status = 'ready', summary = $2, extracted = $3, body_text = $4, completed_at = now() WHERE id = $1`,
+        // A winning proposal keeps its own words (full text from Word or pasted text, excerpts from a PDF) for Winning Voice.
+        [id, r.summary, r.extracted, kind === 'winning_proposal' ? (text || r.voice_excerpt || '').slice(0, 60_000) || null : null]))
       .catch((err) => {
         console.error(`[documents] ${id} failed:`, err.message);
         const msg = err instanceof ai.AiError ? err.message : 'We could not read that document. Please try again.';
@@ -168,4 +173,38 @@ async function documentContext(userId, maxChars = 30_000) {
   return out;
 }
 
-module.exports = { router, documentContext };
+const words = (s) => new Set(String(s || '').toLowerCase().match(/[a-z][a-z0-9-]{3,}/g) || []);
+
+/**
+ * Winning Voice: the member's past winning proposals most like this solicitation (by shared
+ * words), as excerpts the writer imitates. Enterprise only; empty when there are none.
+ */
+async function voiceContext(userId, about, maxChars = 24_000) {
+  const { rows } = await db.query(
+    `SELECT file_name, body_text FROM company_documents
+      WHERE user_id = $1 AND kind = 'winning_proposal' AND status = 'ready' AND body_text IS NOT NULL
+      ORDER BY created_at DESC LIMIT 30`,
+    [userId]
+  );
+  const target = words(about);
+  const ranked = rows
+    .map((r) => {
+      const w = words(r.body_text.slice(0, 40_000));
+      let shared = 0;
+      for (const t of target) if (w.has(t)) shared++;
+      return { name: r.file_name, text: r.body_text, score: shared / Math.sqrt(w.size + 1) };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+  const out = [];
+  let used = 0;
+  for (const r of ranked) {
+    const room = Math.min(maxChars - used, 12_000);
+    if (room < 1000) break;
+    out.push({ name: r.name, text: r.text.slice(0, room) });
+    used += Math.min(r.text.length, room);
+  }
+  return out;
+}
+
+module.exports = { router, documentContext, voiceContext };

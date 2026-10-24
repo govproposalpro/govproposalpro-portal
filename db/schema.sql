@@ -255,3 +255,142 @@ ALTER TABLE capability_statements ADD COLUMN IF NOT EXISTS content_json JSONB;
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS entity_structure VARCHAR(80);
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS primary_markets  VARCHAR(300);
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS contact_title    VARCHAR(120);
+
+-- ============================================================================
+-- Contract-win popups on the public site, managed from the admin dashboard
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS contract_wins (
+  id          BIGSERIAL     PRIMARY KEY,
+  name        VARCHAR(60)   NOT NULL,          -- first name and last initial, e.g. "Emily C."
+  amount      NUMERIC(14,2) NOT NULL,
+  agency      VARCHAR(160)  NOT NULL,
+  published   BOOLEAN       NOT NULL DEFAULT true,
+  created_by  BIGINT,                          -- admins.id; null for the seeded list
+  created_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS contract_wins_published_idx ON contract_wins (published);
+
+-- ============================================================================
+-- Edition toolkit: CMMC checklist, subcontractors and outreach, FOIA, pricing, post-award,
+-- invoices, teaming agreements, AI review jobs and cached public data
+-- ============================================================================
+
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS cmmc_checklist JSONB NOT NULL DEFAULT '{}';
+
+-- Subcontractors the member found or added: quotes, outreach steps and vetting live here.
+CREATE TABLE IF NOT EXISTS sub_contacts (
+  id            BIGSERIAL     PRIMARY KEY,
+  user_id       BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  bid_id        BIGINT        REFERENCES bids(id) ON DELETE SET NULL,
+  company       VARCHAR(200)  NOT NULL,
+  contact_name  VARCHAR(120),
+  email         VARCHAR(254),
+  phone         VARCHAR(40),
+  trade         VARCHAR(120),
+  location      VARCHAR(200),
+  website       VARCHAR(200),
+  uei           VARCHAR(12),
+  cage          VARCHAR(5),
+  rating        NUMERIC(2,1),
+  source        VARCHAR(20)   NOT NULL DEFAULT 'manual',   -- manual | sam | places
+  quote         NUMERIC(14,2),
+  notes         TEXT,
+  outreach      JSONB         NOT NULL DEFAULT '{}',       -- step key -> date sent
+  created_at    TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS sub_contacts_user_idx ON sub_contacts (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS foia_requests (
+  id          BIGSERIAL     PRIMARY KEY,
+  user_id     BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  bid_id      BIGINT        REFERENCES bids(id) ON DELETE SET NULL,
+  agency      VARCHAR(200)  NOT NULL,
+  subject     VARCHAR(300)  NOT NULL,
+  data        JSONB         NOT NULL DEFAULT '{}',
+  letter      TEXT          NOT NULL,
+  status      VARCHAR(20)   NOT NULL DEFAULT 'draft',      -- draft | sent | received
+  sent_on     DATE,
+  created_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS foia_requests_user_idx ON foia_requests (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS pricing_sheets (
+  id          BIGSERIAL     PRIMARY KEY,
+  user_id     BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  bid_id      BIGINT        REFERENCES bids(id) ON DELETE SET NULL,
+  title       VARCHAR(200)  NOT NULL,
+  data        JSONB         NOT NULL DEFAULT '{}',
+  total       NUMERIC(14,2),
+  created_at  TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS pricing_sheets_user_idx ON pricing_sheets (user_id, updated_at DESC);
+
+-- Post-award: milestones per won contract, assigned to a subcontractor.
+CREATE TABLE IF NOT EXISTS milestones (
+  id              BIGSERIAL     PRIMARY KEY,
+  user_id         BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  bid_id          BIGINT        NOT NULL REFERENCES bids(id) ON DELETE CASCADE,
+  title           VARCHAR(200)  NOT NULL,
+  due_on          DATE,
+  sub_contact_id  BIGINT        REFERENCES sub_contacts(id) ON DELETE SET NULL,
+  amount          NUMERIC(14,2),
+  status          VARCHAR(20)   NOT NULL DEFAULT 'open',   -- open | done
+  done_on         DATE,
+  created_at      TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS milestones_user_idx ON milestones (user_id, due_on);
+
+-- SF-1034 public vouchers (and SF-1035 continuation lines) the member bills the government with.
+CREATE TABLE IF NOT EXISTS invoices (
+  id          BIGSERIAL     PRIMARY KEY,
+  user_id     BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  bid_id      BIGINT        REFERENCES bids(id) ON DELETE SET NULL,
+  number      VARCHAR(40)   NOT NULL,
+  data        JSONB         NOT NULL DEFAULT '{}',
+  total       NUMERIC(14,2),
+  status      VARCHAR(20)   NOT NULL DEFAULT 'draft',      -- draft | submitted | paid
+  created_at  TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS invoices_user_idx ON invoices (user_id, created_at DESC);
+
+-- NDAs and teaming agreements filled from the member's profile and a subcontractor.
+CREATE TABLE IF NOT EXISTS legal_docs (
+  id          BIGSERIAL     PRIMARY KEY,
+  user_id     BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  bid_id      BIGINT        REFERENCES bids(id) ON DELETE SET NULL,
+  kind        VARCHAR(20)   NOT NULL,                     -- nda | teaming
+  title       VARCHAR(200)  NOT NULL,
+  data        JSONB         NOT NULL DEFAULT '{}',
+  created_at  TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS legal_docs_user_idx ON legal_docs (user_id, updated_at DESC);
+
+-- Smaller AI tasks: Section M grading, RFI drafts, past performance case studies.
+CREATE TABLE IF NOT EXISTS ai_jobs (
+  id            BIGSERIAL     PRIMARY KEY,
+  user_id       BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  kind          VARCHAR(20)   NOT NULL,                   -- section_m | rfi | case_study
+  title         VARCHAR(200)  NOT NULL,
+  ref_id        BIGINT,                                   -- proposal or rfp summary it is about
+  status        VARCHAR(20)   NOT NULL DEFAULT 'working',
+  input         JSONB         NOT NULL DEFAULT '{}',
+  result        JSONB,
+  error         VARCHAR(300),
+  created_at    TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  completed_at  TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS ai_jobs_user_idx ON ai_jobs (user_id, kind, created_at DESC);
+
+-- Public data fetched from SAM.gov, the Federal Register and Google, reused across members.
+CREATE TABLE IF NOT EXISTS cache_entries (
+  key         VARCHAR(300)  PRIMARY KEY,
+  data        JSONB         NOT NULL,
+  fetched_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+
+-- Winning proposals the member uploads so new drafts are written in their own voice.
+ALTER TABLE company_documents ADD COLUMN IF NOT EXISTS body_text TEXT;

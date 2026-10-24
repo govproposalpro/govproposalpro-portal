@@ -72,6 +72,24 @@
     check: '<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',
     bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
     shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+    gauge: '<path d="M12 14l4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 13h6"/>',
+    dollar: '<path d="M12 2v20"/><path d="M17 6.5c0-1.9-2.2-3.5-5-3.5s-5 1.6-5 3.5S9.2 10 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5"/>',
+    handshake: '<path d="m11 17 2 2a1.4 1.4 0 0 0 2-2"/><path d="m14 14 2.5 2.5a1.4 1.4 0 0 0 2-2l-3.9-3.9a2 2 0 0 0-2.8 0l-.9.9a1.4 1.4 0 0 1-2-2l2.8-2.8a3.6 3.6 0 0 1 4.3-.6L18 7l3 1v7h-2"/><path d="M3 8l3-1 1 1M3 8v7l6 6a1.4 1.4 0 0 0 2-2"/>',
+    grade: '<path d="M9 11l2 2 4-4"/><rect x="4" y="3" width="16" height="18" rx="2"/>',
+    question: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>',
+    flag: '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+    receipt: '<path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/>',
+    trophy: '<path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+    voice: '<path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+    lockshield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><rect x="9" y="11" width="6" height="5" rx="1"/><path d="M10 11V9.5a2 2 0 0 1 4 0V11"/>',
+    pulse: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    map: '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
+    radar: '<circle cx="12" cy="12" r="9"/><path d="M12 12 18 6"/><circle cx="12" cy="12" r="4"/>',
+    doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
   };
   const icon = (name, cls = 'h-5 w-5') =>
     `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name] || ICON.spark}</svg>`;
@@ -145,16 +163,35 @@
   window.addEventListener('popstate', render);
 
   const ROUTE_OF = {
-    proposal_engine: '/proposals', bid_decryptor: '/decryptor', bid_crm: '/crm', capability_statement: '/capability',
-    subcontracting_check: '/subcontracting', sam_checklist: '/sam-checklist', deadline_alerts: '/alerts', sub_vetting: '/vetting',
+    proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
+    vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
+    section_m: '/section-m', rfi_ghostwriter: '/rfi', milestones: '/milestones', invoicing: '/invoices',
+    capability_statement: '/capability', past_performance: '/portfolio', winning_voice: '/winning-voice', cmmc_checklist: '/cmmc',
+    compliance_pulse: '/pulse', subcontracting_check: '/subcontracting', sam_checklist: '/sam-checklist', sub_vetting: '/vetting',
+    state_directory: '/states', deadline_alerts: '/alerts',
   };
   const ICON_OF = {
-    proposal_engine: 'proposal', bid_decryptor: 'decrypt', bid_crm: 'crm', capability_statement: 'badge',
-    subcontracting_check: 'scale', sam_checklist: 'check', deadline_alerts: 'bell', sub_vetting: 'shield',
+    proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
+    vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
+    section_m: 'grade', rfi_ghostwriter: 'question', milestones: 'flag', invoicing: 'receipt',
+    capability_statement: 'badge', past_performance: 'trophy', winning_voice: 'voice', cmmc_checklist: 'lockshield',
+    compliance_pulse: 'pulse', subcontracting_check: 'scale', sam_checklist: 'check', sub_vetting: 'shield',
+    state_directory: 'map', deadline_alerts: 'bell',
   };
-  const WIN_WORK = ['proposal_engine', 'bid_decryptor', 'bid_crm'];
+  const NAV_GROUPS = [
+    ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker']],
+    ['Subs and pricing', ['vendor_scraper', 'outreach', 'pricing_matrix', 'foia', 'teaming_legal', 'sub_vetting']],
+    ['Review and submit', ['section_m', 'rfi_ghostwriter']],
+    ['After award', ['milestones', 'invoicing']],
+    ['Company and compliance', ['capability_statement', 'past_performance', 'winning_voice', 'cmmc_checklist', 'compliance_pulse',
+      'subcontracting_check', 'sam_checklist', 'state_directory', 'deadline_alerts']],
+  ];
   const ABOUT = {
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
+    invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
+    winning_voice: 'Upload your past winning proposals and every new draft is written in your own proven voice.',
+    cmmc_checklist: 'A 17-point CMMC Level 1 self-assessment based on FAR 52.204-21, with progress you can show a prime or contracting officer.',
+    compliance_pulse: 'The newest FAR, DFARS and agency rule changes from the Federal Register, plus the 2026 rules every bidder must know.',
     vendor_scraper: 'Pulls targeted lists of local, top-rated subcontractors with phone numbers and emails based on the contract location and industry.',
     outreach: 'Auto-fills subcontractor and contract details into proven email templates so you can collect competitive quotes fast.',
     foia: 'Generates and sends FOIA requests for past winning bids and pricing data so you know the price to beat.',
@@ -173,35 +210,39 @@
 
   function navItems() {
     const f = state.me.features;
+    const byKey = new Map(f.map((x) => [x.key, x]));
     const link = (href, ic, label, extra = '') =>
-      `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link">${icon(ic)}<span class="flex-1">${esc(label)}</span>${extra}</a>`;
-    const live = f.filter((x) => x.status === 'live' && x.unlocked);
-    const rest = f.filter((x) => x.status !== 'live' || !x.unlocked);
-    const group = (title, items) => (items.length ? `<p class="mt-5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-mist-500">${title}</p>
-      ${items.map((x) => link(ROUTE_OF[x.key], ICON_OF[x.key], x.name)).join('')}` : '');
+      `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link">${icon(ic, 'h-[18px] w-[18px] shrink-0')}<span class="flex-1 truncate">${esc(label)}</span>${extra}</a>`;
+    const item = (x) => (x.unlocked && x.status === 'live'
+      ? link(ROUTE_OF[x.key], ICON_OF[x.key], x.name)
+      : link('/feature/' + x.key, x.unlocked ? ICON_OF[x.key] : 'lock', x.name,
+        x.unlocked ? '<span class="pill bg-white/[0.08] text-mist-400">Soon</span>' : '<span class="pill bg-gradient-to-r from-brand-blue/30 to-brand-red/30 text-white">Ent</span>'));
     return `
       ${link('/', 'home', 'Command Center')}
-      ${group('Win work', live.filter((x) => WIN_WORK.includes(x.key)))}
-      ${group('Get bid-ready', live.filter((x) => !WIN_WORK.includes(x.key)))}
-      <p class="mt-5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-mist-500">Toolkit</p>
-      ${rest.map((x) => link('/feature/' + x.key, x.unlocked ? 'spark' : 'lock', x.name,
-        x.unlocked ? '<span class="pill bg-brand-blue/15 text-brand-blueSoft">Soon</span>' : '<span class="pill bg-brand-red/15 text-brand-redSoft">Ent</span>')).join('')}
+      ${NAV_GROUPS.map(([title, keys]) => {
+        const items = keys.map((k) => byKey.get(k)).filter(Boolean);
+        return items.length ? `<p class="mt-5 px-3 pb-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-mist-500">${title}</p>${items.map(item).join('')}` : '';
+      }).join('')}
     `;
   }
+
+  const brandLockup = (h = 'h-8') => `<img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="${h} w-auto" />
+    <span class="text-[17px] font-semibold tracking-tight text-white">GovProposal<span class="text-mist-400">Pro</span></span>`;
 
   function renderShell() {
     const me = state.me;
     const ent = me.tier.key === 'enterprise';
+    document.body.classList.toggle('ed-enterprise', ent);
+    document.body.classList.toggle('ed-core', !ent);
     $('#root').innerHTML = `
       <div class="flex min-h-screen">
-        <aside class="no-print sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-white/[0.06] bg-ink-950/60 p-4 backdrop-blur-xl lg:flex">
-          <a href="/app" data-link class="mb-6 block px-2 pt-2"><img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="h-auto w-48" /></a>
-          <nav class="flex-1 space-y-0.5 overflow-y-auto pr-1">${navItems()}</nav>
-          <div class="mt-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3">
-            <div class="flex items-center gap-2">
-              <span class="pill ${ent ? 'bg-gradient-to-r from-brand-blue to-brand-red text-white' : 'bg-brand-blue/20 text-brand-blueSoft'}">${esc(me.tier.label)}</span>
-            </div>
-            <p class="mt-2 truncate text-sm text-mist-100">${esc(me.user.businessName || me.user.fullName || me.user.email)}</p>
+        <aside class="no-print sticky top-0 hidden h-screen w-[17rem] shrink-0 flex-col border-r border-white/[0.07] bg-black/80 px-4 pb-4 pt-5 backdrop-blur-2xl lg:flex">
+          <a href="/app" data-link class="mb-1 flex items-center gap-2.5 px-2">${brandLockup()}</a>
+          <div class="mb-4 px-2"><span class="edition-badge mt-2">${esc(me.tier.label)}</span></div>
+          <nav class="flex-1 space-y-0.5 overflow-y-auto pl-1.5 pr-1">${navItems()}</nav>
+          <div class="mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
+            <p class="truncate text-sm font-medium text-mist-100">${esc(me.user.businessName || me.user.fullName || me.user.email)}</p>
+            <p class="truncate text-xs text-mist-500">${esc(me.user.email)}</p>
             <div class="mt-2 flex gap-2">
               <a href="/app/profile" data-link class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('user', 'h-4 w-4')}Profile</a>
               <button id="logout" class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('out', 'h-4 w-4')}Sign out</button>
@@ -209,11 +250,11 @@
           </div>
         </aside>
         <div class="flex min-w-0 flex-1 flex-col">
-          <header class="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.06] bg-ink-950/80 px-4 py-3 backdrop-blur-xl lg:hidden">
-            <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro" width="1200" height="386" class="h-auto w-36" />
+          <header class="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.07] bg-black/80 px-4 py-3 backdrop-blur-2xl lg:hidden">
+            <a href="/app" data-link class="flex items-center gap-2">${brandLockup('h-7')}<span class="edition-badge !px-2 !py-0.5 !text-[9px]">${ent ? 'Enterprise' : 'Core'}</span></a>
             <button id="menu" class="btn-ghost !p-2" aria-label="Menu">${icon('menu')}</button>
           </header>
-          <div id="mobile-nav" class="no-print fixed inset-0 top-14 z-20 hidden overflow-y-auto bg-ink-950/95 p-4 backdrop-blur-xl lg:hidden">
+          <div id="mobile-nav" class="no-print fixed inset-0 top-14 z-20 hidden overflow-y-auto bg-black/95 p-4 backdrop-blur-2xl lg:hidden">
             <nav class="space-y-0.5">${navItems()}
               <a href="/app/profile" data-link class="nav-link">${icon('user')}<span>Profile</span></a>
               <button id="logout-m" class="nav-link w-full">${icon('out')}<span>Sign out</span></button>
@@ -240,6 +281,8 @@
       a.classList.toggle('active', p === '/' ? path === '/' : path === p || path.startsWith(p + '/'));
     });
   }
+
+  const hasTool = (key) => Boolean(state.me && state.me.features.some((f) => f.key === key && f.unlocked && f.status === 'live'));
 
   async function refreshMe() {
     state.me = await api('/me');
@@ -281,6 +324,26 @@
       else if (path === '/sam-checklist') viewSamChecklist(view);
       else if (path === '/alerts') await viewAlerts(view);
       else if (path === '/vetting') await viewVetting(view);
+      else if (path === '/go-no-go') await viewGoNoGo(view);
+      else if (path === '/matchmaker') await viewMatchmaker(view);
+      else if (path === '/vendors') await viewVendors(view);
+      else if (path === '/outreach') await viewOutreach(view);
+      else if (path === '/foia') await viewFoia(view);
+      else if (path === '/pricing') await viewPricingList(view);
+      else if ((m = path.match(/^\/pricing\/(new|\d+)$/))) await viewPricing(view, m[1]);
+      else if (path === '/teaming') await viewTeaming(view);
+      else if ((m = path.match(/^\/teaming\/(\d+)$/))) await viewLegalDoc(view, m[1]);
+      else if (path === '/section-m') await viewJobs(view, 'section_m');
+      else if (path === '/rfi') await viewJobs(view, 'rfi');
+      else if (path === '/portfolio') await viewJobs(view, 'case_study');
+      else if ((m = path.match(/^\/(section-m|rfi|portfolio)\/(\d+)$/))) await viewJob(view, JOB_KIND_OF[m[1]], m[2]);
+      else if (path === '/milestones') await viewMilestones(view);
+      else if (path === '/invoices') await viewInvoices(view);
+      else if ((m = path.match(/^\/invoices\/(new|\d+)$/))) await viewInvoice(view, m[1]);
+      else if (path === '/winning-voice') await viewWinningVoice(view);
+      else if (path === '/cmmc') await viewCmmc(view);
+      else if (path === '/pulse') await viewPulse(view);
+      else if (path === '/states') await viewStates(view);
       else if (path === '/crm') await viewCrm(view);
       else if (path === '/decryptor') await viewDecryptor(view);
       else if ((m = path.match(/^\/decryptor\/(\d+)$/))) await viewSummary(view, m[1]);
@@ -332,7 +395,7 @@
     $('#root').innerHTML = `
       <main class="flex min-h-screen items-center justify-center px-4 py-12">
         <div class="w-full max-w-md">
-          <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="mx-auto mb-8 h-auto w-72" />
+          <img src="/assets/gpp-logo.png" alt="GovProposalPro" width="900" height="543" class="mx-auto h-auto w-56" /><p class="mb-10 mt-3 text-center text-xs font-medium uppercase tracking-[0.3em] text-mist-500">by Contract Bros</p>
           <form id="login" class="card p-7 sm:p-9" novalidate>
             <h1 class="text-xl font-bold text-white">Sign in to your Command Center</h1>
             <p class="mt-1 text-sm text-mist-400">Use the email and password you created when you secured your access.</p>
@@ -381,8 +444,20 @@
     const pct = Math.min(100, Math.round((usage.used / usage.limit) * 100));
     const won = bids.filter((b) => b.stage === 'won').length;
 
+    const ent = me.tier.key === 'enterprise';
+    const quick = (ent ? [['matchmaker', 'bid_matchmaker', 'Find matched bids'], ['section-m', 'section_m', 'Grade a proposal'], ['pricing', 'pricing_matrix', 'Price with Fringe/G&A'], ['teaming', 'teaming_legal', 'Draft a teaming agreement']]
+      : [['go-no-go', 'go_no_go', 'Go/No-Go a bid'], ['vendors', 'vendor_scraper', 'Find subcontractors'], ['pricing', 'pricing_matrix', 'Price a bid'], ['cmmc', 'cmmc_checklist', 'CMMC Level 1 check']]);
+
     view.innerHTML = `
-      ${pageHead(`Welcome back${first ? ', ' + esc(first) : ''}`, 'Your government contracting command center.',
+      <section class="card relative mb-8 overflow-hidden p-6 sm:p-8">
+        <div class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-40 blur-3xl accent-glow"></div>
+        <span class="edition-badge">${ent ? 'Enterprise Edition' : 'Core Edition'}</span>
+        <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">${ent ? 'Your <span class="accent-text">Enterprise</span> Command Center.' : 'Your <span class="accent-text">Core</span> Command Center.'}</h1>
+        <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? '50 proposals a month, predictive bid matching, legal teaming, compliance grading and your winning voice.' : '10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
+        <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06]">${icon(ICON_OF[key] || 'spark', 'h-4 w-4')}${label}</a>`).join('')}</div>
+        ${ent ? '' : '<p class="mt-5 text-xs text-mist-500">Enterprise adds the Predictive Bid Matchmaker, Section M grading, teaming agreements, RFI Ghostwriter and 50 proposals a month.</p>'}
+      </section>
+      ${pageHead('Today', 'Your pipeline, deadlines and proposals at a glance.',
         '<a href="/app/decryptor" data-link class="btn-ghost">' + icon('decrypt', 'h-4 w-4') + 'Decrypt an RFP</a><a href="/app/proposals/new" data-link class="btn-primary">' + icon('proposal', 'h-4 w-4') + 'New proposal</a>')}
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="card p-5">
@@ -694,7 +769,8 @@
       ${pageHead(esc(d.title || s.fileName), esc([d.agency, d.solicitation_number].filter((x) => x && !/^not stated$/i.test(x)).join(' · ')),
         `<button id="to-bid" class="btn-ghost">${icon('crm', 'h-4 w-4')}${s.bidId ? 'Open in Bid CRM' : 'Add to Bid CRM'}</button>
          <a href="/app/proposals/new?summary=${s.id}${s.bidId ? '&bid=' + s.bidId : ''}" data-link class="btn-primary">${icon('proposal', 'h-4 w-4')}Write proposal</a>`)}
-      <div class="mb-6 rounded-3xl border border-brand-red/25 bg-gradient-to-r from-brand-red/15 to-brand-blue/10 p-5">
+      ${hasTool('go_no_go') ? goNoGoPanel(d) : ''}
+      <div class="mb-6 rounded-[22px] border border-white/[0.08] bg-ink-800 p-5">
         <p class="text-xs font-semibold uppercase tracking-wider text-brand-redSoft">Response due</p>
         <p class="mt-1 text-xl font-bold text-white">${esc(d.response_due || 'Not stated')}</p>
         ${d.questions_due && !/^not stated$/i.test(d.questions_due) ? `<p class="mt-1 text-sm text-mist-300">Questions due: ${esc(d.questions_due)}</p>` : ''}
@@ -847,7 +923,19 @@
       $('#pf-sub').textContent = money2(sub);
       $('#pf-total').textContent = money2(sub + extras);
     };
-    $('#pf-items').insertAdjacentHTML('beforeend', itemRow());
+    // A pricing sheet sent from the Profit Pricing Matrix fills the price table.
+    let handoff = null;
+    try { handoff = JSON.parse(sessionStorage.getItem('gpp-pricing') || 'null'); sessionStorage.removeItem('gpp-pricing'); } catch { handoff = null; }
+    if (handoff && Array.isArray(handoff.items) && handoff.items.length) {
+      $('#pf-items').innerHTML = handoff.items.slice(0, 60).map(itemRow).join('');
+      (handoff.extras || []).slice(0, 20).forEach((x) => $('#pf-extras').insertAdjacentHTML('beforeend', extraRow(x)));
+      if (handoff.title) form.elements.title.value = handoff.title;
+      if (handoff.bidId) form.elements.bidId.value = String(handoff.bidId);
+      recalc();
+      toast('Prices copied from your pricing sheet.');
+    } else {
+      $('#pf-items').insertAdjacentHTML('beforeend', itemRow());
+    }
     $('#pf-add-item').addEventListener('click', () => { $('#pf-items').insertAdjacentHTML('beforeend', itemRow()); recalc(); });
     $('#pf-add-extra').addEventListener('click', () => { $('#pf-extras').insertAdjacentHTML('beforeend', extraRow()); recalc(); });
     form.addEventListener('click', (e) => {
@@ -982,7 +1070,7 @@
     const locked = !f.unlocked;
     view.innerHTML = `
       <div class="card relative mx-auto max-w-2xl overflow-hidden p-10 text-center">
-        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue to-brand-red"></div>
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-[#5B3BFF] to-brand-red"></div>
         <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl ${locked ? 'bg-brand-red/15 text-brand-redSoft' : 'bg-brand-blue/20 text-brand-blueSoft'}">${icon(locked ? 'lock' : 'spark', 'h-7 w-7')}</div>
         <span class="pill ${locked ? 'bg-brand-red/15 text-brand-redSoft' : 'bg-brand-blue/15 text-brand-blueSoft'}">${locked ? 'Enterprise Edition' : 'Rolling out next'}</span>
         <h1 class="mt-3 text-2xl font-bold text-white">${esc(f.name)}</h1>
@@ -1056,7 +1144,7 @@
   const authFrame = (inner) => `
     <main class="flex min-h-screen items-center justify-center px-4 py-12">
       <div class="w-full max-w-md">
-        <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="mx-auto mb-8 h-auto w-72" />
+        <img src="/assets/gpp-logo.png" alt="GovProposalPro" width="900" height="543" class="mx-auto h-auto w-56" /><p class="mb-10 mt-3 text-center text-xs font-medium uppercase tracking-[0.3em] text-mist-500">by Contract Bros</p>
         ${inner}
       </div>
     </main>`;
@@ -1153,7 +1241,7 @@
   const SAM_STATUS = { active: 'Active', in_progress: 'In progress', not_started: 'Not started' };
   const STRUCTURES = { 'Limited Liability Company': 'LLC', Corporation: 'Corporation', 'S Corporation': 'S Corporation', 'Sole Proprietorship': 'Sole proprietorship', Partnership: 'Partnership', Other: 'Other' };
   const EMPLOYEES = { 1: 'Just me', '2-10': '2 to 10', '11-50': '11 to 50', '51-200': '51 to 200', '201+': 'More than 200' };
-  const DOC_KIND = { capability_statement: 'Capability statement', past_performance: 'Past performance', resume: 'Resume', company_overview: 'Company overview', other: 'Other' };
+  const DOC_KIND = { capability_statement: 'Capability statement', past_performance: 'Past performance', resume: 'Resume', company_overview: 'Company overview', winning_proposal: 'Winning proposal (Enterprise)', other: 'Other' };
 
   function fld(name, label, value, o = {}) {
     const id = 'f-' + name;
@@ -1253,18 +1341,20 @@
   }
 
   /** Upload list for company documents. Calls onReady(doc) when a document finishes reading. */
-  async function documentsPanel(box, onReady) {
+  // `only` limits the panel to one kind of document (the Winning Voice page uses it).
+  async function documentsPanel(box, onReady, only) {
     let docs = (await api('/me/documents')).documents;
+    const kinds = Object.entries(DOC_KIND).filter(([v]) => (only ? v === only : v !== 'winning_proposal' || state.me.tier.key === 'enterprise'));
     let file = null;
     const draw = () => {
       box.innerHTML = `
         <div class="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
           <label class="field flex min-w-0 cursor-pointer items-center gap-2 !py-2.5" for="doc-file">${icon('upload', 'h-4 w-4 shrink-0')}<span id="doc-name" class="truncate text-mist-400">${file ? esc(file.name) : 'Choose a PDF, Word file or photo'}</span>
             <input id="doc-file" type="file" accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp" class="sr-only" /></label>
-          <select id="doc-kind" class="field !py-2.5" aria-label="Document type">${Object.entries(DOC_KIND).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+          <select id="doc-kind" class="field !py-2.5 ${only ? 'hidden' : ''}" aria-label="Document type">${kinds.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
           <button type="button" id="doc-up" class="btn-primary">Upload</button>
         </div>
-        <ul class="mt-4 space-y-2">${docs.map((d) => `
+        <ul class="mt-4 space-y-2">${docs.filter((d) => !only || d.kind === only).map((d) => `
           <li class="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
             <div class="flex items-center justify-between gap-3">
               <span class="min-w-0"><span class="block truncate text-sm font-medium text-white">${esc(d.fileName)}</span><span class="text-xs text-mist-500">${esc(DOC_KIND[d.kind] || 'Document')} · ${fmtDate(d.createdAt)}</span></span>
@@ -1873,6 +1963,8 @@
       btn.innerHTML = icon('shield', 'h-4 w-4') + 'Vet subcontractor';
     });
   }
+
+  /*__TOOLS__*/
 
   render();
 })();

@@ -4,29 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <meta name="theme-color" content="#05081A" />
+  <meta name="theme-color" content="#000000" />
   <title>GovProposalPro · Secure Your Access</title>
-  <link rel="icon" type="image/png" href="/assets/gpp-mark.png" />
+  <link rel="icon" type="image/png" href="/assets/gpp-favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <!-- Compiled Tailwind CSS is inlined here by `npm run build`. -->
   <style>/*__TAILWIND__*/</style>
   <style>
-    body { background: radial-gradient(1200px 600px at 10% -10%, rgba(30,91,255,0.22), transparent 60%), radial-gradient(1000px 600px at 110% 10%, rgba(255,31,61,0.16), transparent 60%), #05081A; }
+    body { background: radial-gradient(800px 320px at 50% -120px, rgba(10,102,255,0.18), transparent 70%), #000; -webkit-font-smoothing: antialiased; }
     @keyframes rise { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: none; } }
     .rise { animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    .field { display:block; width:100%; border-radius:1rem; border:1px solid rgba(186,196,234,0.14); background:rgba(8,13,36,0.7); padding:0.85rem 1rem; font-size:15px; color:#EEF1FF; outline:none; transition:border-color .2s, box-shadow .2s; }
-    .field::placeholder { color: rgba(142,154,200,0.6); }
-    .field:focus { border-color:#1E5BFF; box-shadow:0 0 0 4px rgba(30,91,255,0.25); }
-    select.field { appearance:none; background-image:linear-gradient(45deg,transparent 50%,#8E9AC8 50%),linear-gradient(135deg,#8E9AC8 50%,transparent 50%); background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%; background-size:5px 5px; background-repeat:no-repeat; padding-right:2.5rem; }
-    select.field option { background:#0E1533; color:#EEF1FF; }
+    .field { display:block; width:100%; border-radius:1rem; border:1px solid rgba(255,255,255,0.12); background:#0A0A0C; padding:0.85rem 1rem; font-size:15px; color:#F5F5F7; outline:none; transition:border-color .2s, box-shadow .2s; }
+    .field::placeholder { color: #86868B; }
+    .field:focus { border-color:#0A66FF; box-shadow:0 0 0 4px rgba(10,102,255,0.3); }
+    select.field { appearance:none; background-image:linear-gradient(45deg,transparent 50%,#A1A1A6 50%),linear-gradient(135deg,#A1A1A6 50%,transparent 50%); background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%; background-size:5px 5px; background-repeat:no-repeat; padding-right:2.5rem; }
+    select.field option { background:#1C1C1E; color:#F5F5F7; }
     .choice input { position:absolute; opacity:0; pointer-events:none; }
-    .choice span { display:block; border-radius:1rem; border:1px solid rgba(186,196,234,0.14); background:rgba(8,13,36,0.6); padding:0.75rem 0.9rem; transition:all .2s; cursor:pointer; }
-    .choice input:checked + span { border-color:transparent; background:linear-gradient(135deg,rgba(30,91,255,0.28),rgba(255,31,61,0.22)); box-shadow:0 0 0 1px rgba(127,162,255,0.6); }
-    .choice input:focus-visible + span { box-shadow:0 0 0 4px rgba(30,91,255,0.35); }
+    .choice span { display:block; border-radius:1rem; border:1px solid rgba(255,255,255,0.12); background:#0A0A0C; padding:0.75rem 0.9rem; transition:all .2s; cursor:pointer; }
+    .choice input:checked + span { border-color:transparent; background:rgba(10,102,255,0.16); box-shadow:0 0 0 1.5px #0A66FF; }
+    .choice input:focus-visible + span { box-shadow:0 0 0 4px rgba(10,102,255,0.35); }
     .chip input { position:absolute; opacity:0; pointer-events:none; }
-    .chip span { display:inline-block; border-radius:9999px; border:1px solid rgba(186,196,234,0.18); padding:0.45rem 0.9rem; font-size:13px; color:#BAC4EA; cursor:pointer; transition:all .2s; }
-    .chip input:checked + span { color:#fff; border-color:transparent; background:linear-gradient(135deg,#1E5BFF,#FF1F3D); }
-    .chip input:focus-visible + span { box-shadow:0 0 0 4px rgba(30,91,255,0.35); }
-    .cta { background-image:linear-gradient(135deg,#1E5BFF 0%,#5B3BFF 45%,#FF1F3D 100%); }
+    .chip span { display:inline-block; border-radius:9999px; border:1px solid rgba(255,255,255,0.16); padding:0.45rem 0.9rem; font-size:13px; color:#D2D2D7; cursor:pointer; transition:all .2s; }
+    .chip input:checked + span { color:#fff; border-color:transparent; background:#0A66FF; }
+    .chip input:focus-visible + span { box-shadow:0 0 0 4px rgba(10,102,255,0.35); }
+    .cta { background:#0A66FF; border-radius:9999px; } .cta:hover { background:#2E7DFF; }
     .dot { height:8px; border-radius:9999px; transition:all .3s; }
     @media (prefers-reduced-motion: reduce) { .rise { animation: none; } }
   </style>
@@ -37,11 +38,12 @@
 
       <!-- Brand -->
       <header class="mb-8 text-center">
-        <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="mx-auto h-auto w-72 sm:w-96" />
+        <img src="/assets/gpp-logo.png" alt="GovProposalPro" width="900" height="543" class="mx-auto h-auto w-52 sm:w-60" />
+        <p class="mt-3 text-xs font-medium uppercase tracking-[0.3em] text-mist-500">by Contract Bros</p>
       </header>
 
       <!-- Form card -->
-      <section id="form-card" class="rise rounded-[32px] border border-white/10 bg-ink-800/80 p-7 shadow-bubble backdrop-blur-xl sm:p-10">
+      <section id="form-card" class="rise rounded-[28px] border border-white/[0.08] bg-ink-800 p-7 shadow-bubble sm:p-10">
         <div class="mb-6 flex items-center gap-2" aria-hidden="true">
           <div id="dot-1" class="dot w-10 bg-gradient-to-r from-brand-blue to-brand-red"></div>
           <div id="dot-2" class="dot w-4 bg-white/15"></div>

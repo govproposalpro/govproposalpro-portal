@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { color-scheme: dark; -webkit-font-smoothing: antialiased; }
+  body { background: #000; letter-spacing: -0.003em; }
+  ::selection { background: rgba(10, 102, 255, 0.45); }
+}
+
+@layer components {
+  #nav.scrolled { @apply border-b border-white/[0.08] bg-black/70 backdrop-blur-xl backdrop-saturate-150; }
+  .nav-a { @apply transition hover:text-white; }
+  .menu-a { @apply block border-b border-white/[0.06] py-3 text-mist-300; }
+  .btn-sm { @apply inline-flex items-center rounded-full bg-white px-3.5 py-1.5 text-[13px] font-semibold text-black transition hover:bg-mist-300; }
+  .btn-lg { @apply inline-flex items-center justify-center gap-1 rounded-full bg-white px-7 py-3.5 text-[17px] font-semibold text-black transition hover:bg-mist-300; }
+  .btn-lg-ghost { @apply inline-flex items-center justify-center gap-1 rounded-full px-6 py-3.5 text-[17px] font-medium text-brand-blueSoft transition hover:text-white; }
+  .btn-lg-grad { @apply inline-flex items-center justify-center rounded-full px-7 py-3.5 text-[17px] font-semibold text-white transition hover:brightness-110;
+    background: linear-gradient(120deg, #0A66FF, #5B3BFF 50%, #FF2D46); }
+  .grad-text { background: linear-gradient(110deg, #4DA3FF 0%, #9D7BFF 45%, #FF6B7E 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .eyebrow { @apply text-sm font-semibold tracking-wide text-brand-blueSoft; }
+  .eyebrow-ent { @apply text-sm font-semibold tracking-wide; background: linear-gradient(110deg, #4DA3FF, #FF6B7E); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .h2 { @apply mt-3 text-4xl font-semibold leading-[1.08] tracking-[-0.025em] text-white sm:text-6xl; }
+  .shot { @apply overflow-hidden rounded-[28px] border border-white/10 bg-ink-900 shadow-[0_40px_120px_-30px_rgba(10,102,255,0.35)]; }
+  .tile { @apply rounded-[28px] border border-white/[0.06] bg-ink-800 p-7 transition duration-300 hover:border-white/[0.14]; }
+  .tile-xl { @apply flex flex-col overflow-hidden rounded-[28px] border border-white/[0.06] bg-ink-800; }
+  .tile-img { @apply mt-auto block w-full border-t border-white/[0.06]; }
+  .tile-kicker { @apply text-sm font-semibold text-brand-blueSoft; }
+  .tile-h { @apply mt-2 text-2xl font-semibold leading-tight tracking-tight text-white sm:text-3xl; }
+  .tile-p { @apply mt-3 max-w-xl leading-relaxed text-mist-400; }
+  .tile-h3 { @apply mt-3 text-lg font-semibold tracking-tight text-white; }
+  .tile-p2 { @apply mt-1.5 text-[15px] leading-relaxed text-mist-400; }
+  .ico { @apply text-2xl; }
+  .step { @apply flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white; background: linear-gradient(135deg, #0A66FF, #FF2D46); }
+  .plan { @apply flex flex-col rounded-[28px] border border-white/10 bg-ink-800 p-8; }
+  .plan-ent { border-color: transparent; background: linear-gradient(#141416, #141416) padding-box, linear-gradient(135deg, #0A66FF, #5B3BFF, #FF2D46) border-box; }
+  .plan-list { @apply mt-6 flex-1 space-y-3 text-[15px] text-mist-300; }
+  .plan-list li { @apply flex gap-3; }
+  .plan-list li::before { content: '✓'; @apply font-semibold text-brand-blueSoft; }
+  .faq summary { @apply flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-medium text-white; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; @apply text-2xl font-light text-mist-500 transition; }
+  .faq[open] summary::after { transform: rotate(45deg); }
+  .faq p { @apply pb-6 leading-relaxed text-mist-400; }
+}
+
+.hero-glow { position: absolute; left: 50%; top: -220px; width: 1100px; height: 700px; transform: translateX(-50%); pointer-events: none;
+  background: radial-gradient(closest-side at 35% 50%, rgba(10,102,255,0.28), transparent 70%), radial-gradient(closest-side at 68% 45%, rgba(255,45,70,0.20), transparent 70%); filter: blur(10px); }
+.ent-glow { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(700px 400px at 15% 10%, rgba(10,102,255,0.14), transparent 70%), radial-gradient(700px 400px at 85% 30%, rgba(255,45,70,0.12), transparent 70%); }
+.cta-glow { position: absolute; inset: -40% -10% auto -10%; height: 140%; pointer-events: none;
+  background: radial-gradient(closest-side at 30% 40%, rgba(10,102,255,0.30), transparent), radial-gradient(closest-side at 72% 40%, rgba(255,45,70,0.22), transparent); }
+
+/* Scroll reveal: site.js adds .js to <html> and .in when each block scrolls into view. */
+.js .reveal { opacity: 0; transform: translateY(24px); transition: opacity 900ms cubic-bezier(.2,.7,.2,1), transform 900ms cubic-bezier(.2,.7,.2,1); }
+.js .reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .js .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }

@@ -18,6 +18,7 @@ const { publicProfile, parseProfileUpdate } = require('../../app/profile');
 const { proposalUsage } = require('../../app/quota');
 const { sendMemberLink } = require('../../app/routes/auth');
 const { requireAdmin, requireOwner, audit } = require('../session');
+const { parseWin, parseImport } = require('../../app/wins');
 
 const router = express.Router();
 const TIERS = ['core', 'enterprise'];
@@ -386,6 +387,87 @@ router.get('/admin/audit', requireOwner, async (req, res, next) => {
          FROM admin_audit l LEFT JOIN admins a ON a.id = l.admin_id
         ORDER BY l.created_at DESC LIMIT 300`);
     res.json({ entries: rows });
+  } catch (err) { next(err); }
+});
+
+// ---------------------------------------------------------------- contract-win popups (owners and VAs)
+
+router.get('/admin/wins', async (req, res, next) => {
+  try {
+    const q = clean(req.query.q, 100);
+    const page = Math.max(0, Number.parseInt(req.query.page, 10) || 0);
+    const params = [];
+    let where = '';
+    if (q) {
+      params.push(`%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`);
+      where = 'WHERE name ILIKE $1 OR agency ILIKE $1';
+    }
+    params.push(100, page * 100);
+    const [list, counts] = await Promise.all([
+      db.query(`SELECT id, name, amount::float AS amount, agency, published, created_at AS "createdAt" FROM contract_wins ${where}
+                 ORDER BY id DESC LIMIT $${params.length - 1} OFFSET $${params.length}`, params),
+      db.query('SELECT count(*)::int AS total, count(*) FILTER (WHERE published)::int AS published FROM contract_wins'),
+    ]);
+    res.json({ wins: list.rows, page, more: list.rows.length === 100, ...counts.rows[0] });
+  } catch (err) { next(err); }
+});
+
+router.post('/admin/wins', express.json({ limit: '256kb' }), async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    const wins = typeof b.import === 'string' ? parseImport(b.import) : [parseWin(b)].map((r) => r.win).filter(Boolean);
+    if (!wins.length) {
+      return res.status(400).json({ error: typeof b.import === 'string' ? 'No wins found. Use one per line, like: Emily C. just won a contract worth over $30,000 from the Department of Defense' : parseWin(b).error });
+    }
+    const published = b.published !== false;
+    await db.query(
+      `INSERT INTO contract_wins (name, amount, agency, published, created_by)
+       SELECT n, a, g, $4, $5 FROM unnest($1::text[], $2::numeric[], $3::text[]) AS t(n, a, g)`,
+      [wins.map((w) => w.name), wins.map((w) => w.amount), wins.map((w) => w.agency), published, req.admin.id]
+    );
+    await audit(req, 'wins.add', null, { count: wins.length });
+    res.status(201).json({ added: wins.length });
+  } catch (err) { next(err); }
+});
+
+router.patch('/admin/wins/:id', express.json({ limit: '2kb' }), async (req, res, next) => {
+  try {
+    const id = toId(req.params.id);
+    const b = req.body || {};
+    const sets = [];
+    const values = [id];
+    if (typeof b.published === 'boolean') { values.push(b.published); sets.push(`published = $${values.length}`); }
+    if (b.name !== undefined || b.amount !== undefined || b.agency !== undefined) {
+      const { win, error } = parseWin(b);
+      if (error) return res.status(400).json({ error });
+      values.push(win.name, win.amount, win.agency);
+      sets.push(`name = $${values.length - 2}, amount = $${values.length - 1}, agency = $${values.length}`);
+    }
+    if (!sets.length) return res.status(400).json({ error: 'Nothing to change.' });
+    const { rowCount } = await db.query(`UPDATE contract_wins SET ${sets.join(', ')} WHERE id = $1`, values);
+    if (!rowCount) return res.status(404).json({ error: 'Not found.' });
+    await audit(req, 'wins.edit', String(id), b);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+// Publish or hide every win at once.
+router.post('/admin/wins/bulk', express.json({ limit: '1kb' }), async (req, res, next) => {
+  try {
+    const published = req.body && req.body.published;
+    if (typeof published !== 'boolean') return res.status(400).json({ error: 'Choose publish or hide.' });
+    const { rowCount } = await db.query('UPDATE contract_wins SET published = $1 WHERE published <> $1', [published]);
+    await audit(req, published ? 'wins.publish_all' : 'wins.hide_all', null, { count: rowCount });
+    res.json({ changed: rowCount });
+  } catch (err) { next(err); }
+});
+
+router.delete('/admin/wins/:id', async (req, res, next) => {
+  try {
+    const { rows } = await db.query('DELETE FROM contract_wins WHERE id = $1 RETURNING name, agency', [toId(req.params.id)]);
+    if (!rows[0]) return res.status(404).json({ error: 'Not found.' });
+    await audit(req, 'wins.delete', `${rows[0].name} (${rows[0].agency})`);
+    res.json({ ok: true });
   } catch (err) { next(err); }
 });
 

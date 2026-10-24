@@ -13,7 +13,8 @@ const ai = require('../ai');
 const { requireAuth, requireFeature } = require('../session');
 const { reserveProposal, proposalUsage } = require('../quota');
 const { aiProfile } = require('../profile');
-const { documentContext } = require('./profile');
+const { documentContext, voiceContext } = require('./profile');
+const { hasFeature } = require('../tiers');
 
 const router = express.Router();
 const MAX_PDF_BYTES = 20 * 1024 * 1024;
@@ -105,7 +106,7 @@ router.post(
       const id = rows[0].id;
       res.status(202).json({ id, status: 'working' });
 
-      ai.decryptRfp({ files, text: pasted })
+      ai.decryptRfp({ files, text: pasted, profile: req.user.onboarded_at ? aiProfile(req.user) : null })
         .then((summary) => db.query(
           `UPDATE rfp_summaries SET status = 'ready', summary = $2, completed_at = now() WHERE id = $1`, [id, summary]))
         .catch((err) => {
@@ -123,7 +124,9 @@ router.get('/decryptor', requireAuth, requireFeature('bid_decryptor'), async (re
   try {
     const { rows } = await db.query(
       `SELECT id, bid_id AS "bidId", file_name AS "fileName", status, summary->>'title' AS title,
-              summary->>'response_due' AS "responseDue", created_at AS "createdAt"
+              summary->>'response_due' AS "responseDue", summary->>'agency' AS agency, summary->>'set_aside' AS "setAside",
+              summary->'go_no_go'->>'verdict' AS verdict, (summary->'go_no_go'->>'score')::int AS score,
+              summary->'go_no_go'->>'headline' AS headline, created_at AS "createdAt"
          FROM rfp_summaries WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`,
       [req.user.id]
     );
@@ -298,7 +301,10 @@ router.post(
 
       const profile = aiProfile(req.user);
       const documents = await documentContext(req.user.id);
-      ai.writeProposal({ bid, summary, profile, documents, instructions, title, ...details })
+      const voice = hasFeature(req.user.tier, 'winning_voice')
+        ? await voiceContext(req.user.id, JSON.stringify([summary && [summary.title, summary.scope_of_work, summary.requirements], bid, instructions]))
+        : [];
+      ai.writeProposal({ bid, summary, profile, documents, instructions, title, voice, ...details })
         .then((md) => db.query(
           `UPDATE proposals SET status = 'ready', content_md = $2, completed_at = now() WHERE id = $1`, [id, md]))
         .catch((err) => {
@@ -355,7 +361,7 @@ router.patch('/proposals/:id', requireAuth, requireFeature('proposal_engine'), e
  */
 async function failInterruptedJobs() {
   const msg = 'This was interrupted by a system update. Please run it again; it did not count toward your limit.';
-  for (const table of ['proposals', 'rfp_summaries', 'company_documents', 'capability_statements']) {
+  for (const table of ['proposals', 'rfp_summaries', 'company_documents', 'capability_statements', 'ai_jobs']) {
     await db.query(
       `UPDATE ${table} SET status = 'failed', error = $1, completed_at = now()
         WHERE status = 'working' AND created_at < now() - interval '30 minutes'`,

@@ -68,7 +68,7 @@
   const authCard = (title, sub, inner) => `
     <main class="flex min-h-screen items-center justify-center px-4 py-12">
       <div class="w-full max-w-md">
-        <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro by Contract Bros" width="1200" height="386" class="mx-auto mb-3 h-auto w-64" />
+        <img src="/assets/gpp-logo.png" alt="GovProposalPro" width="900" height="543" class="mx-auto mb-3 h-auto w-48" />
         <p class="mb-8 text-center text-xs font-semibold uppercase tracking-[0.3em] text-brand-redSoft">Admin</p>
         <div class="card p-7 sm:p-9">
           <h1 class="text-xl font-bold text-white">${title}</h1>
@@ -248,11 +248,11 @@
       <div class="flex min-h-screen flex-col lg:flex-row">
         <aside class="border-b border-white/[0.06] bg-ink-950/60 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r">
           <div class="mb-5 flex items-center justify-between px-2 lg:block">
-            <img src="/assets/gpp-by-contract-bros.png" alt="GovProposalPro" width="1200" height="386" class="h-auto w-40" />
+            <span class="flex items-center gap-2"><img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-7 w-auto" /><span class="text-[16px] font-semibold tracking-tight text-white">GovProposal<span class="text-mist-400">Pro</span></span></span>
             <span class="pill bg-brand-red/15 text-brand-redSoft lg:mt-3">Admin</span>
           </div>
           <nav class="flex gap-1 overflow-x-auto lg:block lg:space-y-0.5">
-            ${link('/', 'Overview')}${link('/members', 'Members')}${link('/access', 'Access')}
+            ${link('/', 'Overview')}${link('/members', 'Members')}${link('/access', 'Access')}${link('/wins', 'Contract wins')}
             ${owner ? link('/team', 'Team') + link('/audit', 'Audit log') : ''}${link('/account', 'My account')}
           </nav>
           <div class="mt-5 hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3 lg:block">
@@ -303,6 +303,7 @@
       else if (path === '/members') await viewMembers(view);
       else if ((m = path.match(/^\/members\/(\d+)$/))) await viewMember(view, m[1]);
       else if (path === '/access') await viewAccess(view);
+      else if (path === '/wins') await viewWins(view);
       else if (path === '/team') await viewTeam(view);
       else if (path === '/audit') await viewAudit(view);
       else if (path === '/account') viewAccount(view);
@@ -508,6 +509,87 @@
       const res = $('[data-restore]', tr);
       if (res) res.addEventListener('click', async () => {
         try { await api('/access/' + id, { method: 'PATCH', body: { revoked: false } }); toast('Access restored.'); render(); } catch (err) { toast(err.message, 'error'); }
+      });
+    });
+  }
+
+  // ------------------------------------------------------------------ contract wins (site popups)
+
+  async function viewWins(view) {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q') || '';
+    const page = Math.max(0, Number.parseInt(params.get('page'), 10) || 0);
+    const data = await api(`/wins?page=${page}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
+    const money = (n) => '$' + Math.round(n).toLocaleString('en-US');
+    const go = (p) => navigate(`/wins?page=${p}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
+    view.innerHTML = `
+      ${head('Contract wins', `${data.published} of ${data.total} wins show in the popups on the main site. Each visitor sees a fresh random set.`,
+        '<button id="w-hide" class="btn-ghost">Hide all</button><button id="w-pub" class="btn-ghost">Publish all</button><button id="w-import" class="btn-ghost">Import list</button><button id="w-add" class="btn-primary">Add a win</button>')}
+      <form id="w-search" class="mb-4 flex gap-2"><input id="w-q" class="field" placeholder="Search name or agency" value="${esc(q)}" /><button class="btn-ghost">Search</button></form>
+      <div class="card overflow-x-auto">
+        <table class="w-full min-w-[720px] text-left text-sm">
+          <thead class="text-xs uppercase tracking-wider text-mist-500"><tr><th class="px-5 py-3">Member</th><th class="px-3 py-3 text-right">Amount</th><th class="px-3 py-3">Agency</th><th class="px-3 py-3">On site</th><th class="px-3 py-3"></th></tr></thead>
+          <tbody class="divide-y divide-white/[0.05]">
+            ${data.wins.map((w) => `<tr data-id="${w.id}">
+              <td class="px-5 py-3 text-white">${esc(w.name)}</td><td class="px-3 py-3 text-right text-white">${money(w.amount)}</td><td class="px-3 py-3 text-mist-300">${esc(w.agency)}</td>
+              <td class="px-3 py-3"><label class="inline-flex items-center gap-2 text-xs text-mist-300"><input type="checkbox" data-pub ${w.published ? 'checked' : ''} />${w.published ? 'Showing' : 'Hidden'}</label></td>
+              <td class="px-3 py-3 text-right"><button class="btn-ghost !py-1.5 !text-xs" data-edit>Edit</button> <button class="btn-danger !py-1.5 !text-xs" data-del>Delete</button></td></tr>`).join('') || '<tr><td colspan="5" class="px-5 py-8 text-center text-mist-500">No wins yet.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 flex justify-between">${page ? '<button id="w-prev" class="btn-ghost">Previous</button>' : '<span></span>'}${data.more ? '<button id="w-next" class="btn-ghost">Next</button>' : ''}</div>`;
+    $('#w-search').addEventListener('submit', (e) => { e.preventDefault(); const v = $('#w-q').value.trim(); navigate('/wins' + (v ? `?q=${encodeURIComponent(v)}` : '')); });
+    if ($('#w-prev')) $('#w-prev').addEventListener('click', () => go(page - 1));
+    if ($('#w-next')) $('#w-next').addEventListener('click', () => go(page + 1));
+    const bulk = (published) => async () => {
+      if (!confirm(published ? 'Show every win in the site popups?' : 'Hide every win from the site popups?')) return;
+      try { const { changed } = await api('/wins/bulk', { method: 'POST', body: { published } }); toast(`${changed} updated.`); render(); } catch (err) { toast(err.message, 'error'); }
+    };
+    $('#w-pub').addEventListener('click', bulk(true));
+    $('#w-hide').addEventListener('click', bulk(false));
+    const winModal = (w) => {
+      const m = openModal(`<h2 class="text-lg font-semibold text-white">${w ? 'Edit win' : 'Add a win'}</h2>
+        <form class="mt-5 space-y-4" novalidate>
+          <div><label class="label" for="wn">Member name as shown</label><input id="wn" name="name" class="field" maxlength="80" placeholder="Emily C." value="${esc(w ? w.name : '')}" /></div>
+          <div><label class="label" for="wa">Amount ($)</label><input id="wa" name="amount" class="field" inputmode="decimal" value="${w ? Math.round(w.amount) : ''}" /></div>
+          <div><label class="label" for="wg">Agency</label><input id="wg" name="agency" class="field" maxlength="160" placeholder="Department of Veterans Affairs" value="${esc(w ? w.agency : '')}" /></div>
+          <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" data-close>Cancel</button><button class="btn-primary">Save</button></div>
+        </form>`);
+      $('form', m.el).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target.elements;
+        const body = { name: f.name.value, amount: f.amount.value, agency: f.agency.value };
+        try {
+          if (w) await api('/wins/' + w.id, { method: 'PATCH', body });
+          else await api('/wins', { method: 'POST', body });
+          m.close(); toast('Saved.'); render();
+        } catch (err) { toast(err.message, 'error'); }
+      });
+    };
+    $('#w-add').addEventListener('click', () => winModal(null));
+    $('#w-import').addEventListener('click', () => {
+      const m = openModal(`<h2 class="text-lg font-semibold text-white">Import wins</h2>
+        <p class="mt-1 text-sm text-mist-400">Paste one per line, like: Emily C. just won a contract worth over $30,000 from the Department of Defense. CSV (name, amount, agency) works too.</p>
+        <form class="mt-5 space-y-4"><textarea name="text" rows="10" class="field font-mono !text-xs"></textarea>
+          <label class="flex items-center gap-2 text-sm text-mist-300"><input type="checkbox" name="published" checked />Show on the site right away</label>
+          <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" data-close>Cancel</button><button class="btn-primary">Import</button></div></form>`);
+      $('form', m.el).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          const { added } = await api('/wins', { method: 'POST', body: { import: e.target.elements.text.value, published: e.target.elements.published.checked } });
+          m.close(); toast(`${added} wins added.`); render();
+        } catch (err) { toast(err.message, 'error'); }
+      });
+    });
+    $$('tr[data-id]', view).forEach((tr) => {
+      const w = data.wins.find((x) => String(x.id) === tr.dataset.id);
+      $('[data-pub]', tr).addEventListener('change', async (e) => {
+        try { await api('/wins/' + w.id, { method: 'PATCH', body: { published: e.target.checked } }); e.target.parentElement.lastChild.textContent = e.target.checked ? 'Showing' : 'Hidden'; } catch (err) { e.target.checked = !e.target.checked; toast(err.message, 'error'); }
+      });
+      $('[data-edit]', tr).addEventListener('click', () => winModal(w));
+      $('[data-del]', tr).addEventListener('click', async () => {
+        if (!confirm('Delete this win?')) return;
+        try { await api('/wins/' + w.id, { method: 'DELETE' }); tr.remove(); } catch (err) { toast(err.message, 'error'); }
       });
     });
   }
