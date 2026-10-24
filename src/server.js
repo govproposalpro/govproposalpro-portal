@@ -106,8 +106,8 @@ const htmlText = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<
 const legalState = (process.env.LEGAL_STATE || '').trim() || 'Ohio';
 const supportEmail = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(process.env.SUPPORT_EMAIL || '') ? process.env.SUPPORT_EMAIL.trim() : 'contact@govproposalpro.com';
 const legalPage = (name) => fs.readFileSync(path.join(SITE_DIR, `${name}.html`), 'utf8')
-  .replaceAll('__ENTITY__', htmlText((process.env.LEGAL_ENTITY || '').trim() || 'Valor Innovation Management & Consulting, doing business as Contract Bros'))
-  .replaceAll('__GOVLAW__', legalState ? `the State of ${htmlText(legalState)}` : 'the state in which Contract Bros is organized')
+  .replaceAll('__ENTITY__', htmlText((process.env.LEGAL_ENTITY || '').trim() || 'Valor Innovation Management & Consulting, doing business as GovProposal Pro'))
+  .replaceAll('__GOVLAW__', legalState ? `the State of ${htmlText(legalState)}` : 'the state in which the company is organized')
   .replaceAll('__EMAIL__', htmlText(supportEmail));
 const legal = { terms: legalPage('terms'), privacy: legalPage('privacy') };
 app.get(['/terms', '/privacy'], (req, res) => {

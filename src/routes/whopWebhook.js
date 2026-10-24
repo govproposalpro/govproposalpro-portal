@@ -20,7 +20,8 @@ const router = express.Router();
 const TOLERANCE_SECONDS = 5 * 60;
 
 const GRANT_EVENTS = new Set(['membership.went_valid', 'membership.activated', 'payment.succeeded']);
-const REVOKE_EVENTS = new Set(['membership.went_invalid', 'membership.deactivated', 'payment.refunded']);
+// A cancelled or lapsed membership keeps access (owner's call, 2026-10-24); only a refund removes it.
+const REVOKE_EVENTS = new Set(['payment.refunded']);
 
 const listFromEnv = (name) => new Set((process.env[name] || '').split(',').map((s) => s.trim()).filter(Boolean));
 const ENTERPRISE_PRODUCTS = listFromEnv('WHOP_ENTERPRISE_PRODUCT_IDS');
