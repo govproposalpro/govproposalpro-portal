@@ -115,6 +115,8 @@ Env: `ANTHROPIC_API_KEY` (required for AI features), `APP_LAUNCH_AT` (sign-in op
 - `govproposalpro.com/` (any host that is not `access.*`) serves the landing page from `frontend/site/`; `access.govproposalpro.com/` and `/access` serve signup.
 - Buy buttons use `SITE_CTA_URL`, `WHOP_CORE_CHECKOUT_URL` and `WHOP_ENTERPRISE_CHECKOUT_URL` (https only).
 - Win popups read `/api/public/wins` (40 random published wins, CORS open, rate limited). Manage them in Admin > Contract wins. The 500 starting wins in `db/seed/contract-wins.json` load once when the table is empty.
+- The landing page's live pill, member wins wall and agency strip read `/api/public/wins/stats` (published wins only, cached 5 minutes). Those sections stay hidden if there are no published wins.
+- The site font is Inter, self-hosted in `public/assets/fonts/` under the SIL Open Font License.
 - To show the popups on a site hosted elsewhere (for example GoHighLevel), paste `<script src="https://access.govproposalpro.com/embed/wins.js" defer></script>` into its footer.
 - Product images in `public/assets/site/` are screenshots of the real app.
 - `/terms` and `/privacy` are in `frontend/site/`. Set `LEGAL_ENTITY`, `LEGAL_STATE` and `SUPPORT_EMAIL` to fill in the legal name, governing-law state and contact email.
