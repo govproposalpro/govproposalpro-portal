@@ -87,24 +87,26 @@ app.get('/favicon.ico', (_req, res) => res.sendFile(path.join(PUBLIC_DIR, 'asset
 
 // The marketing site (landing page). Its CSS and JS are files on this origin, like the dashboard.
 const SITE_DIR = path.join(PUBLIC_DIR, 'site');
-// Buy buttons point at the Whop checkout links in the environment; until they are set they
-// scroll to the edition comparison and the signup page.
+// Buy buttons point at the Whop checkout pages: one-time purchase, then the monthly access plan.
+// Env vars override the defaults if the products move.
 const checkoutUrl = (name, fallback) => {
   const v = (process.env[name] || '').trim();
   return /^https:\/\/[^\s"'<>]+$/.test(v) ? v : fallback;
 };
 const siteHtml = fs.readFileSync(path.join(SITE_DIR, 'index.html'), 'utf8')
   .replaceAll('__CTA_URL__', checkoutUrl('SITE_CTA_URL', '#editions'))
-  .replaceAll('__CORE_URL__', checkoutUrl('WHOP_CORE_CHECKOUT_URL', '/access'))
-  .replaceAll('__ENTERPRISE_URL__', checkoutUrl('WHOP_ENTERPRISE_CHECKOUT_URL', '/access'));
+  .replaceAll('__CORE_URL__', checkoutUrl('WHOP_CORE_CHECKOUT_URL', 'https://whop.com/contractbros/contract-bros-govproposalpro-operator-pay-in-full/'))
+  .replaceAll('__ENTERPRISE_URL__', checkoutUrl('WHOP_ENTERPRISE_CHECKOUT_URL', 'https://whop.com/contractbros/contract-bros-govproposalpro-operator-pay-in-full-72/'))
+  .replaceAll('__CORE_ACCESS_URL__', checkoutUrl('WHOP_CORE_ACCESS_URL', 'https://whop.com/contractbros/contract-bros-govproposalpro-core-maintenance/'))
+  .replaceAll('__ENTERPRISE_ACCESS_URL__', checkoutUrl('WHOP_ENTERPRISE_ACCESS_URL', 'https://whop.com/contractbros/contract-bros-govproposalpro-operator-maintenance/'));
 app.use('/site/static', express.static(path.join(SITE_DIR, 'static'), { maxAge: '1h', index: false }));
 
 // Terms and Privacy. The legal name, governing state and contact email come from the environment.
 const htmlText = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const legalState = (process.env.LEGAL_STATE || '').trim();
-const supportEmail = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(process.env.SUPPORT_EMAIL || '') ? process.env.SUPPORT_EMAIL.trim() : 'jalen@contractbros.com';
+const legalState = (process.env.LEGAL_STATE || '').trim() || 'Ohio';
+const supportEmail = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(process.env.SUPPORT_EMAIL || '') ? process.env.SUPPORT_EMAIL.trim() : 'contact@govproposalpro.com';
 const legalPage = (name) => fs.readFileSync(path.join(SITE_DIR, `${name}.html`), 'utf8')
-  .replaceAll('__ENTITY__', htmlText((process.env.LEGAL_ENTITY || '').trim() || 'Contract Bros'))
+  .replaceAll('__ENTITY__', htmlText((process.env.LEGAL_ENTITY || '').trim() || 'Valor Innovation Management & Consulting, doing business as Contract Bros'))
   .replaceAll('__GOVLAW__', legalState ? `the State of ${htmlText(legalState)}` : 'the state in which Contract Bros is organized')
   .replaceAll('__EMAIL__', htmlText(supportEmail));
 const legal = { terms: legalPage('terms'), privacy: legalPage('privacy') };
