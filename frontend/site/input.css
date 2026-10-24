@@ -55,3 +55,15 @@
 .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity 900ms cubic-bezier(.2,.7,.2,1), transform 900ms cubic-bezier(.2,.7,.2,1); }
 .js .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .js .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+
+/* Terms and Privacy pages */
+.legal h1 { font-size: 2.5rem; line-height: 1.1; font-weight: 600; letter-spacing: -0.025em; color: #fff; }
+.legal .updated { margin-top: 0.75rem; color: #86868B; font-size: 0.875rem; }
+.legal h2 { margin-top: 2.5rem; font-size: 1.25rem; font-weight: 600; color: #fff; }
+.legal p, .legal li { margin-top: 0.75rem; color: #A1A1A6; line-height: 1.7; }
+.legal ul { margin-top: 0.5rem; padding-left: 1.25rem; list-style: disc; }
+.legal ul ul { list-style: circle; }
+.legal ul ul li { margin-top: 0.25rem; }
+.legal strong { color: #F5F5F7; font-weight: 600; }
+.legal a { color: #4DA3FF; }
+.legal a:hover { color: #fff; }

@@ -117,6 +117,7 @@ Env: `ANTHROPIC_API_KEY` (required for AI features), `APP_LAUNCH_AT` (sign-in op
 - Win popups read `/api/public/wins` (40 random published wins, CORS open, rate limited). Manage them in Admin > Contract wins. The 500 starting wins in `db/seed/contract-wins.json` load once when the table is empty.
 - To show the popups on a site hosted elsewhere (for example GoHighLevel), paste `<script src="https://access.govproposalpro.com/embed/wins.js" defer></script>` into its footer.
 - Product images in `public/assets/site/` are screenshots of the real app.
+- `/terms` and `/privacy` are in `frontend/site/`. Set `LEGAL_ENTITY`, `LEGAL_STATE` and `SUPPORT_EMAIL` to fill in the legal name, governing-law state and contact email.
 
 ## Admin dashboard (at `/admin`)
 

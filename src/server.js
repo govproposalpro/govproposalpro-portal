@@ -99,6 +99,20 @@ const siteHtml = fs.readFileSync(path.join(SITE_DIR, 'index.html'), 'utf8')
   .replaceAll('__ENTERPRISE_URL__', checkoutUrl('WHOP_ENTERPRISE_CHECKOUT_URL', '/access'));
 app.use('/site/static', express.static(path.join(SITE_DIR, 'static'), { maxAge: '1h', index: false }));
 
+// Terms and Privacy. The legal name, governing state and contact email come from the environment.
+const htmlText = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const legalState = (process.env.LEGAL_STATE || '').trim();
+const supportEmail = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(process.env.SUPPORT_EMAIL || '') ? process.env.SUPPORT_EMAIL.trim() : 'jalen@contractbros.com';
+const legalPage = (name) => fs.readFileSync(path.join(SITE_DIR, `${name}.html`), 'utf8')
+  .replaceAll('__ENTITY__', htmlText((process.env.LEGAL_ENTITY || '').trim() || 'Contract Bros'))
+  .replaceAll('__GOVLAW__', legalState ? `the State of ${htmlText(legalState)}` : 'the state in which Contract Bros is organized')
+  .replaceAll('__EMAIL__', htmlText(supportEmail));
+const legal = { terms: legalPage('terms'), privacy: legalPage('privacy') };
+app.get(['/terms', '/privacy'], (req, res) => {
+  res.set('Cache-Control', 'public, max-age=300');
+  res.type('html').send(legal[req.path.slice(1)]);
+});
+
 // Contract-win popups for any page, including the main site on another host: paste
 // <script src="https://access.govproposalpro.com/embed/wins.js" defer></script>.
 app.get('/embed/wins.js', (_req, res) => {

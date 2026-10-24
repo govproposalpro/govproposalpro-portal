@@ -75,4 +75,8 @@ fs.writeFileSync(
   path.join(root, 'public/site/index.html'),
   fs.readFileSync(path.join(root, 'frontend/site/index.html'), 'utf8').replaceAll('__VERSION__', siteVersion)
 );
+for (const page of ['terms', 'privacy']) {
+  fs.writeFileSync(path.join(root, `public/site/${page}.html`),
+    fs.readFileSync(path.join(root, `frontend/site/${page}.html`), 'utf8').replaceAll('__VERSION__', siteVersion));
+}
 console.log(`Wrote public/site (${(siteCss.length / 1024).toFixed(1)} KB CSS, v${siteVersion})`);
