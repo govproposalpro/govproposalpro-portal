@@ -248,3 +248,10 @@ CREATE TABLE IF NOT EXISTS sub_vettings (
 CREATE INDEX IF NOT EXISTS sub_vettings_user_idx ON sub_vettings (user_id, created_at DESC);
 ALTER TABLE company_documents     ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
 ALTER TABLE capability_statements ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
+
+-- Capability statement layout (structured content rendered as a two-column page) and the profile
+-- fields it shows.
+ALTER TABLE capability_statements ADD COLUMN IF NOT EXISTS content_json JSONB;
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS entity_structure VARCHAR(80);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS primary_markets  VARCHAR(300);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS contact_title    VARCHAR(120);

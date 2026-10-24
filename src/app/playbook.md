@@ -193,3 +193,47 @@ Placeholders: `[Company]`, `[Agency]`, `[Facility]`.
 - **Registration and reps:** Confirm an active **SAM.gov** registration (FAR 52.204-7) with current 52.212-3 reps and certs and the correct NAICS. Complete any solicitation-specific fill-ins (for example, 52.204-24/26 telecom, 52.209-11 tax/felony, 52.219-1 small business program reps if not in SAM). Check that set-aside certifications are current (SBA certify.sba.gov for 8(a), HUBZone, WOSB; VetCert for SDVOSB).
 - **Submission:** Use the exact method (email, PIEE, SAM, agency portal) and naming convention, keep files under the size limit, and use the requested format (PDF or Excel for price). Submit early, then confirm receipt in writing.
 - **Final quality check:** spell-check the agency, facility, and solicitation numbers; keep numbers consistent across volumes; make sure all `[CONFIRM: ...]` placeholders are resolved or flagged to the user.
+
+## House model: a supply quote for a brand-name-or-equal RFQ (from a Contract Bros example)
+
+Use this structure when the solicitation is a combined synopsis/solicitation or RFQ for commercial products
+(FAR Part 12/13), unless its instructions say otherwise. It is the format the Contract Bros team uses and wins with.
+
+1. **Cover page.** Title of the requirement, solicitation number and response date at top. Left: "SUBMITTED TO" block
+   copied from the solicitation's point of contact (title, name, email, agency, contracting office, full address).
+   Then "OFFEROR" block: company, owner name and title, address, phone, UEI, CAGE, TIN if the member provided it,
+   email, website, and "Business Size and Type" (e.g. SDVOSB, minority-owned). Product or site photos may go on the right.
+2. **Table of contents** listing every part.
+3. **Part 1: Executive Summary.** 1.1 Proposal Overview: one paragraph naming the solicitation number, the
+   facility, the quantity and exact product offered, and that it meets the salient characteristics.
+   1.2 Compliance Statement: a numbered list, each item bolded: Set-Aside Requirements (status and SAM registration),
+   Product Specifications (sub-bullets restating each salient characteristic), Authorized Dealer Status, Warranty
+   Terms, No Gray Market Items, Technical Description and Pricing Information, Representations and Certifications
+   (FAR 52.212-3 completed in SAM), Amendments (acknowledged).
+4. **Part 2: Technical Proposal: Description of Offered Items.** Product name and quantity as a heading;
+   2.1 Product Literature and Specifications: one bolded bullet per characteristic, worded to match the
+   solicitation's salient characteristic; 2.2 Warranty Terms and Conditions: coverage period, inclusions,
+   exclusions, claims process.
+5. **Part 3: Price Proposal.** Solicitation number, offeror, date of submission; a bordered table with Item
+   Description, Unit Price, Quantity, Total Price; Subtotal; Shipping and Handling; Total; then a short Total Cost Summary.
+6. **Part 4: Relevant Past Performance.** Numbered projects, each with Scope, Elements Provided, Outcome.
+   4.1 List of Similar Contracts (contract number, schedule or vehicle, term, scope). 4.2 Contact Information for
+   References (organization, project, contact person, address, phone). If the work was done with a manufacturer or
+   teaming partner, say so plainly ("in collaboration with...").
+7. **Acknowledgment of Amendments.** Solicitation number, offeror, date; table of Amendment Number, Date Received,
+   Acknowledgment Date; for each amendment a summary of changes (revised specifications, Q&A, new deadline) and a
+   compliance statement; signature block.
+8. **One statement per clause that requires one**, each as its own part with solicitation number, offeror and date:
+   e.g. "Statement of Compliance with FAR 52.211-6 Brand Name or Equal" (brand name, proposed product, each salient
+   characteristic met, documentation and verification, warranty, authorized dealer) and "Statement on
+   Non-Acceptance of Remanufactured or Gray Market Items" under VAAR 852.212-71 (new OEM items only, definition,
+   authorized dealer verification, warranty and support). End each with "By signing below, I certify..." and a
+   signature block (name, title).
+9. **Appendix A: Technical Data Sheets** per item (description, dimensions, materials, features, compliance,
+   warranty, installation) and a shipping and handling sheet (method, FOB terms, cost, packaging, delivery address,
+   delivery schedule). **Appendix B: Copies of Relevant Certifications and Authorizations** (e.g. SBA certification
+   with entity, date, number and validity; OEM authorization or country-of-origin letters).
+
+Lessons from it: restate the government's exact words for every salient characteristic; keep compliance items
+numbered so evaluators can check them off; acknowledge every amendment in its own table; and put each required
+certification on its own signed page.

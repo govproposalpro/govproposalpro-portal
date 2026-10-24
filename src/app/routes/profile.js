@@ -3,6 +3,7 @@
 // Business profile, onboarding, alert settings, and company documents (capability statements etc.).
 
 const express = require('express');
+const mammoth = require('mammoth');
 const db = require('../../db');
 const ai = require('../ai');
 const { requireAuth } = require('../session');
@@ -31,6 +32,10 @@ router.patch('/me/profile', requireAuth, express.json({ limit: '128kb' }), async
 
 router.post('/me/onboarding/complete', requireAuth, async (req, res, next) => {
   try {
+    // The minimum every proposal needs to be about this company rather than placeholders.
+    const missing = [['business_name', 'your legal business name'], ['naics', 'your NAICS codes'], ['capabilities', 'your core capabilities']]
+      .filter(([col]) => !req.user[col]).map(([, label]) => label);
+    if (missing.length) return res.status(400).json({ error: `Add ${missing.join(', ')} to finish setup.`, missing });
     await db.query('UPDATE "Users" SET onboarded_at = COALESCE(onboarded_at, now()) WHERE id = $1', [req.user.id]);
     res.json({ ok: true });
   } catch (err) {
@@ -70,22 +75,38 @@ router.post('/me/documents', requireAuth, express.json({ limit: '28mb' }), async
     const b = req.body || {};
     const kind = DOC_KINDS.includes(b.kind) ? b.kind : 'other';
     let pdfBase64 = null;
+    let image = null;
     let text = null;
     if (typeof b.pdfBase64 === 'string' && b.pdfBase64) {
-      if (!/^[A-Za-z0-9+/]+=*$/.test(b.pdfBase64)) return res.status(400).json({ error: 'That file could not be read.' });
-      const bytes = Buffer.from(b.pdfBase64, 'base64');
-      if (bytes.length > MAX_PDF_BYTES) return res.status(413).json({ error: 'PDFs up to 20 MB are supported.' });
-      if (bytes.subarray(0, 5).toString('latin1') !== '%PDF-') return res.status(400).json({ error: 'Please upload a PDF file.' });
-      pdfBase64 = b.pdfBase64;
+      // Kept for older clients; new uploads send { data, fileName } and are sniffed below.
+      b.data = b.pdfBase64;
+    }
+    if (typeof b.data === 'string' && b.data) {
+      if (!/^[A-Za-z0-9+/]+=*$/.test(b.data)) return res.status(400).json({ error: 'That file could not be read.' });
+      const bytes = Buffer.from(b.data, 'base64');
+      if (bytes.length > MAX_PDF_BYTES) return res.status(413).json({ error: 'Files up to 20 MB are supported.' });
+      const head = bytes.subarray(0, 12);
+      if (head.subarray(0, 5).toString('latin1') === '%PDF-') pdfBase64 = b.data;
+      else if (head[0] === 0xff && head[1] === 0xd8) image = { mediaType: 'image/jpeg', data: b.data };
+      else if (head.subarray(1, 4).toString('latin1') === 'PNG') image = { mediaType: 'image/png', data: b.data };
+      else if (head.subarray(8, 12).toString('latin1') === 'WEBP') image = { mediaType: 'image/webp', data: b.data };
+      else if (head.subarray(0, 2).toString('latin1') === 'PK' && /\.docx$/i.test(b.fileName || '')) {
+        try {
+          text = (await mammoth.extractRawText({ buffer: bytes })).value.trim().slice(0, 200_000);
+        } catch { text = ''; }
+        if (!text) return res.status(400).json({ error: 'That Word file has no readable text.' });
+      } else {
+        return res.status(400).json({ error: 'Upload a PDF, Word (.docx) file or a photo (JPG or PNG).' });
+      }
     } else if (typeof b.text === 'string' && b.text.trim().length >= 50) {
       text = b.text.slice(0, 200_000);
     } else {
-      return res.status(400).json({ error: 'Upload a PDF or paste the text.' });
+      return res.status(400).json({ error: 'Upload a file or paste the text.' });
     }
     const count = await db.query('SELECT count(*)::int AS n FROM company_documents WHERE user_id = $1', [req.user.id]);
     if (count.rows[0].n >= MAX_DOCS) return res.status(400).json({ error: `You can keep up to ${MAX_DOCS} documents. Remove one first.` });
 
-    const fileName = (typeof b.fileName === 'string' && b.fileName.slice(0, 200)) || (pdfBase64 ? 'document.pdf' : 'Pasted text');
+    const fileName = (typeof b.fileName === 'string' && b.fileName.slice(0, 200)) || (pdfBase64 || image ? 'document' : 'Pasted text');
     const { rows } = await db.query(
       'INSERT INTO company_documents (user_id, file_name, kind) VALUES ($1, $2, $3) RETURNING id',
       [req.user.id, fileName, kind]
@@ -93,7 +114,7 @@ router.post('/me/documents', requireAuth, express.json({ limit: '28mb' }), async
     const id = rows[0].id;
     res.status(202).json({ id, status: 'working' });
 
-    ai.readCompanyDocument({ pdfBase64, text, kind })
+    ai.readCompanyDocument({ pdfBase64, image, text, kind })
       .then((r) => db.query(
         `UPDATE company_documents SET status = 'ready', summary = $2, extracted = $3, completed_at = now() WHERE id = $1`,
         [id, r.summary, r.extracted]))

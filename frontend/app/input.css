@@ -72,3 +72,32 @@
   .step-bar { @apply block h-1.5 rounded-full bg-white/[0.08] transition-colors; }
   .step.done .step-bar { @apply bg-gradient-to-r from-brand-blue to-brand-red; }
 }
+
+/* Member capability statement page (their document: neutral print colors, not the app theme) */
+.cap { --cap-main: #1B2F5E; --cap-rule: #B8963E; min-width: 720px; background: #fff; color: #222; font-family: Georgia, 'Times New Roman', serif; font-size: 14px; line-height: 1.45; padding: 28px; }
+.cap-teal { --cap-main: #1F6F75; --cap-rule: #C2A15A; }
+.cap-maroon { --cap-main: #6E1E2C; --cap-rule: #B8963E; }
+.cap-charcoal { --cap-main: #2B2F36; --cap-rule: #8C96A3; }
+.cap-head { background: var(--cap-main); color: #fff; padding: 18px 22px; }
+.cap-head h1 { margin: 0; font-size: 30px; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; }
+.cap-head p { margin: 2px 0 0; color: var(--cap-rule); font-weight: 700; }
+.cap-intro { font-style: italic; margin: 16px 0; }
+.cap-cols { display: grid; grid-template-columns: 3fr 2fr; gap: 0; }
+.cap-main { padding-right: 20px; }
+.cap-side { background: #F2F2F2; border-left: 2px solid var(--cap-rule); padding: 4px 16px 16px; }
+.cap h2 { color: var(--cap-main); font-size: 16px; font-weight: 700; text-transform: uppercase; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1.5px solid var(--cap-rule); }
+.cap ul { list-style: disc; margin: 0 0 6px 20px; }
+.cap li { margin: 3px 0; }
+.cap-note { font-style: italic; }
+.cap-side p { margin: 3px 0; }
+.cap-side strong { color: var(--cap-main); }
+.cap-poc { font-weight: 700; }
+.cap-ph { color: #B3261E; font-style: italic; background: #FDECEA; border-radius: 3px; padding: 0 3px; }
+.cap-swatch { height: 28px; width: 28px; border-radius: 9999px; border: 2px solid rgba(255,255,255,0.15); }
+.cap-swatch.on { border-color: #fff; box-shadow: 0 0 0 3px rgba(127,162,255,0.45); }
+.cap-sw-navy { background: #1B2F5E; } .cap-sw-teal { background: #1F6F75; } .cap-sw-maroon { background: #6E1E2C; } .cap-sw-charcoal { background: #2B2F36; }
+@media print {
+  .cap { min-width: 0; padding: 0; font-size: 12px; }
+  .cap, .cap-head, .cap-side { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .cap-ph { background: none; }
+}

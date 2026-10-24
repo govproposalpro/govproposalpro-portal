@@ -33,9 +33,37 @@ const toId = (v) => {
 
 // ---------------------------------------------------------------- Capability Statement Generator
 
+const ACCENTS = ['navy', 'teal', 'maroon', 'charcoal'];
+const txt = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, '').trim().slice(0, max) : '');
+const txtList = (v, n, max) => (Array.isArray(v) ? v.map((x) => txt(x, max)).filter(Boolean).slice(0, n) : []);
+
+/** Normalizes a structured capability statement, from Claude or from the member's edits. */
+function cleanStatement(c) {
+  const o = c && typeof c === 'object' ? c : {};
+  const contact = o.contact && typeof o.contact === 'object' ? o.contact : {};
+  return {
+    accent: ACCENTS.includes(o.accent) ? o.accent : 'navy',
+    companyName: txt(o.companyName, 160),
+    overview: txt(o.overview, 600),
+    coreCapabilities: txtList(o.coreCapabilities, 10, 240),
+    capabilitiesNote: txt(o.capabilitiesNote, 400),
+    coreCompetencies: txtList(o.coreCompetencies, 16, 80),
+    differentiators: txtList(o.differentiators, 8, 300),
+    companyData: (Array.isArray(o.companyData) ? o.companyData : []).slice(0, 12)
+      .map((d) => ({ label: txt(d && d.label, 40), value: txt(d && d.value, 300) })).filter((d) => d.label && d.value),
+    representativeClients: (Array.isArray(o.representativeClients) ? o.representativeClients : []).slice(0, 12)
+      .map((r) => ({ name: txt(r && r.name, 120), role: txt(r && r.role, 120) })).filter((r) => r.name),
+    contact: {
+      name: txt(contact.name, 120), title: txt(contact.title, 120), email: txt(contact.email, 254),
+      phone: txt(contact.phone, 40), website: txt(contact.website, 200),
+    },
+  };
+}
+
 router.post('/capability-statements', requireAuth, requireFeature('capability_statement'), perUser(4), async (req, res, next) => {
   try {
     if (!ai.enabled()) return res.status(503).json({ error: 'AI features are being switched on. Please try again shortly.' });
+    if (!req.user.onboarded_at) return res.status(409).json({ error: 'Finish your company setup first.', setupRequired: true });
     const today = await db.query(
       `SELECT count(*)::int AS n FROM capability_statements WHERE user_id = $1 AND created_at > now() - interval '1 day'`,
       [req.user.id]
@@ -48,7 +76,11 @@ router.post('/capability-statements', requireAuth, requireFeature('capability_st
     const profile = aiProfile(req.user);
     documentContext(req.user.id)
       .then((documents) => ai.writeCapabilityStatement({ profile, documents }))
-      .then((md) => db.query(`UPDATE capability_statements SET status = 'ready', content_md = $2, completed_at = now() WHERE id = $1`, [id, md]))
+      .then((c) => {
+        const content = cleanStatement(c);
+        return db.query(`UPDATE capability_statements SET status = 'ready', content_json = $2, content_md = $3, completed_at = now() WHERE id = $1`,
+          [id, content, ai.capabilityMarkdown(content)]);
+      })
       .catch((err) => {
         console.error(`[capability] ${id} failed:`, err.message);
         const msg = err instanceof ai.AiError ? err.message : 'Something went wrong on our side. Please try again.';
@@ -72,7 +104,7 @@ router.get('/capability-statements', requireAuth, requireFeature('capability_sta
 router.get('/capability-statements/:id', requireAuth, requireFeature('capability_statement'), async (req, res, next) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, status, error, content_md AS "contentMd", created_at AS "createdAt"
+      `SELECT id, status, error, content_md AS "contentMd", content_json AS "content", created_at AS "createdAt"
          FROM capability_statements WHERE id = $1 AND user_id = $2`, [toId(req.params.id), req.user.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json({ statement: rows[0] });
@@ -81,11 +113,18 @@ router.get('/capability-statements/:id', requireAuth, requireFeature('capability
 
 router.patch('/capability-statements/:id', requireAuth, requireFeature('capability_statement'), express.json({ limit: '256kb' }), async (req, res, next) => {
   try {
-    const md = req.body && req.body.contentMd;
+    const b = req.body || {};
+    let content = null;
+    let md = b.contentMd;
+    if (b.content && typeof b.content === 'object') {
+      content = cleanStatement(b.content);
+      md = ai.capabilityMarkdown(content);
+    }
     if (typeof md !== 'string' || md.length > 100_000) return res.status(400).json({ error: 'Invalid text.' });
     const { rowCount } = await db.query(
-      `UPDATE capability_statements SET content_md = $3 WHERE id = $1 AND user_id = $2 AND status = 'ready'`,
-      [toId(req.params.id), req.user.id, md]);
+      `UPDATE capability_statements SET content_md = $3, content_json = COALESCE($4, content_json)
+        WHERE id = $1 AND user_id = $2 AND status = 'ready'`,
+      [toId(req.params.id), req.user.id, md, content]);
     if (!rowCount) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   } catch (err) { next(err); }

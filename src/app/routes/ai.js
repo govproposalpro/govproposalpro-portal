@@ -6,6 +6,7 @@
  */
 
 const express = require('express');
+const mammoth = require('mammoth');
 const rateLimit = require('express-rate-limit');
 const db = require('../../db');
 const ai = require('../ai');
@@ -37,29 +38,52 @@ const safeError = (err) => (err instanceof ai.AiError ? err.message : 'Something
 
 // ---------------------------------------------------------------- AI Bid Decryptor
 
+const MAX_SOLICITATION_FILES = 6;
+
+/** Plain text of a Word document. Solicitations and amendments are often posted as .docx. */
+async function docxText(buffer) {
+  try {
+    const { value } = await mammoth.extractRawText({ buffer });
+    return value.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  } catch {
+    return '';
+  }
+}
+
 router.post(
   '/decryptor',
   requireAuth,
   requireFeature('bid_decryptor'),
   aiLimiter,
-  express.json({ limit: '28mb' }),
+  express.json({ limit: '42mb' }),
   async (req, res, next) => {
     try {
       if (!ai.enabled()) return res.status(503).json({ error: 'AI features are being switched on. Please try again shortly.' });
       const b = req.body || {};
-      let pdfBase64 = null;
-      let text = null;
-      if (typeof b.pdfBase64 === 'string' && b.pdfBase64) {
-        if (!/^[A-Za-z0-9+/]+=*$/.test(b.pdfBase64)) return res.status(400).json({ error: 'That file could not be read.' });
-        const bytes = Buffer.from(b.pdfBase64, 'base64');
-        if (bytes.length > MAX_PDF_BYTES) return res.status(413).json({ error: 'PDFs up to 20 MB are supported.' });
-        if (bytes.subarray(0, 5).toString('latin1') !== '%PDF-') return res.status(400).json({ error: 'Please upload a PDF file.' });
-        pdfBase64 = b.pdfBase64;
-      } else if (typeof b.text === 'string' && b.text.trim().length >= 200) {
-        text = b.text.slice(0, MAX_TEXT_CHARS);
-      } else {
-        return res.status(400).json({ error: 'Upload the solicitation PDF or paste at least a few paragraphs of it.' });
+      // The solicitation plus any amendments, Q&A or attachments: PDF or Word files, or pasted text.
+      const incoming = Array.isArray(b.files) ? b.files
+        : typeof b.pdfBase64 === 'string' && b.pdfBase64 ? [{ name: b.fileName, data: b.pdfBase64 }] : [];
+      if (incoming.length > MAX_SOLICITATION_FILES) return res.status(400).json({ error: `Upload up to ${MAX_SOLICITATION_FILES} files at a time.` });
+      const files = [];
+      let bytesTotal = 0;
+      for (const f of incoming) {
+        const name = typeof f.name === 'string' && f.name.slice(0, 200) ? f.name.slice(0, 200) : 'solicitation';
+        if (typeof f.data !== 'string' || !/^[A-Za-z0-9+/]+=*$/.test(f.data)) return res.status(400).json({ error: `${name} could not be read.` });
+        const bytes = Buffer.from(f.data, 'base64');
+        bytesTotal += bytes.length;
+        if (bytesTotal > MAX_PDF_BYTES * 1.5) return res.status(413).json({ error: 'Files can add up to 30 MB.' });
+        if (bytes.subarray(0, 5).toString('latin1') === '%PDF-') {
+          files.push({ name, kind: 'pdf', data: f.data });
+        } else if (bytes.subarray(0, 2).toString('latin1') === 'PK' && /\.docx$/i.test(name)) {
+          const text = await docxText(bytes);
+          if (!text) return res.status(400).json({ error: `${name} has no readable text.` });
+          files.push({ name, kind: 'text', data: text.slice(0, MAX_TEXT_CHARS) });
+        } else {
+          return res.status(400).json({ error: `${name}: upload PDF or Word (.docx) files.` });
+        }
       }
+      const pasted = typeof b.text === 'string' && b.text.trim().length >= 200 ? b.text.slice(0, MAX_TEXT_CHARS) : null;
+      if (!files.length && !pasted) return res.status(400).json({ error: 'Upload the solicitation (PDF or Word) or paste at least a few paragraphs of it.' });
       const bidId = b.bidId ? toId(b.bidId) : null;
       if (bidId) {
         const owns = await db.query('SELECT 1 FROM bids WHERE id = $1 AND user_id = $2', [bidId, req.user.id]);
@@ -73,7 +97,7 @@ router.post(
         return res.status(429).json({ error: `You've decrypted ${DECRYPTS_PER_DAY} solicitations in the last 24 hours. Try again tomorrow.` });
       }
 
-      const fileName = typeof b.fileName === 'string' ? b.fileName.slice(0, 200) : pdfBase64 ? 'solicitation.pdf' : 'Pasted text';
+      const fileName = files.length ? files.map((f) => f.name).join(', ').slice(0, 200) : 'Pasted text';
       const { rows } = await db.query(
         'INSERT INTO rfp_summaries (user_id, bid_id, file_name) VALUES ($1, $2, $3) RETURNING id',
         [req.user.id, bidId, fileName]
@@ -81,7 +105,7 @@ router.post(
       const id = rows[0].id;
       res.status(202).json({ id, status: 'working' });
 
-      ai.decryptRfp({ pdfBase64, text })
+      ai.decryptRfp({ files, text: pasted })
         .then((summary) => db.query(
           `UPDATE rfp_summaries SET status = 'ready', summary = $2, completed_at = now() WHERE id = $1`, [id, summary]))
         .catch((err) => {
@@ -146,16 +170,94 @@ router.post('/decryptor/:id/to-bid', requireAuth, requireFeature('bid_crm'), asy
 
 // ---------------------------------------------------------------- AI Proposal Engine
 
+const CONTRACT_TYPES = ['Firm Fixed Price', 'Time and Materials', 'Labor Hour', 'Cost Reimbursement', 'IDIQ', 'BPA', 'Purchase Order', 'Not sure'];
+const FILE_TYPES = {
+  'application/pdf': (b) => b.subarray(0, 5).toString('latin1') === '%PDF-',
+  'image/jpeg': (b) => b[0] === 0xff && b[1] === 0xd8,
+  'image/png': (b) => b.subarray(1, 4).toString('latin1') === 'PNG',
+  'image/webp': (b) => b.subarray(8, 12).toString('latin1') === 'WEBP',
+  'image/gif': (b) => b.subarray(0, 3).toString('latin1') === 'GIF',
+};
+const MAX_FILES = 8;
+const MAX_FILES_BYTES = 25 * 1024 * 1024;
+const money = (v) => {
+  const n = typeof v === 'number' ? v : Number(String(v ?? '').replace(/[$,\s]/g, ''));
+  return Number.isFinite(n) && n >= 0 && n < 1e12 ? Math.round(n * 100) / 100 : null;
+};
+const line = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, max) : '');
+
+/**
+ * Contract type, pricing table and supporting files the member adds for one proposal.
+ * Totals are computed here so the writer never does its own arithmetic on raw input.
+ * Files are passed to Claude and never stored.
+ */
+function parseProposalDetails(b) {
+  const out = { contract: null, pricing: null, attachments: [] };
+  const contractType = CONTRACT_TYPES.includes(b.contractType) ? b.contractType : null;
+  const delivery = line(b.deliveryTerms, 300);
+  if (contractType || delivery) out.contract = { type: contractType || 'Not stated', delivery_and_lead_time: delivery || 'Not stated' };
+
+  const items = Array.isArray(b.pricingItems) ? b.pricingItems.slice(0, 60) : [];
+  const rows = [];
+  for (const it of items) {
+    const description = line(it && it.description, 300);
+    if (!description) continue;
+    const unitPrice = money(it.unitPrice);
+    const quantity = money(it.quantity);
+    rows.push({
+      item: line(it.item, 20) || String(rows.length + 1).padStart(4, '0'),
+      description,
+      unit: line(it.unit, 30) || 'Each',
+      quantity,
+      unit_price: unitPrice,
+      total: unitPrice !== null && quantity !== null ? Math.round(unitPrice * quantity * 100) / 100 : null,
+    });
+  }
+  const extras = (Array.isArray(b.pricingExtras) ? b.pricingExtras.slice(0, 10) : [])
+    .map((x) => ({ label: line(x && x.label, 100), amount: money(x && x.amount) }))
+    .filter((x) => x.label && x.amount !== null);
+  if (rows.length || extras.length) {
+    const subtotal = rows.reduce((t, r) => t + (r.total || 0), 0);
+    const total = subtotal + extras.reduce((t, x) => t + x.amount, 0);
+    out.pricing = {
+      line_items: rows,
+      subtotal: Math.round(subtotal * 100) / 100,
+      other_charges: extras,
+      total: Math.round(total * 100) / 100,
+      note: rows.some((r) => r.total === null) ? 'Some line items have no price yet: use [INSERT: price] for them.' : undefined,
+    };
+  }
+
+  const files = Array.isArray(b.attachments) ? b.attachments : [];
+  if (files.length > MAX_FILES) return { error: `Attach up to ${MAX_FILES} files.` };
+  let bytesTotal = 0;
+  for (const f of files) {
+    const mediaType = f && f.mediaType;
+    if (!FILE_TYPES[mediaType] || typeof f.data !== 'string' || !/^[A-Za-z0-9+/]+=*$/.test(f.data)) {
+      return { error: 'Attach photos (JPG, PNG, WebP) or PDF files only.' };
+    }
+    const bytes = Buffer.from(f.data, 'base64');
+    bytesTotal += bytes.length;
+    if (bytesTotal > MAX_FILES_BYTES) return { error: 'Attachments can add up to 25 MB.' };
+    if (!FILE_TYPES[mediaType](bytes)) return { error: `${line(f.name, 80) || 'A file'} is not a valid ${mediaType === 'application/pdf' ? 'PDF' : 'image'}.` };
+    out.attachments.push({ name: line(f.name, 120) || 'attachment', mediaType, data: f.data });
+  }
+  return out;
+}
+
 router.post(
   '/proposals',
   requireAuth,
   requireFeature('proposal_engine'),
   aiLimiter,
-  express.json({ limit: '32kb' }),
+  express.json({ limit: '36mb' }),
   async (req, res, next) => {
     try {
       if (!ai.enabled()) return res.status(503).json({ error: 'AI features are being switched on. Please try again shortly.' });
+      if (!req.user.onboarded_at) return res.status(409).json({ error: 'Finish your company setup first, so the proposal is written about your business.', setupRequired: true });
       const b = req.body || {};
+      const details = parseProposalDetails(b);
+      if (details.error) return res.status(400).json({ error: details.error });
       const bidId = b.bidId ? toId(b.bidId) : null;
       const summaryId = b.rfpSummaryId ? toId(b.rfpSummaryId) : null;
       const instructions = typeof b.instructions === 'string' ? b.instructions.trim().slice(0, 6000) : '';
@@ -196,7 +298,7 @@ router.post(
 
       const profile = aiProfile(req.user);
       const documents = await documentContext(req.user.id);
-      ai.writeProposal({ bid, summary, profile, documents, instructions, title })
+      ai.writeProposal({ bid, summary, profile, documents, instructions, title, ...details })
         .then((md) => db.query(
           `UPDATE proposals SET status = 'ready', content_md = $2, completed_at = now() WHERE id = $1`, [id, md]))
         .catch((err) => {

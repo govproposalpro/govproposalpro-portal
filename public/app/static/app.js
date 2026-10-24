@@ -257,8 +257,8 @@
     } catch {
       return;
     }
-    // New members land on the company setup first, so their first proposal already knows them.
-    if (path === '/' && !state.me.user.onboarded && !skippedOnboarding()) {
+    // Company setup comes first and is required: every proposal is written from it.
+    if (!state.me.user.onboarded && path !== '/welcome' && path !== '/profile') {
       history.replaceState(null, '', '/app/welcome');
       path = '/welcome';
     }
@@ -384,9 +384,6 @@
     view.innerHTML = `
       ${pageHead(`Welcome back${first ? ', ' + esc(first) : ''}`, 'Your government contracting command center.',
         '<a href="/app/decryptor" data-link class="btn-ghost">' + icon('decrypt', 'h-4 w-4') + 'Decrypt an RFP</a><a href="/app/proposals/new" data-link class="btn-primary">' + icon('proposal', 'h-4 w-4') + 'New proposal</a>')}
-      ${!me.user.onboarded ? `<div class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-brand-blueSoft/25 bg-gradient-to-r from-brand-blue/20 to-brand-red/10 p-5">
-        <div><p class="font-semibold text-white">Finish setting up your company</p><p class="mt-1 text-sm text-mist-300">Proposals and capability statements use your UEI, capabilities and past performance. Without them the engine leaves placeholders.</p></div>
-        <a href="/app/welcome" data-link class="btn-primary">Finish setup</a></div>` : ''}
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="card p-5">
           <p class="text-sm text-mist-400">Proposals this month</p>
@@ -588,17 +585,18 @@
   async function viewDecryptor(view) {
     const [{ summaries }, { bids }] = await Promise.all([api('/decryptor'), api('/bids')]);
     view.innerHTML = `
-      ${pageHead('AI Bid Decryptor', 'Drop in a 100-page solicitation. Get the one-page brief: scope, requirements, due dates and disqualifiers.')}
+      ${pageHead('AI Bid Decryptor', 'Drop in the solicitation and its amendments. Get the one-page brief: scope, line items, FAR clauses, who to submit to, due dates and disqualifiers.')}
       <div class="grid gap-6 lg:grid-cols-5">
         <form id="decrypt-form" class="card p-6 lg:col-span-3" novalidate>
           <label id="drop" for="pdf" class="flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-mist-300/20 bg-ink-900/50 px-6 py-12 text-center transition hover:border-brand-blueSoft/50">
             <span class="mb-3 rounded-2xl bg-gradient-to-br from-brand-blue/30 to-brand-red/20 p-3 text-white">${icon('upload', 'h-6 w-6')}</span>
-            <span id="drop-label" class="font-semibold text-white">Drop the solicitation PDF here</span>
-            <span class="mt-1 text-sm text-mist-400">or click to choose a file (up to 20 MB)</span>
-            <input id="pdf" type="file" accept="application/pdf,.pdf" class="sr-only" />
+            <span id="drop-label" class="font-semibold text-white">Drop the solicitation here</span>
+            <span class="mt-1 text-sm text-mist-400">PDF or Word. Add amendments, Q&amp;A and attachments too (up to 6 files, 30 MB).</span>
+            <input id="pdf" type="file" multiple accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="sr-only" />
           </label>
+          <ul id="sol-files" class="mt-3 space-y-2"></ul>
           <details class="mt-4">
-            <summary class="cursor-pointer text-sm text-mist-400 hover:text-white">No PDF? Paste the solicitation text instead</summary>
+            <summary class="cursor-pointer text-sm text-mist-400 hover:text-white">No file? Paste the solicitation text instead</summary>
             <textarea id="paste" rows="8" class="field mt-3" placeholder="Paste the RFP, RFQ or Sources Sought text"></textarea>
           </details>
           <div class="mt-4"><label class="label" for="link-bid">Attach to an opportunity (optional)</label>
@@ -614,20 +612,28 @@
         </section>
       </div>`;
 
-    let file = null;
+    const picked = [];
     const input = $('#pdf');
     const drop = $('#drop');
-    const pick = (f) => {
-      if (!f) return;
-      if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') return toast('Please choose a PDF file.', 'error');
-      if (f.size > 20 * 1024 * 1024) return toast('PDFs up to 20 MB are supported.', 'error');
-      file = f;
-      $('#drop-label').textContent = f.name;
+    const drawPicked = () => {
+      $('#sol-files').innerHTML = picked.map((f, i) => `<li class="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
+        <span class="min-w-0 truncate text-sm text-mist-100">${esc(f.name)}</span><button type="button" class="btn-ghost !px-2.5 !py-1 !text-xs" data-rm="${i}">Remove</button></li>`).join('');
+      $('#drop-label').textContent = picked.length ? 'Add another file (amendment, Q&A, attachment)' : 'Drop the solicitation here';
     };
-    input.addEventListener('change', () => pick(input.files[0]));
+    const pick = (list) => {
+      for (const f of list) {
+        if (!/\.(pdf|docx)$/i.test(f.name)) { toast(`${f.name}: upload PDF or Word (.docx) files.`, 'error'); continue; }
+        if (picked.length >= 6) { toast('Up to 6 files at a time.', 'error'); break; }
+        if (picked.reduce((t, x) => t + x.size, 0) + f.size > 30 * 1024 * 1024) { toast('Files can add up to 30 MB.', 'error'); break; }
+        picked.push(f);
+      }
+      drawPicked();
+    };
+    input.addEventListener('change', () => { pick(input.files); input.value = ''; });
+    $('#sol-files').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (b) { picked.splice(Number(b.dataset.rm), 1); drawPicked(); } });
     drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('border-brand-blueSoft/60'); });
     drop.addEventListener('dragleave', () => drop.classList.remove('border-brand-blueSoft/60'));
-    drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('border-brand-blueSoft/60'); pick(e.dataTransfer.files[0]); });
+    drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('border-brand-blueSoft/60'); pick(e.dataTransfer.files); });
 
     $('#decrypt-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -635,8 +641,8 @@
       const errEl = $('#decrypt-error');
       errEl.classList.add('hidden');
       const text = $('#paste').value.trim();
-      if (!file && text.length < 200) {
-        errEl.textContent = 'Upload the PDF or paste at least a few paragraphs of the solicitation.';
+      if (!picked.length && text.length < 200) {
+        errEl.textContent = 'Upload the solicitation or paste at least a few paragraphs of it.';
         errEl.classList.remove('hidden');
         return;
       }
@@ -644,12 +650,8 @@
       btn.innerHTML = '<span class="spinner"></span>Uploading';
       try {
         const body = { bidId: $('#link-bid').value ? Number($('#link-bid').value) : null };
-        if (file) {
-          body.pdfBase64 = await readBase64(file);
-          body.fileName = file.name;
-        } else {
-          body.text = text;
-        }
+        if (picked.length) body.files = await Promise.all(picked.map(async (f) => ({ name: f.name, data: await readBase64(f) })));
+        else body.text = text;
         const { id } = await api('/decryptor', { method: 'POST', body });
         navigate('/decryptor/' + id);
       } catch (err) {
@@ -711,6 +713,16 @@
         ${block('How you\'ll be graded (Section M)', list(d.evaluation_criteria))}
         ${block('Disqualifiers and compliance flags', list(d.compliance_flags), 'lg:col-span-2 border-brand-red/25')}
         ${block('Subcontracting limits', `<p>${esc(d.subcontracting_notes || 'Not stated')}</p>`)}
+        ${d.contracting_officer ? block('Submit to', (() => {
+          const co = d.contracting_officer;
+          const rows = [co.name, co.title, co.email, co.phone, co.office, co.address].filter((x) => x && !/^not stated$/i.test(x));
+          return rows.length ? rows.map((x) => `<p>${esc(x)}</p>`).join('') : '<p class="text-mist-500">Not stated</p>';
+        })()) : ''}
+        ${d.far_clauses ? block('FAR and agency clauses', d.far_clauses.length ? `<div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="text-xs uppercase tracking-wider text-mist-500"><tr><th class="pb-2 pr-4 font-semibold">Clause</th><th class="pb-2 pr-4 font-semibold">Title</th><th class="pb-2 font-semibold">What you must do</th></tr></thead>
+          <tbody class="divide-y divide-white/[0.06]">${d.far_clauses.map((c) => `<tr class="${/^none/i.test(c.offeror_action || '') ? 'text-mist-500' : ''}"><td class="py-2 pr-4 align-top font-mono text-xs text-white">${esc(c.number)}</td><td class="py-2 pr-4 align-top">${esc(c.title)}</td><td class="py-2 align-top">${esc(c.offeror_action)}</td></tr>`).join('')}</tbody></table></div>
+          <p class="mt-3 text-xs text-mist-500">The Proposal Engine writes a compliance statement for each clause that needs one.</p>` : '<p class="text-mist-500">None listed</p>', 'lg:col-span-2') : ''}
+        ${d.line_items && d.line_items.length ? block('Line items to price', `<ul class="space-y-2">${d.line_items.map((li) => `<li><p class="text-white">${esc([li.item, li.description].filter(Boolean).join(' · '))}</p><p class="text-xs text-mist-500">${esc([li.quantity, li.unit].filter(Boolean).join(' '))}</p></li>`).join('')}</ul>`, 'lg:col-span-3') : ''}
+        ${d.amendments && d.amendments.length ? block('Amendments', list(d.amendments), 'lg:col-span-3') : ''}
       </div>`;
 
     $('#to-bid').addEventListener('click', async () => {
@@ -734,43 +746,190 @@
     if (proposals.some((p) => p.status === 'working')) every(6000, () => render());
   }
 
+  const CONTRACT_TYPES = ['Firm Fixed Price', 'Time and Materials', 'Labor Hour', 'Cost Reimbursement', 'IDIQ', 'BPA', 'Purchase Order', 'Not sure'];
+  const FILE_ACCEPT = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const step = (n, title, sub) => `<div class="mb-4 flex items-start gap-3"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-blue to-brand-red text-xs font-bold text-white">${n}</span>
+    <div><h2 class="font-semibold text-white">${title}</h2>${sub ? `<p class="mt-0.5 text-sm text-mist-400">${sub}</p>` : ''}</div></div>`;
+
   async function viewNewProposal(view) {
     const params = new URLSearchParams(location.search);
     const [{ bids }, { summaries }, { usage }] = await Promise.all([api('/bids'), api('/decryptor'), api('/proposals')]);
     const ready = summaries.filter((s) => s.status === 'ready');
     const left = usage.limit - usage.used;
+    const files = [];
     view.innerHTML = `
       ${pageHead('New proposal', left > 0 ? `Uses 1 of your ${left} remaining proposals this month.` : 'You have reached this month\'s proposal limit.')}
-      <form id="proposal-form" class="card max-w-3xl p-6 sm:p-8" novalidate>
-        <div class="grid gap-5">
-          <div><label class="label" for="pf-bid">Opportunity from your Bid CRM</label>
-            <select id="pf-bid" name="bidId" class="field"><option value="">None</option>${bids.map((b) => `<option value="${b.id}" ${String(b.id) === params.get('bid') ? 'selected' : ''}>${esc(b.title)}</option>`).join('')}</select></div>
-          <div><label class="label" for="pf-sum">Decrypted solicitation (strongly recommended)</label>
-            <select id="pf-sum" name="rfpSummaryId" class="field"><option value="">None</option>${ready.map((s) => `<option value="${s.id}" ${String(s.id) === params.get('summary') ? 'selected' : ''}>${esc(s.title || s.fileName)}</option>`).join('')}</select>
-            <p class="mt-1.5 text-xs text-mist-500">The engine mirrors the solicitation's own instructions and grading criteria when it has them.</p></div>
-          <div><label class="label" for="pf-title">Proposal title (optional)</label><input id="pf-title" name="title" class="field" maxlength="200" /></div>
-          <div><label class="label" for="pf-notes">Your notes for the writer</label>
-            <textarea id="pf-notes" name="instructions" rows="6" class="field" maxlength="6000" placeholder="Win themes, the subcontractor you plan to use, staffing, anything the government should know about you. If you have no opportunity selected, describe the contract here."></textarea></div>
-        </div>
-        <p id="pf-error" class="mt-4 hidden text-sm text-brand-redSoft" role="alert"></p>
-        <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <p class="text-xs text-mist-500">Facts we don't know about your company are left as <span class="doc"><span class="ph">[INSERT: ...]</span></span> placeholders, never made up.</p>
-          <button type="submit" class="btn-primary !px-6 !py-3" ${left <= 0 ? 'disabled' : ''}>${icon('spark', 'h-5 w-5')}Generate proposal</button>
-        </div>
-        ${left <= 0 ? `<p class="mt-4 rounded-2xl border border-brand-red/30 bg-brand-red/10 p-4 text-sm text-brand-redSoft">You've used all ${usage.limit} proposals this month.${state.me.tier.key !== 'enterprise' ? ' Enterprise Edition raises your limit to 50 a month.' : ''}</p>` : ''}
+      <form id="proposal-form" class="max-w-4xl space-y-6" novalidate>
+        <section class="card p-6 sm:p-8">
+          ${step(1, 'The solicitation', 'The engine pulls the contracting officer, the FAR clauses you must answer, line items and grading criteria from it.')}
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2"><label class="label" for="pf-sum">Decrypted solicitation (strongly recommended)</label>
+              <select id="pf-sum" name="rfpSummaryId" class="field"><option value="">None</option>${ready.map((s) => `<option value="${s.id}" ${String(s.id) === params.get('summary') ? 'selected' : ''}>${esc(s.title || s.fileName)}</option>`).join('')}</select>
+              <p class="mt-1.5 text-xs text-mist-500">Not there yet? <a href="/app/decryptor" data-link class="font-semibold text-brand-blueSoft hover:text-white">Upload the solicitation and amendments</a> first (PDF or Word). It takes a minute.</p></div>
+            <div><label class="label" for="pf-bid">Opportunity from your Bid CRM</label>
+              <select id="pf-bid" name="bidId" class="field"><option value="">None</option>${bids.map((b) => `<option value="${b.id}" ${String(b.id) === params.get('bid') ? 'selected' : ''}>${esc(b.title)}</option>`).join('')}</select></div>
+            <div><label class="label" for="pf-title">Proposal title (optional)</label><input id="pf-title" name="title" class="field" maxlength="200" /></div>
+          </div>
+          <div id="pf-sol" class="mt-5 hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-sm"></div>
+        </section>
+
+        <section class="card p-6 sm:p-8">
+          ${step(2, 'Contract type and delivery', 'Use what the solicitation states. Pick "Not sure" if it does not say.')}
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div><label class="label" for="pf-type">Contract type</label>
+              <select id="pf-type" name="contractType" class="field"><option value="">Choose</option>${CONTRACT_TYPES.map((t) => `<option>${t}</option>`).join('')}</select></div>
+            <div><label class="label" for="pf-del">Delivery, lead time or period of performance</label><input id="pf-del" name="deliveryTerms" class="field" maxlength="300" placeholder="e.g. 7 to 9 weeks after award, FOB destination" /></div>
+          </div>
+        </section>
+
+        <section class="card p-6 sm:p-8">
+          ${step(3, 'Your pricing', 'Enter what you will charge the government: your supplier or subcontractor cost plus your markup. The engine builds the price table from these exact numbers.')}
+          <div class="overflow-x-auto"><table class="w-full min-w-[640px] text-left text-sm">
+            <thead class="text-xs uppercase tracking-wider text-mist-500"><tr><th class="pb-2 pr-2 font-semibold">Item</th><th class="pb-2 pr-2 font-semibold">Description</th><th class="pb-2 pr-2 font-semibold">Unit</th><th class="pb-2 pr-2 font-semibold">Qty</th><th class="pb-2 pr-2 font-semibold">Unit price ($)</th><th class="pb-2 pr-2 text-right font-semibold">Total</th><th></th></tr></thead>
+            <tbody id="pf-items"></tbody>
+          </table></div>
+          <button type="button" id="pf-add-item" class="btn-ghost mt-3">${icon('plus', 'h-4 w-4')}Add line item</button>
+          <h3 class="mt-6 text-sm font-semibold text-mist-300">Other charges</h3>
+          <div id="pf-extras" class="mt-2 space-y-2"></div>
+          <button type="button" id="pf-add-extra" class="btn-ghost mt-3">${icon('plus', 'h-4 w-4')}Add a charge (shipping, installation, freight...)</button>
+          <div class="mt-6 flex justify-end"><div class="w-full max-w-xs space-y-1 text-sm">
+            <div class="flex justify-between text-mist-400"><span>Subtotal</span><span id="pf-sub">$0</span></div>
+            <div class="flex justify-between text-base font-bold text-white"><span>Total</span><span id="pf-total">$0</span></div>
+          </div></div>
+        </section>
+
+        <section class="card p-6 sm:p-8">
+          ${step(4, 'Photos and supporting files', 'Supplier quotes, product spec sheets, price lists, photos of the product or job site, authorization letters, certifications. Phone photos work. Up to 8 files, 25 MB total.')}
+          <label id="pf-drop" for="pf-files" class="flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-mist-300/20 bg-ink-900/50 px-6 py-8 text-center transition hover:border-brand-blueSoft/50">
+            <span class="mb-2 rounded-2xl bg-gradient-to-br from-brand-blue/30 to-brand-red/20 p-3 text-white">${icon('upload', 'h-6 w-6')}</span>
+            <span class="font-semibold text-white">Drop files here or click to add</span>
+            <span class="mt-1 text-sm text-mist-400">JPG, PNG or PDF</span>
+            <input id="pf-files" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.pdf" class="sr-only" />
+          </label>
+          <ul id="pf-file-list" class="mt-3 space-y-2"></ul>
+        </section>
+
+        <section class="card p-6 sm:p-8">
+          ${step(5, 'Anything else the writer should know', '')}
+          <textarea id="pf-notes" name="instructions" rows="5" class="field" maxlength="6000" placeholder="Brand or model you are offering, the subcontractor or supplier you plan to use, warranty, win themes, staffing. If you have no solicitation selected, describe the contract here."></textarea>
+          <p id="pf-error" class="mt-4 hidden text-sm text-brand-redSoft" role="alert"></p>
+          <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <p class="text-xs text-mist-500">Facts we don't have are left as <span class="doc"><span class="ph">[INSERT: ...]</span></span> placeholders, never made up.</p>
+            <button type="submit" class="btn-primary !px-6 !py-3" ${left <= 0 ? 'disabled' : ''}>${icon('spark', 'h-5 w-5')}Generate proposal</button>
+          </div>
+          ${left <= 0 ? `<p class="mt-4 rounded-2xl border border-brand-red/30 bg-brand-red/10 p-4 text-sm text-brand-redSoft">You've used all ${usage.limit} proposals this month.${state.me.tier.key !== 'enterprise' ? ' Enterprise Edition raises your limit to 50 a month.' : ''}</p>` : ''}
+        </section>
       </form>`;
-    $('#proposal-form').addEventListener('submit', async (e) => {
+
+    const form = $('#proposal-form');
+    const num = (v) => { const n = Number(String(v).replace(/[$,\s]/g, '')); return Number.isFinite(n) && n >= 0 ? n : null; };
+    const money2 = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    const itemRow = (it = {}) => `<tr class="pf-item align-top">
+      <td class="py-1 pr-2"><input class="field !w-20 !px-3 !py-2" data-k="item" maxlength="20" placeholder="0001" value="${esc(it.item)}" /></td>
+      <td class="py-1 pr-2"><input class="field !py-2" data-k="description" maxlength="300" placeholder="What you are providing" value="${esc(it.description)}" /></td>
+      <td class="py-1 pr-2"><input class="field !w-24 !px-3 !py-2" data-k="unit" maxlength="30" placeholder="Each" value="${esc(it.unit)}" /></td>
+      <td class="py-1 pr-2"><input class="field !w-24 !px-3 !py-2" data-k="quantity" inputmode="decimal" value="${esc(it.quantity)}" /></td>
+      <td class="py-1 pr-2"><input class="field !w-32 !px-3 !py-2" data-k="unitPrice" inputmode="decimal" placeholder="0.00" value="${esc(it.unitPrice)}" /></td>
+      <td class="py-3 pr-2 text-right text-white" data-total>-</td>
+      <td class="py-1"><button type="button" class="btn-ghost !px-2.5 !py-2 pf-del" aria-label="Remove line">&times;</button></td></tr>`;
+    const extraRow = (x = {}) => `<div class="pf-extra flex gap-2"><input class="field !py-2" data-k="label" maxlength="100" placeholder="e.g. Shipping and handling" value="${esc(x.label)}" />
+      <input class="field !w-40 !py-2" data-k="amount" inputmode="decimal" placeholder="0.00" value="${esc(x.amount)}" /><button type="button" class="btn-ghost !px-2.5 pf-del" aria-label="Remove charge">&times;</button></div>`;
+    const recalc = () => {
+      let sub = 0;
+      $$('.pf-item', form).forEach((tr) => {
+        const q = num($('[data-k=quantity]', tr).value);
+        const p = num($('[data-k=unitPrice]', tr).value);
+        const t = q !== null && p !== null && $('[data-k=unitPrice]', tr).value !== '' ? q * p : null;
+        $('[data-total]', tr).textContent = t === null ? '-' : money2(t);
+        sub += t || 0;
+      });
+      const extras = $$('.pf-extra', form).reduce((t, el) => t + (num($('[data-k=amount]', el).value) || 0), 0);
+      $('#pf-sub').textContent = money2(sub);
+      $('#pf-total').textContent = money2(sub + extras);
+    };
+    $('#pf-items').insertAdjacentHTML('beforeend', itemRow());
+    $('#pf-add-item').addEventListener('click', () => { $('#pf-items').insertAdjacentHTML('beforeend', itemRow()); recalc(); });
+    $('#pf-add-extra').addEventListener('click', () => { $('#pf-extras').insertAdjacentHTML('beforeend', extraRow()); recalc(); });
+    form.addEventListener('click', (e) => {
+      const d = e.target.closest('.pf-del');
+      if (d) { (d.closest('.pf-item') || d.closest('.pf-extra')).remove(); recalc(); }
+    });
+    form.addEventListener('input', (e) => { if (e.target.closest('.pf-item, .pf-extra')) recalc(); });
+
+    // Picking a decrypted solicitation shows who it goes to and the clauses, and pre-fills its line items.
+    const showSolicitation = async () => {
+      const id = $('#pf-sum').value;
+      const box = $('#pf-sol');
+      if (!id) { box.classList.add('hidden'); return; }
+      try {
+        const d = (await api('/decryptor/' + id)).summary.summary || {};
+        const co = d.contracting_officer || {};
+        const must = (d.far_clauses || []).filter((c) => !/^none/i.test(c.offeror_action || ''));
+        box.innerHTML = `
+          <p class="text-mist-300"><span class="text-mist-500">Submitted to:</span> ${esc([co.name, co.title, co.email].filter((x) => x && !/^not stated$/i.test(x)).join(', ') || 'Not stated in the solicitation')}</p>
+          <p class="mt-1 text-mist-300"><span class="text-mist-500">Contract type:</span> ${esc(d.contract_type || 'Not stated')}</p>
+          <p class="mt-1 text-mist-300"><span class="text-mist-500">Clauses the proposal will answer:</span> ${must.length ? must.map((c) => esc(c.number)).join(', ') : 'None that need a statement'}</p>`;
+        box.classList.remove('hidden');
+        const typeSel = $('#pf-type');
+        if (!typeSel.value) {
+          const match = CONTRACT_TYPES.find((t) => (d.contract_type || '').toLowerCase().includes(t.toLowerCase()));
+          if (match) typeSel.value = match;
+        }
+        const empty = $$('.pf-item', form).every((tr) => !$('[data-k=description]', tr).value.trim());
+        if (empty && (d.line_items || []).length) {
+          $('#pf-items').innerHTML = d.line_items.slice(0, 60).map((li) => itemRow({
+            item: li.item, description: li.description, unit: li.unit,
+            quantity: /^\d+(\.\d+)?$/.test((li.quantity || '').replace(/,/g, '')) ? li.quantity.replace(/,/g, '') : '',
+          })).join('');
+          recalc();
+          toast('Line items copied from the solicitation. Add your prices.');
+        }
+      } catch { box.classList.add('hidden'); }
+    };
+    $('#pf-sum').addEventListener('change', showSolicitation);
+    if ($('#pf-sum').value) showSolicitation();
+
+    const drawFiles = () => {
+      $('#pf-file-list').innerHTML = files.map((f, i) => `<li class="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
+        <span class="min-w-0 truncate text-sm text-mist-100">${esc(f.name)}</span><span class="flex shrink-0 items-center gap-3 text-xs text-mist-500">${(f.size / 1048576).toFixed(1)} MB
+        <button type="button" class="btn-ghost !px-2.5 !py-1 !text-xs" data-rm="${i}">Remove</button></span></li>`).join('');
+    };
+    const addFiles = (list) => {
+      for (const f of list) {
+        if (!FILE_ACCEPT.includes(f.type) && !/\.pdf$/i.test(f.name)) { toast(`${f.name}: use JPG, PNG or PDF.`, 'error'); continue; }
+        if (files.length >= 8) { toast('Up to 8 files.', 'error'); break; }
+        if (files.reduce((t, x) => t + x.size, 0) + f.size > 25 * 1024 * 1024) { toast('Files can add up to 25 MB.', 'error'); break; }
+        files.push(f);
+      }
+      drawFiles();
+    };
+    $('#pf-files').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+    const drop = $('#pf-drop');
+    drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('border-brand-blueSoft/60'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('border-brand-blueSoft/60'));
+    drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('border-brand-blueSoft/60'); addFiles(e.dataTransfer.files); });
+    $('#pf-file-list').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (b) { files.splice(Number(b.dataset.rm), 1); drawFiles(); } });
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const form = e.target;
       const btn = $('button[type=submit]', form);
       const errEl = $('#pf-error');
       errEl.classList.add('hidden');
-      const data = Object.fromEntries(new FormData(form));
-      data.bidId = data.bidId ? Number(data.bidId) : null;
-      data.rfpSummaryId = data.rfpSummaryId ? Number(data.rfpSummaryId) : null;
+      const val = (n) => form.elements[n].value;
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span>Starting';
       try {
+        const data = {
+          bidId: val('bidId') ? Number(val('bidId')) : null,
+          rfpSummaryId: val('rfpSummaryId') ? Number(val('rfpSummaryId')) : null,
+          title: val('title'),
+          instructions: val('instructions'),
+          contractType: val('contractType') || null,
+          deliveryTerms: val('deliveryTerms'),
+          pricingItems: $$('.pf-item', form).map((tr) => Object.fromEntries($$('[data-k]', tr).map((i) => [i.dataset.k, i.value.trim()]))).filter((it) => it.description),
+          pricingExtras: $$('.pf-extra', form).map((el) => Object.fromEntries($$('[data-k]', el).map((i) => [i.dataset.k, i.value.trim()]))).filter((x) => x.label && x.amount),
+          attachments: await Promise.all(files.map(async (f) => ({ name: f.name, mediaType: f.type || 'application/pdf', data: await readBase64(f) }))),
+        };
         const { id } = await api('/proposals', { method: 'POST', body: data });
         await refreshMe().catch(() => {});
         navigate('/proposals/' + id);
@@ -843,10 +1002,6 @@
       r.onerror = () => reject(new Error('Could not read that file.'));
       r.readAsDataURL(file);
     });
-  }
-
-  function skippedOnboarding() {
-    try { return sessionStorage.getItem('gpp_setup_later') === '1'; } catch { return false; }
   }
 
   const ALERT_LABEL = { proposal_due: 'Proposal due', questions_due: 'Questions due', sam_expiring: 'SAM.gov renewal' };
@@ -996,6 +1151,7 @@
 
   const CERTS = { '8a': '8(a)', wosb: 'WOSB', sdvosb: 'SDVOSB', vosb: 'VOSB', hubzone: 'HUBZone', sdb: 'SDB' };
   const SAM_STATUS = { active: 'Active', in_progress: 'In progress', not_started: 'Not started' };
+  const STRUCTURES = { 'Limited Liability Company': 'LLC', Corporation: 'Corporation', 'S Corporation': 'S Corporation', 'Sole Proprietorship': 'Sole proprietorship', Partnership: 'Partnership', Other: 'Other' };
   const EMPLOYEES = { 1: 'Just me', '2-10': '2 to 10', '11-50': '11 to 50', '51-200': '51 to 200', '201+': 'More than 200' };
   const DOC_KIND = { capability_statement: 'Capability statement', past_performance: 'Past performance', resume: 'Resume', company_overview: 'Company overview', other: 'Other' };
 
@@ -1011,8 +1167,10 @@
 
   const SECTION = {
     company: (u) => `
-      ${fld('businessName', 'Legal business name', u.businessName, { attrs: 'maxlength="160"' })}
-      ${fld('fullName', 'Your name', u.fullName, { attrs: 'maxlength="120"' })}
+      ${fld('businessName', 'Legal business name *', u.businessName, { attrs: 'maxlength="160" required' })}
+      ${fld('fullName', 'Your name (point of contact)', u.fullName, { attrs: 'maxlength="120"' })}
+      ${fld('contactTitle', 'Your title', u.contactTitle, { attrs: 'maxlength="120" placeholder="e.g. Founder and President"' })}
+      ${fld('entityStructure', 'Business structure', u.entityStructure, { options: STRUCTURES })}
       ${fld('uei', 'UEI (from SAM.gov)', u.uei, { attrs: 'maxlength="12" placeholder="12 letters and numbers"' })}
       ${fld('cageCode', 'CAGE code', u.cageCode, { attrs: 'maxlength="5" placeholder="5 characters"' })}
       ${fld('samStatus', 'SAM.gov registration', u.samStatus, { options: SAM_STATUS })}
@@ -1023,10 +1181,11 @@
       ${fld('yearFounded', 'Year founded', u.yearFounded, { type: 'number', attrs: 'min="1800" max="2100"' })}
       ${fld('employees', 'Employees', u.employees, { options: EMPLOYEES })}`,
     work: (u) => `
-      ${fld('naics', 'NAICS codes', u.naics, { wide: true, attrs: 'maxlength="200" placeholder="e.g. 561720, 561730"' })}
-      ${fld('capabilities', 'Core capabilities', u.capabilities, { wide: true, rows: 5, attrs: 'maxlength="4000" placeholder="What you and your subcontractors deliver, for whom, and at what scale."', help: 'The proposal engine leans on this more than anything else.' })}
+      ${fld('naics', 'NAICS codes *', u.naics, { wide: true, attrs: 'maxlength="200" placeholder="e.g. 561720, 561730" required' })}
+      ${fld('capabilities', 'Core capabilities *', u.capabilities, { wide: true, rows: 5, attrs: 'maxlength="4000" placeholder="What you and your subcontractors deliver, for whom, and at what scale."', help: 'The proposal engine leans on this more than anything else.' })}
       ${fld('differentiators', 'What makes you different', u.differentiators, { wide: true, rows: 3, attrs: 'maxlength="2000" placeholder="Response times, certifications, equipment, local presence, safety record..."' })}
       ${fld('serviceArea', 'Where you work', u.serviceArea, { wide: true, attrs: 'maxlength="300" placeholder="e.g. Texas and Oklahoma, or nationwide"' })}
+      ${fld('primaryMarkets', 'Who you sell to', u.primaryMarkets, { wide: true, attrs: 'maxlength="300" placeholder="e.g. VA medical centers, school districts, state and local agencies"' })}
       <fieldset class="sm:col-span-2"><legend class="label">Certifications</legend><div class="flex flex-wrap gap-2">
         ${Object.entries(CERTS).map(([v, l]) => `<label class="chip"><input type="checkbox" name="certifications" value="${v}" class="accent-brand-blue" ${u.certifications.includes(v) ? 'checked' : ''} />${l}</label>`).join('')}
       </div></fieldset>`,
@@ -1100,8 +1259,8 @@
     const draw = () => {
       box.innerHTML = `
         <div class="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-          <label class="field flex min-w-0 cursor-pointer items-center gap-2 !py-2.5" for="doc-file">${icon('upload', 'h-4 w-4 shrink-0')}<span id="doc-name" class="truncate text-mist-400">${file ? esc(file.name) : 'Choose a PDF'}</span>
-            <input id="doc-file" type="file" accept="application/pdf,.pdf" class="sr-only" /></label>
+          <label class="field flex min-w-0 cursor-pointer items-center gap-2 !py-2.5" for="doc-file">${icon('upload', 'h-4 w-4 shrink-0')}<span id="doc-name" class="truncate text-mist-400">${file ? esc(file.name) : 'Choose a PDF, Word file or photo'}</span>
+            <input id="doc-file" type="file" accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp" class="sr-only" /></label>
           <select id="doc-kind" class="field !py-2.5" aria-label="Document type">${Object.entries(DOC_KIND).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
           <button type="button" id="doc-up" class="btn-primary">Upload</button>
         </div>
@@ -1116,8 +1275,8 @@
       $('#doc-file', box).addEventListener('change', (e) => {
         const f = e.target.files[0];
         if (!f) return;
-        if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { toast('Please choose a PDF file.', 'error'); return; }
-        if (f.size > 20 * 1024 * 1024) { toast('PDFs up to 20 MB are supported.', 'error'); return; }
+        if (!/\.(pdf|docx|jpe?g|png|webp)$/i.test(f.name)) { toast('Choose a PDF, Word (.docx) file or a JPG/PNG photo.', 'error'); return; }
+        if (f.size > 20 * 1024 * 1024) { toast('Files up to 20 MB are supported.', 'error'); return; }
         file = f;
         $('#doc-name', box).textContent = f.name;
       });
@@ -1132,13 +1291,13 @@
       }));
     };
     async function upload() {
-      if (!file) { toast('Choose a PDF first.', 'error'); return; }
+      if (!file) { toast('Choose a file first.', 'error'); return; }
       const btn = $('#doc-up', box);
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span>';
       try {
         const kind = $('#doc-kind', box).value;
-        const { id } = await api('/me/documents', { method: 'POST', body: { pdfBase64: await readBase64(file), fileName: file.name, kind } });
+        const { id } = await api('/me/documents', { method: 'POST', body: { data: await readBase64(file), fileName: file.name, kind } });
         docs.unshift({ id, fileName: file.name, kind, status: 'working', createdAt: new Date().toISOString() });
         file = null;
         draw();
@@ -1171,7 +1330,7 @@
   async function viewWelcome(view) {
     const u = state.me.user;
     const steps = [
-      ['Upload what you have', 'Capability statement, past performance write-ups, resumes, a company overview. We read them and fill in your profile for you. No documents yet? Skip this step.', null],
+      ['Upload what you have', 'Capability statement, past performance write-ups, resumes, a company overview: PDF, Word or a photo. We read them and fill in your profile for you. No documents yet? Continue to fill it in by hand.', null],
       ['Company basics', 'The facts every proposal, form and capability statement asks for.', 'company'],
       ['What you do', 'Proposals are written around this, so be specific.', 'work'],
       ['Team and track record', 'Evaluators score experience. Add every relevant project, including commercial and subcontract work.', 'team'],
@@ -1180,7 +1339,7 @@
       <div class="mx-auto max-w-3xl">
         <p class="text-xs font-semibold uppercase tracking-widest text-brand-blueSoft">Set up your company</p>
         <h1 class="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">Teach the engine about your business</h1>
-        <p class="mt-2 text-mist-400">Every proposal, capability statement and bid check uses what you add here. It takes about five minutes and you can change it anytime from your profile.</p>
+        <p class="mt-2 text-mist-400">Every proposal, capability statement and bid check is written from what you add here, so this comes first. It takes about five minutes and you can change it anytime from your profile. Fields marked * are required.</p>
         <ol class="mt-6 grid grid-cols-4 gap-2">${steps.map((st, i) => `<li class="step" data-i="${i}"><span class="step-bar"></span><span class="mt-2 hidden text-xs text-mist-400 sm:block">${i + 1}. ${st[0]}</span></li>`).join('')}</ol>
         <form id="ob" class="card mt-6 p-6 sm:p-8" novalidate>
           ${steps.map((st, i) => `
@@ -1193,7 +1352,7 @@
           ${errBox('ob-error')}
           <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
             <button type="button" id="ob-back" class="btn-ghost">Back</button>
-            <div class="flex gap-2"><button type="button" id="ob-later" class="btn-ghost">Finish later</button><button type="submit" id="ob-next" class="btn-primary">Continue</button></div>
+            <button type="submit" id="ob-next" class="btn-primary">Continue</button>
           </div>
         </form>
       </div>`;
@@ -1215,12 +1374,6 @@
     });
     show();
     $('#ob-back').addEventListener('click', () => { i = Math.max(0, i - 1); show(); });
-    $('#ob-later').addEventListener('click', async () => {
-      try { await save(); } catch { /* keep what saved */ }
-      try { sessionStorage.setItem('gpp_setup_later', '1'); } catch { /* private mode */ }
-      await refreshMe().catch(() => {});
-      navigate('/');
-    });
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = $('#ob-next');
@@ -1343,25 +1496,164 @@
     if (statements.some((c) => c.status === 'working')) every(6000, () => render());
   }
 
+  // Colors for the member's own capability statement (their document, so neutral, not our brand).
+  const CAP_ACCENTS = {
+    navy: { label: 'Navy', main: '#1B2F5E', rule: '#B8963E' },
+    teal: { label: 'Teal', main: '#1F6F75', rule: '#C2A15A' },
+    maroon: { label: 'Maroon', main: '#6E1E2C', rule: '#B8963E' },
+    charcoal: { label: 'Charcoal', main: '#2B2F36', rule: '#8C96A3' },
+  };
+  const phInline = (s) => esc(s).replace(/\[(INSERT|TBD|CONFIRM)[^\]]*\]|Pending assignment/g, (m) => `<span class="cap-ph">${m}</span>`);
+
+  /** The capability statement page: header band, intro, two columns. Classes only (strict CSP). */
+  function capPage(c) {
+    const ul = (items) => `<ul>${(items || []).map((x) => `<li>${phInline(x)}</li>`).join('')}</ul>`;
+    return `
+      <div class="cap cap-${esc(c.accent || 'navy')}">
+        <header class="cap-head"><h1>${phInline(c.companyName)}</h1><p>Capability Statement</p></header>
+        <p class="cap-intro">${phInline(c.overview)}</p>
+        <div class="cap-cols">
+          <div class="cap-main">
+            <h2>Core Capabilities</h2>${ul(c.coreCapabilities)}
+            ${c.capabilitiesNote ? `<p class="cap-note">${phInline(c.capabilitiesNote)}</p>` : ''}
+            <h2>Core Competencies</h2><p>${(c.coreCompetencies || []).map(phInline).join(' &nbsp;•&nbsp; ')}</p>
+            <h2>Differentiators</h2>${ul(c.differentiators)}
+          </div>
+          <aside class="cap-side">
+            <h2>Company Data</h2>
+            ${(c.companyData || []).map((d) => `<p><strong>${esc(d.label)}:</strong> ${phInline(d.value)}</p>`).join('')}
+            ${(c.representativeClients || []).length ? `<h2>Representative Clients</h2>${ul(c.representativeClients.map((r) => (r.role ? `${r.name} — ${r.role}` : r.name)))}` : ''}
+            <h2>Point of Contact</h2>
+            <p class="cap-poc">${phInline(c.contact.name)}</p>
+            ${c.contact.title ? `<p><em>${phInline(c.contact.title)}</em></p>` : ''}
+            ${[c.contact.email, c.contact.phone, c.contact.website].filter(Boolean).map((x) => `<p>${phInline(x)}</p>`).join('')}
+          </aside>
+        </div>
+      </div>`;
+  }
+
+  /** Same page for Word: tables and inline styles, which Word understands. */
+  function capWord(c) {
+    const a = CAP_ACCENTS[c.accent] || CAP_ACCENTS.navy;
+    const h2 = (t) => `<p style="margin:12pt 0 4pt;padding-bottom:3pt;border-bottom:1.5pt solid ${a.rule};font-family:Georgia,serif;font-size:12pt;font-weight:bold;color:${a.main}">${esc(t).toUpperCase()}</p>`;
+    const ul = (items) => `<ul style="margin:0 0 0 14pt;padding:0">${(items || []).map((x) => `<li style="margin:2pt 0">${esc(x)}</li>`).join('')}</ul>`;
+    return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(c.companyName)} Capability Statement</title></head>
+      <body style="font-family:Georgia,'Times New Roman',serif;font-size:10.5pt;color:#222">
+      <table width="100%" cellpadding="10" style="border-collapse:collapse;background:${a.main}"><tr><td>
+        <p style="margin:0;font-size:22pt;font-weight:bold;color:#fff">${esc(c.companyName).toUpperCase()}</p>
+        <p style="margin:2pt 0 0;font-size:12pt;font-weight:bold;color:${a.rule}">Capability Statement</p></td></tr></table>
+      <p style="margin:10pt 0;font-style:italic">${esc(c.overview)}</p>
+      <table width="100%" cellpadding="8" style="border-collapse:collapse"><tr>
+        <td width="60%" valign="top" style="border-right:1.5pt solid ${a.rule}">
+          ${h2('Core Capabilities')}${ul(c.coreCapabilities)}${c.capabilitiesNote ? `<p style="font-style:italic">${esc(c.capabilitiesNote)}</p>` : ''}
+          ${h2('Core Competencies')}<p>${(c.coreCompetencies || []).map(esc).join(' • ')}</p>
+          ${h2('Differentiators')}${ul(c.differentiators)}
+        </td>
+        <td width="40%" valign="top" style="background:#F2F2F2">
+          ${h2('Company Data')}${(c.companyData || []).map((d) => `<p style="margin:2pt 0"><b style="color:${a.main}">${esc(d.label)}:</b> ${esc(d.value)}</p>`).join('')}
+          ${(c.representativeClients || []).length ? h2('Representative Clients') + ul(c.representativeClients.map((r) => (r.role ? `${r.name} — ${r.role}` : r.name))) : ''}
+          ${h2('Point of Contact')}<p style="margin:2pt 0"><b>${esc(c.contact.name)}</b></p>${c.contact.title ? `<p style="margin:2pt 0;font-style:italic">${esc(c.contact.title)}</p>` : ''}
+          ${[c.contact.email, c.contact.phone, c.contact.website].filter(Boolean).map((x) => `<p style="margin:2pt 0">${esc(x)}</p>`).join('')}
+        </td></tr></table></body></html>`;
+  }
+
+  function capEditor(c) {
+    const lines = (a) => esc((a || []).join('\n'));
+    const ta = (name, label, value, rows, help) => `<div class="sm:col-span-2"><label class="label" for="ce-${name}">${label}</label><textarea id="ce-${name}" name="${name}" rows="${rows}" class="field">${value}</textarea>${help ? `<p class="mt-1 text-xs text-mist-500">${help}</p>` : ''}</div>`;
+    const inp = (name, label, value) => `<div><label class="label" for="ce-${name}">${label}</label><input id="ce-${name}" name="${name}" class="field" value="${esc(value)}" /></div>`;
+    return `<form id="cap-edit" class="grid gap-4 sm:grid-cols-2" novalidate>
+      <div class="sm:col-span-2">${inp('companyName', 'Company name', c.companyName)}</div>
+      ${ta('overview', 'Intro', esc(c.overview), 3)}
+      ${ta('coreCapabilities', 'Core capabilities', lines(c.coreCapabilities), 6, 'One per line.')}
+      ${ta('capabilitiesNote', 'Note under capabilities', esc(c.capabilitiesNote), 2)}
+      ${ta('coreCompetencies', 'Core competencies', lines(c.coreCompetencies), 5, 'One per line.')}
+      ${ta('differentiators', 'Differentiators', lines(c.differentiators), 5, 'One per line.')}
+      ${ta('companyData', 'Company data', esc((c.companyData || []).map((d) => `${d.label}: ${d.value}`).join('\n')), 8, 'One per line, as Label: value.')}
+      ${ta('representativeClients', 'Representative clients', esc((c.representativeClients || []).map((r) => (r.role ? `${r.name} — ${r.role}` : r.name)).join('\n')), 6, 'One per line, as Client — role.')}
+      ${inp('contactName', 'Contact name', c.contact.name)}${inp('contactTitle', 'Contact title', c.contact.title)}
+      ${inp('contactEmail', 'Email', c.contact.email)}${inp('contactPhone', 'Phone', c.contact.phone)}
+      <div class="sm:col-span-2">${inp('contactWebsite', 'Website', c.contact.website)}</div>
+      <div class="flex justify-end gap-2 sm:col-span-2"><button type="button" id="ce-cancel" class="btn-ghost">Cancel</button><button type="submit" class="btn-primary">Save changes</button></div>
+    </form>`;
+  }
+
+  function readCapEditor(form, base) {
+    const v = (n) => form.elements[n].value.trim();
+    const list = (n) => v(n).split('\n').map((x) => x.trim()).filter(Boolean);
+    return {
+      accent: base.accent,
+      companyName: v('companyName'),
+      overview: v('overview'),
+      coreCapabilities: list('coreCapabilities'),
+      capabilitiesNote: v('capabilitiesNote'),
+      coreCompetencies: list('coreCompetencies'),
+      differentiators: list('differentiators'),
+      companyData: list('companyData').map((l) => { const i = l.indexOf(':'); return i > 0 ? { label: l.slice(0, i).trim(), value: l.slice(i + 1).trim() } : { label: 'Note', value: l }; }),
+      representativeClients: list('representativeClients').map((l) => { const [name, ...role] = l.split(/\s+[—–-]\s+/); return { name: name.trim(), role: role.join(' - ').trim() }; }),
+      contact: { name: v('contactName'), title: v('contactTitle'), email: v('contactEmail'), phone: v('contactPhone'), website: v('contactWebsite') },
+    };
+  }
+
   async function viewCapability(view, id) {
     const load = async () => (await api('/capability-statements/' + id)).statement;
-    const c = await load();
-    if (c.status === 'working') {
+    const st = await load();
+    if (st.status === 'working') {
       view.innerHTML = working('Writing your capability statement', 'Pulling your strongest facts into one page.');
       every(4000, async () => {
         try { if ((await load()).status !== 'working') render(); } catch { /* keep polling */ }
       });
       return;
     }
-    if (c.status === 'failed') {
-      view.innerHTML = emptyState('This one did not finish', esc(c.error || 'Please try again.'), '<a href="/app/capability" data-link class="btn-primary">Try again</a>');
+    if (st.status === 'failed') {
+      view.innerHTML = emptyState('This one did not finish', esc(st.error || 'Please try again.'), '<a href="/app/capability" data-link class="btn-primary">Try again</a>');
       return;
     }
-    docViewer(view, {
-      title: (state.me.user.businessName || 'Capability') + ' Capability Statement',
-      sub: 'Check every [INSERT] and [CONFIRM] placeholder, then export to Word or PDF.',
-      md: c.contentMd,
-      save: (md) => api('/capability-statements/' + id, { method: 'PATCH', body: { contentMd: md } }),
+    const title = (state.me.user.businessName || 'Capability') + ' Capability Statement';
+    if (!st.content) {
+      // Statements made before the two-column layout were plain Markdown.
+      docViewer(view, { title, sub: 'Check every [INSERT] placeholder, then export.', md: st.contentMd,
+        save: (md) => api('/capability-statements/' + id, { method: 'PATCH', body: { contentMd: md } }) });
+      return;
+    }
+    let c = st.content;
+    const slug = (c.companyName || 'capability').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 50) + '-capability-statement';
+    const save = async (next) => {
+      await api('/capability-statements/' + id, { method: 'PATCH', body: { content: next } });
+      c = next;
+    };
+    view.innerHTML = `
+      <div class="no-print">${pageHead(esc(title), 'Fix anything highlighted in red, pick a color, then download it for Word or save it as a PDF.',
+        `<button id="edit" class="btn-ghost">Edit</button><button id="copy" class="btn-ghost">Copy text</button>
+         <button id="word" class="btn-ghost">Download Word</button><button id="print" class="btn-primary">Print / PDF</button>`)}
+        <div class="mb-4 flex flex-wrap items-center gap-2"><span class="text-sm text-mist-400">Color</span>
+          ${Object.entries(CAP_ACCENTS).map(([k, a]) => `<button type="button" class="cap-swatch cap-sw-${k}" data-accent="${k}" aria-label="${a.label}" title="${a.label}"></button>`).join('')}</div></div>
+      <div id="cap-view" class="print-area overflow-x-auto rounded-3xl bg-white">${capPage(c)}</div>
+      <div id="cap-form" class="card no-print hidden p-6 sm:p-8"></div>`;
+    const redraw = () => {
+      $('#cap-view').innerHTML = capPage(c);
+      $$('[data-accent]').forEach((b) => b.classList.toggle('on', b.dataset.accent === (c.accent || 'navy')));
+    };
+    redraw();
+    $$('[data-accent]').forEach((b) => b.addEventListener('click', async () => {
+      try { await save({ ...c, accent: b.dataset.accent }); redraw(); } catch (err) { toast(err.message, 'error'); }
+    }));
+    $('#print').addEventListener('click', () => window.print());
+    $('#copy').addEventListener('click', async () => {
+      const md = (await load()).contentMd;
+      try { await navigator.clipboard.writeText(md); toast('Copied to clipboard.'); } catch { toast('Copy failed.', 'error'); }
+    });
+    $('#word').addEventListener('click', () => download(slug + '.doc', new Blob(['﻿', capWord(c)], { type: 'application/msword' })));
+    $('#edit').addEventListener('click', () => {
+      const box = $('#cap-form');
+      box.innerHTML = capEditor(c);
+      box.classList.remove('hidden');
+      $('#cap-view').classList.add('hidden');
+      const close = () => { box.classList.add('hidden'); $('#cap-view').classList.remove('hidden'); };
+      $('#ce-cancel').addEventListener('click', close);
+      $('#cap-edit').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try { await save(readCapEditor(e.target, c)); close(); redraw(); toast('Saved.'); } catch (err) { toast(err.message, 'error'); }
+      });
     });
   }
 
