@@ -79,4 +79,22 @@ publicRouter.get('/public/wins', feedLimiter, async (_req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Totals for the landing page (hero pill, wins wall, agency strip). Published wins only, cached
+// in memory for a few minutes so a busy landing page costs one query per window.
+const STATS_TTL_MS = 5 * 60 * 1000;
+let statsCache = { at: 0, body: null };
+publicRouter.get('/public/wins/stats', feedLimiter, async (_req, res, next) => {
+  try {
+    if (!statsCache.body || Date.now() - statsCache.at > STATS_TTL_MS) {
+      const [totals, agencies] = await Promise.all([
+        db.query('SELECT count(*)::int AS count, coalesce(sum(amount), 0)::float AS total FROM contract_wins WHERE published'),
+        db.query(`SELECT agency FROM contract_wins WHERE published GROUP BY agency ORDER BY count(*) DESC, agency LIMIT 24`),
+      ]);
+      statsCache = { at: Date.now(), body: { ...totals.rows[0], agencies: agencies.rows.map((r) => r.agency) } };
+    }
+    res.set({ 'Cache-Control': 'public, max-age=300' });
+    res.json(statsCache.body);
+  } catch (err) { next(err); }
+});
+
 module.exports = { publicRouter, seedWins, parseWin, parseImport };

@@ -77,7 +77,10 @@
     css(b, { fontWeight: '600', color: '#FFFFFF' });
     box._msg.appendChild(b);
     box._msg.appendChild(document.createTextNode(' just won a contract worth over ' + money(win.amount) + ' from ' + the(win.agency)));
-    css(box, { opacity: '1', transform: 'none', pointerEvents: 'auto' });
+    // On our landing page, sit above the phone buy bar while it is showing.
+    var bar = document.getElementById('mobile-cta');
+    var lift = bar && bar.classList.contains('show') ? bar.offsetHeight + 24 : 16;
+    css(box, { bottom: lift + 'px', opacity: '1', transform: 'none', pointerEvents: 'auto' });
   }
   function hide() { css(box, { opacity: '0', transform: reduced ? 'none' : 'translateY(16px) scale(0.98)', pointerEvents: 'none' }); }
 

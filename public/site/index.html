@@ -2,34 +2,38 @@
 <html lang="en" class="scroll-smooth">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>GovProposalPro: win government contracts</title>
   <meta name="description" content="GovProposalPro by Contract Bros is the Command Center for small businesses that win government contracts: decrypt solicitations, find subcontractors, price to win and write compliant proposals in minutes." />
   <meta name="theme-color" content="#000000" />
   <link rel="icon" type="image/png" href="/assets/gpp-favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/site/command-center.webp" as="image" type="image/webp" imagesrcset="/assets/site/command-center-900.webp 900w, /assets/site/command-center.webp 1600w" imagesizes="(min-width: 1200px) 1120px, 92vw" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="GovProposalPro by Contract Bros" />
   <meta property="og:description" content="Decrypt the solicitation. Price to win. Submit a compliant proposal in minutes." />
   <meta property="og:image" content="https://govproposalpro.com/assets/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="stylesheet" href="/site/static/site.css?v=ecb9a08f76c4" />
-  <script src="/site/static/site.js?v=ecb9a08f76c4" defer></script>
-  <script src="/site/static/wins.js?v=ecb9a08f76c4" defer></script>
+  <link rel="stylesheet" href="/site/static/site.css?v=af00a427ef94" />
+  <script src="/site/static/site.js?v=af00a427ef94" defer></script>
+  <script src="/site/static/wins.js?v=af00a427ef94" defer></script>
 </head>
 <body class="bg-black font-sans text-mist-100 antialiased">
+  <a href="#main" class="skip">Skip to content</a>
+
   <!-- Navigation -->
   <header id="nav" class="fixed inset-x-0 top-0 z-50 transition-colors duration-300">
-    <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-      <a href="/" class="flex items-center gap-2" aria-label="GovProposalPro home">
+    <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <a href="/" class="flex items-center gap-2.5" aria-label="GovProposalPro home">
         <img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-7 w-auto" />
         <span class="text-[15px] font-semibold tracking-tight text-white">GovProposal<span class="text-mist-400">Pro</span></span>
       </a>
       <nav class="hidden items-center gap-8 text-[13px] text-mist-300 md:flex" aria-label="Main">
-        <a href="#features" class="nav-a">Features</a>
-        <a href="#enterprise" class="nav-a">Enterprise</a>
-        <a href="#editions" class="nav-a">Compare</a>
         <a href="#how" class="nav-a">How it works</a>
+        <a href="#features" class="nav-a">Features</a>
+        <a href="#wins" class="nav-a">Wins</a>
+        <a href="#editions" class="nav-a">Pricing</a>
         <a href="#faq" class="nav-a">FAQ</a>
       </nav>
       <div class="flex items-center gap-2">
@@ -41,120 +45,274 @@
       </div>
     </div>
     <div id="menu" class="hidden border-t border-white/10 bg-black/95 px-4 pb-4 md:hidden">
-      <a href="#features" class="menu-a">Features</a><a href="#enterprise" class="menu-a">Enterprise</a><a href="#editions" class="menu-a">Compare</a>
-      <a href="#how" class="menu-a">How it works</a><a href="#faq" class="menu-a">FAQ</a><a href="/app/login" class="menu-a">Sign in</a>
+      <a href="#how" class="menu-a">How it works</a><a href="#features" class="menu-a">Features</a><a href="#wins" class="menu-a">Wins</a>
+      <a href="#editions" class="menu-a">Pricing</a><a href="#faq" class="menu-a">FAQ</a><a href="/app/login" class="menu-a">Sign in</a>
     </div>
   </header>
 
-  <main>
+  <main id="main">
     <!-- Hero -->
-    <section class="relative overflow-hidden px-4 pb-16 pt-32 sm:px-6 sm:pt-40">
-      <div class="hero-glow" aria-hidden="true"></div>
-      <div class="relative mx-auto max-w-4xl text-center">
-        <img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="reveal mx-auto h-20 w-auto drop-shadow-[0_20px_40px_rgba(10,102,255,0.35)] sm:h-24" />
-        <p class="reveal mt-6 text-sm font-semibold tracking-wide text-mist-400">GovProposalPro <span class="text-mist-500">by Contract Bros</span></p>
-        <h1 class="reveal mt-3 text-[44px] font-semibold leading-[1.04] tracking-[-0.03em] text-white sm:text-7xl">Win government contracts.<br /><span class="grad-text">Skip the paperwork.</span></h1>
-        <p class="reveal mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-mist-400 sm:text-xl">Decrypt the solicitation, line up subcontractors, price to win and submit a compliant proposal in minutes. One Command Center for every step from bid to paid.</p>
+    <section id="hero" class="relative overflow-hidden px-4 pb-10 pt-28 sm:px-6 sm:pt-32">
+      <div class="aurora" aria-hidden="true"><span class="aurora-a"></span><span class="aurora-b"></span><span class="aurora-c"></span></div>
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="grain" aria-hidden="true"></div>
+
+      <div class="relative mx-auto max-w-5xl text-center">
+        <a href="#wins" id="live-pill" class="pill reveal" aria-live="polite">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span id="live-pill-text">Real contract wins from our members</span>
+          <span class="text-mist-500" aria-hidden="true">›</span>
+        </a>
+        <h1 class="reveal display mt-7">Win government contracts.<br /><span class="grad-text">Skip the paperwork.</span></h1>
+        <p class="reveal lede mx-auto mt-6 max-w-2xl">Decrypt the solicitation, line up subcontractors, price to win and submit a compliant proposal in minutes. One Command Center for every step from bid to paid.</p>
         <div class="reveal mt-9 flex flex-wrap items-center justify-center gap-3">
-          <a href="__CTA_URL__" class="btn-lg">Get access</a>
-          <a href="#features" class="btn-lg-ghost">See what it does <span aria-hidden="true">›</span></a>
+          <a href="__CTA_URL__" class="btn-lg btn-shine">Get access <span aria-hidden="true">→</span></a>
+          <a href="#how" class="btn-lg-ghost">See how it works <span aria-hidden="true">›</span></a>
         </div>
+        <p class="reveal mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-mist-500">
+          <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secure checkout by Whop</span>
+          <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>One-time purchase</span>
+          <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>Login in your inbox after purchase</span>
+        </p>
       </div>
-      <div class="reveal relative mx-auto mt-16 max-w-6xl">
-        <div class="shot">
-          <img src="/assets/site/command-center.png" alt="The GovProposalPro Command Center showing proposals used this month, active opportunities, pipeline value and upcoming deadlines" width="1440" height="900" class="block w-full" />
+
+      <!-- Product stage: tilted back, settles flat as you scroll -->
+      <div class="stage reveal relative mx-auto mt-16 max-w-6xl" id="stage">
+        <div class="stage-glow" aria-hidden="true"></div>
+        <div class="stage-tilt" id="tilt">
+          <div class="shot">
+            <div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span><em>govproposalpro.com/app</em></div>
+            <img src="/assets/site/command-center.webp" srcset="/assets/site/command-center-900.webp 900w, /assets/site/command-center.webp 1600w" sizes="(min-width: 1200px) 1120px, 92vw" alt="The GovProposalPro Command Center showing proposals used this month, active opportunities, pipeline value and upcoming deadlines" width="1600" height="1000" class="block w-full" fetchpriority="high" />
+          </div>
+        </div>
+        <div class="float-card fc-left" aria-hidden="true">
+          <span class="ring86"><b>86</b></span>
+          <span><span class="fc-kicker">Go/No-Go</span><span class="block font-semibold text-white">Go. You qualify.</span><span class="block text-mist-500">Set-aside, NAICS and SAM.gov match</span></span>
+        </div>
+        <div class="float-card fc-right" aria-hidden="true">
+          <span class="fc-icon"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <span><span class="fc-kicker">Compliance matrix</span><span class="block font-semibold text-white">5 of 5 requirements answered</span><span class="block text-mist-500">Proposal ready for review</span></span>
         </div>
       </div>
     </section>
 
-    <!-- Proof strip -->
-    <section class="border-y border-white/[0.06] bg-ink-900/60 px-4 py-10 sm:px-6">
-      <div class="mx-auto grid max-w-5xl grid-cols-2 gap-8 text-center sm:grid-cols-4">
-        <div class="reveal"><p class="text-4xl font-semibold tracking-tight text-white">24</p><p class="mt-1 text-sm text-mist-500">tools in one place</p></div>
-        <div class="reveal"><p class="text-4xl font-semibold tracking-tight text-white">Minutes</p><p class="mt-1 text-sm text-mist-500">from RFP to draft proposal</p></div>
-        <div class="reveal"><p class="text-4xl font-semibold tracking-tight text-white">FAR-ready</p><p class="mt-1 text-sm text-mist-500">clauses pulled from your solicitation</p></div>
-        <div class="reveal"><p class="text-4xl font-semibold tracking-tight text-white">Bid to paid</p><p class="mt-1 text-sm text-mist-500">through SF-1034 invoicing</p></div>
+    <!-- Agencies members have won from (live from published wins) -->
+    <section id="agencies" class="hidden-until-data relative py-10" aria-label="Agencies our members have won contracts from">
+      <p class="text-center text-xs font-semibold uppercase tracking-[0.18em] text-mist-500">Members have won contracts from</p>
+      <div class="marquee mt-6"><div class="marquee-track" id="agency-track"></div></div>
+    </section>
+
+    <!-- The old way vs with GovProposalPro -->
+    <section id="why" class="section">
+      <div class="mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">Why GovProposalPro</p>
+          <h2 class="h2">Bidding used to take weeks.<br class="hidden sm:block" /> <span class="text-mist-500">Now it takes an afternoon.</span></h2>
+        </div>
+        <div class="mt-14 grid gap-4 lg:grid-cols-2">
+          <div class="reveal compare compare-old">
+            <p class="compare-h">The old way</p>
+            <ul class="compare-list">
+              <li><b>Reading 80 pages</b> of solicitation and amendments to find what actually matters.</li>
+              <li><b>Guessing</b> whether you even qualify for the set-aside.</li>
+              <li><b>Cold-calling</b> subcontractors one by one and waiting on quotes.</li>
+              <li><b>Pricing on a napkin</b> and hoping the margin holds.</li>
+              <li><b>A blank page</b> and a deadline, with FAR clauses you have never seen.</li>
+              <li><b>Chasing payment</b> because the invoice was not in the right format.</li>
+            </ul>
+          </div>
+          <div class="reveal compare compare-new">
+            <p class="compare-h"><span class="grad-text">With GovProposalPro</span></p>
+            <ul class="compare-list">
+              <li><b>A plain-English brief</b> of the whole solicitation, with dates, clauses and the contracting officer.</li>
+              <li><b>A Go/No-Go score</b> against your set-asides, NAICS codes and SAM.gov status.</li>
+              <li><b>SAM.gov registered subs</b> found by NAICS and state, with a quote request sequence ready to send.</li>
+              <li><b>A price sheet</b> with overhead and markup, so you see your profit before you bid.</li>
+              <li><b>A compliant draft</b> that answers the clauses in your solicitation and flags what you need to confirm.</li>
+              <li><b>SF-1034 vouchers</b> ready to upload, plus milestones so nothing slips after award.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive walkthrough -->
+    <section id="how" class="section border-t border-white/[0.06]">
+      <div class="mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">How it works</p>
+          <h2 class="h2">From solicitation to paid,<br class="hidden sm:block" /> in six steps.</h2>
+          <p class="lede mx-auto mt-5 max-w-2xl">Every screen below is the real product.</p>
+        </div>
+        <div class="reveal tour mt-14" id="tour">
+          <div class="tour-tabs" role="tablist" aria-label="Product walkthrough">
+            <button class="tour-tab is-active" role="tab" aria-selected="true" aria-controls="tour-panel" data-step="0" type="button">
+              <span class="tour-num">01</span><span class="tour-body"><span class="tour-title">Decrypt the solicitation</span><span class="tour-text">Upload the RFP and every amendment. Get the dates, scope, clauses and contracting officer on one page.</span></span><span class="tour-bar"><i></i></span>
+            </button>
+            <button class="tour-tab" role="tab" aria-selected="false" aria-controls="tour-panel" data-step="1" type="button">
+              <span class="tour-num">02</span><span class="tour-body"><span class="tour-title">Decide Go or No-Go</span><span class="tour-text">A score against your set-asides, NAICS codes, SAM.gov status, location and deadline, with every check explained.</span></span><span class="tour-bar"><i></i></span>
+            </button>
+            <button class="tour-tab" role="tab" aria-selected="false" aria-controls="tour-panel" data-step="2" type="button">
+              <span class="tour-num">03</span><span class="tour-body"><span class="tour-title">Find subcontractors</span><span class="tour-text">Search SAM.gov registrants by NAICS and state, save them and send a quote request sequence in one click.</span></span><span class="tour-bar"><i></i></span>
+            </button>
+            <button class="tour-tab" role="tab" aria-selected="false" aria-controls="tour-panel" data-step="3" type="button">
+              <span class="tour-num">04</span><span class="tour-body"><span class="tour-title">Price to win</span><span class="tour-text">Sub quotes plus overhead and markup, with fully loaded labor rates on Enterprise. See your margin before you bid.</span></span><span class="tour-bar"><i></i></span>
+            </button>
+            <button class="tour-tab" role="tab" aria-selected="false" aria-controls="tour-panel" data-step="4" type="button">
+              <span class="tour-num">05</span><span class="tour-body"><span class="tour-title">Write the proposal</span><span class="tour-text">A compliant draft with a compliance matrix, built from your solicitation, your profile and your price.</span></span><span class="tour-bar"><i></i></span>
+            </button>
+            <button class="tour-tab" role="tab" aria-selected="false" aria-controls="tour-panel" data-step="5" type="button">
+              <span class="tour-num">06</span><span class="tour-body"><span class="tour-title">Get paid</span><span class="tour-text">SF-1034 public vouchers with SF-1035 continuation, ready for the payment system in your contract.</span></span><span class="tour-bar"><i></i></span>
+            </button>
+          </div>
+          <div>
+          <div class="tour-stage" id="tour-panel" role="tabpanel">
+            <img class="tour-img is-active" src="/assets/site/decrypt.webp" srcset="/assets/site/decrypt-900.webp 900w, /assets/site/decrypt.webp 1600w" sizes="(min-width: 1024px) 760px, 92vw" alt="The Bid Decryptor brief for a VA janitorial solicitation: response due date, executive summary and key facts" width="1600" height="1000" loading="lazy" />
+            <img class="tour-img" src="/assets/site/go-no-go.webp" srcset="/assets/site/go-no-go-900.webp 900w, /assets/site/go-no-go.webp 1600w" sizes="(min-width: 1024px) 760px, 92vw" alt="A Go/No-Go score of 86 with each eligibility check marked pass, check or fail" width="1600" height="1000" loading="lazy" />
+            <img class="tour-img" src="/assets/site/vendors.webp" srcset="/assets/site/vendors-900.webp 900w, /assets/site/vendors.webp 1600w" sizes="(min-width: 1024px) 760px, 92vw" alt="The Smart Vendor Scraper with a SAM.gov search and a saved list of subcontractors and their quotes" width="1600" height="1000" loading="lazy" />
+            <img class="tour-img" src="/assets/site/pricing.webp" srcset="/assets/site/pricing-900.webp 900w, /assets/site/pricing.webp 1600w" sizes="(min-width: 1024px) 760px, 92vw" alt="The Profit Pricing Matrix with overhead, markup and fully loaded labor rates" width="1600" height="1000" loading="lazy" />
+            <img class="tour-img" src="/assets/site/proposal.webp" srcset="/assets/site/proposal-900.webp 900w, /assets/site/proposal.webp 1600w" sizes="(min-width: 1024px) 760px, 92vw" alt="A generated proposal with a cover letter and compliance matrix" width="1600" height="1000" loading="lazy" />
+            <img class="tour-img" src="/assets/site/invoices.webp" srcset="/assets/site/invoices-900.webp 900w, /assets/site/invoices.webp 1600w" sizes="(min-width: 1024px) 760px, 92vw" alt="The invoicing screen with a submitted SF-1034 voucher waiting on payment" width="1600" height="1000" loading="lazy" />
+          </div>
+          <p class="tour-caption" id="tour-caption">Upload the RFP and every amendment. Get the dates, scope, clauses and contracting officer on one page.</p>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- Core features -->
-    <section id="features" class="px-4 py-24 sm:px-6 sm:py-32">
+    <section id="features" class="section">
       <div class="mx-auto max-w-6xl">
         <div class="reveal mx-auto max-w-3xl text-center">
           <p class="eyebrow">Core Edition</p>
           <h2 class="h2">Everything you need to bid.<br class="hidden sm:block" /> Nothing you don't.</h2>
-          <p class="mt-5 text-lg text-mist-400">Built for small businesses that act as the prime and subcontract the work, from the first solicitation to the final invoice.</p>
+          <p class="lede mx-auto mt-5 max-w-2xl">Built for small businesses that act as the prime and subcontract the work, from the first solicitation to the final invoice.</p>
         </div>
 
         <div class="mt-16 grid gap-4 lg:grid-cols-3">
-          <article class="tile-xl reveal lg:col-span-2">
+          <article class="tile-xl glow reveal lg:col-span-2">
             <div class="p-8 sm:p-10">
               <p class="tile-kicker">Proposal Engine</p>
               <h3 class="tile-h">A compliant proposal, written for you.</h3>
               <p class="tile-p">Upload the solicitation and amendments. The engine answers every FAR clause in it, builds your price table from your numbers and leaves placeholders instead of making things up.</p>
             </div>
-            <img src="/assets/site/proposal.png" alt="A generated proposal in GovProposalPro" width="1440" height="900" class="tile-img" loading="lazy" />
+            <img src="/assets/site/proposal.webp" srcset="/assets/site/proposal-900.webp 900w, /assets/site/proposal.webp 1600w" sizes="(min-width: 1024px) 740px, 92vw" alt="A generated proposal in GovProposalPro" width="1600" height="1000" class="tile-img" loading="lazy" />
           </article>
-          <article class="tile-xl reveal">
+          <article class="tile-xl glow reveal">
             <div class="p-8 sm:p-10">
               <p class="tile-kicker">Bid Decryptor + Go/No-Go</p>
               <h3 class="tile-h">Know in a minute if you should bid.</h3>
               <p class="tile-p">A plain-English brief of any RFP, then a score against your set-asides, NAICS, SAM.gov status, location and deadline.</p>
             </div>
-            <img src="/assets/site/go-no-go.png" alt="Go/No-Go score for a solicitation" width="1440" height="900" class="tile-img" loading="lazy" />
+            <img src="/assets/site/go-no-go-900.webp" alt="Go/No-Go score for a solicitation" width="900" height="563" class="tile-img tile-img-crop" loading="lazy" />
           </article>
         </div>
 
         <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <article class="tile reveal"><span class="ico">🔎</span><h3 class="tile-h3">Smart Vendor Scraper</h3><p class="tile-p2">Search SAM.gov for registered subcontractors by NAICS and state, then save them to your list.</p></article>
-          <article class="tile reveal"><span class="ico">✉️</span><h3 class="tile-h3">1-Click Outreach</h3><p class="tile-p2">A three-step quote request sequence for every sub, ready to send from your own email.</p></article>
-          <article class="tile reveal"><span class="ico">💲</span><h3 class="tile-h3">Profit Pricing Matrix</h3><p class="tile-p2">Sub quotes plus overhead plus markup, with your margin shown before you bid.</p></article>
-          <article class="tile reveal"><span class="ico">📂</span><h3 class="tile-h3">FOIA Automator</h3><p class="tile-p2">Request the winning price on past contracts so you know the price to beat.</p></article>
-          <article class="tile reveal"><span class="ico">🗂️</span><h3 class="tile-h3">Visual Bid CRM</h3><p class="tile-p2">Every opportunity on one board, from prospecting to won.</p></article>
-          <article class="tile reveal"><span class="ico">🏁</span><h3 class="tile-h3">Milestone Tracker</h3><p class="tile-p2">Post-award deliverables and sub check-ins, with overdue items in red.</p></article>
-          <article class="tile reveal"><span class="ico">🧾</span><h3 class="tile-h3">SF-1034 Invoicing</h3><p class="tile-p2">Public vouchers with SF-1035 continuation, ready for PIEE or IPP.</p></article>
-          <article class="tile reveal"><span class="ico">🛡️</span><h3 class="tile-h3">CMMC Level 1</h3><p class="tile-p2">The 17 FAR 52.204-21 practices as a progress dashboard, with your evidence.</p></article>
+          <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><h3 class="tile-h3">Smart Vendor Scraper</h3><p class="tile-p2">Search SAM.gov for registered subcontractors by NAICS and state, then save them to your list.</p></article>
+          <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg></span><h3 class="tile-h3">1-Click Outreach</h3><p class="tile-p2">A three-step quote request sequence for every sub, ready to send from your own email.</p></article>
+          <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><h3 class="tile-h3">Profit Pricing Matrix</h3><p class="tile-p2">Sub quotes plus overhead plus markup, with your margin shown before you bid.</p></article>
+          <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-7.9a1 1 0 0 1-.8-.4L10.2 5a1 1 0 0 0-.8-.4H4a1 1 0 0 0-1 1V19a1 1 0 0 0 1 1z"/></svg></span><h3 class="tile-h3">FOIA Automator</h3><p class="tile-p2">Request the winning price on past contracts so you know the price to beat.</p></article>
+          <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg></span><h3 class="tile-h3">Visual Bid CRM</h3><p class="tile-p2">Every opportunity on one board, from prospecting to won.</p></article>
+          <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4"/><path d="M4 4h12l-2 4 2 4H4"/></svg></span><h3 class="tile-h3">Milestone Tracker</h3><p class="tile-p2">Post-award deliverables and sub check-ins, with overdue items in red.</p></article>
+          <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></span><h3 class="tile-h3">SF-1034 Invoicing</h3><p class="tile-p2">Public vouchers with SF-1035 continuation, ready for PIEE or IPP.</p></article>
+          <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><h3 class="tile-h3">CMMC Level 1</h3><p class="tile-p2">The 17 FAR 52.204-21 practices as a progress dashboard, with your evidence.</p></article>
         </div>
         <p class="reveal mt-6 text-center text-sm text-mist-500">Plus a Quick-Start Capability Statement, FAR 52.219-14 subcontracting checker, SAM.gov registration checklist and deadline alerts. 10 proposals a month.</p>
       </div>
     </section>
 
+    <!-- Live wins wall -->
+    <section id="wins" class="section hidden-until-data relative overflow-hidden border-y border-white/[0.06] bg-ink-900/50">
+      <div class="wins-glow" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">Member wins</p>
+          <h2 class="h2">Real contracts.<br class="hidden sm:block" /> <span class="grad-text">Won by people like you.</span></h2>
+        </div>
+        <div class="reveal mt-12 grid grid-cols-3 gap-2 sm:gap-4">
+          <div class="stat"><p class="stat-n" data-count="total" data-format="money">$0</p><p class="stat-l">in contracts won by members</p></div>
+          <div class="stat"><p class="stat-n" data-count="count">0</p><p class="stat-l">wins reported</p></div>
+          <div class="stat"><p class="stat-n" data-count="agencies">0</p><p class="stat-l">agencies and departments</p></div>
+        </div>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" id="wins-grid"></div>
+        <p class="reveal mt-6 text-center text-xs text-mist-500">Contract wins reported by Contract Bros members. Names are shortened for privacy. Individual results vary.</p>
+      </div>
+    </section>
+
+    <!-- ROI calculator -->
+    <section id="roi" class="section">
+      <div class="mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">Do the math</p>
+          <h2 class="h2">One contract pays for it.</h2>
+          <p class="lede mx-auto mt-5 max-w-2xl">Move the sliders to a contract you would bid on.</p>
+        </div>
+        <div class="reveal calc mt-12">
+          <div class="calc-inputs">
+            <div>
+              <div class="flex items-baseline justify-between"><label for="roi-value" class="calc-label">Contract value</label><output id="roi-value-out" for="roi-value" class="calc-out">$100,000</output></div>
+              <input id="roi-value" type="range" min="25000" max="2000000" step="5000" value="100000" class="range" />
+            </div>
+            <div>
+              <div class="flex items-baseline justify-between"><label for="roi-margin" class="calc-label">Your profit margin</label><output id="roi-margin-out" for="roi-margin" class="calc-out">15%</output></div>
+              <input id="roi-margin" type="range" min="5" max="40" step="1" value="15" class="range" />
+            </div>
+            <fieldset>
+              <legend class="calc-label">Edition</legend>
+              <div class="seg mt-3" id="roi-edition">
+                <label><input type="radio" name="roi-ed" value="997" checked /><span>Core · $997</span></label>
+                <label><input type="radio" name="roi-ed" value="4997" /><span>Enterprise · $4,997</span></label>
+              </div>
+            </fieldset>
+          </div>
+          <div class="calc-result">
+            <p class="text-sm font-medium text-mist-400">Profit on one contract</p>
+            <p class="calc-big" id="roi-profit">$15,000</p>
+            <p class="mt-4 text-lg text-mist-300"><span id="roi-multiple" class="font-semibold text-white">15×</span> the <span id="roi-ed-name">Core Edition</span> price.</p>
+            <a href="__CTA_URL__" class="btn-lg mt-8 w-full">Get access</a>
+            <p class="mt-4 text-xs leading-relaxed text-mist-500">An illustration, not a promise. Your results depend on the contracts you bid and win. The monthly access plan is billed separately.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Enterprise -->
-    <section id="enterprise" class="relative overflow-hidden px-4 py-24 sm:px-6 sm:py-32">
+    <section id="enterprise" class="section relative overflow-hidden">
       <div class="ent-glow" aria-hidden="true"></div>
       <div class="relative mx-auto max-w-6xl">
         <div class="reveal mx-auto max-w-3xl text-center">
           <p class="eyebrow-ent">Enterprise Edition</p>
           <h2 class="h2">For teams that bid <span class="grad-text">every week.</span></h2>
-          <p class="mt-5 text-lg text-mist-400">50 proposals a month and the tools that turn a small business into a repeat winner.</p>
+          <p class="lede mx-auto mt-5 max-w-2xl">50 proposals a month and the tools that turn a small business into a repeat winner.</p>
         </div>
-        <div class="reveal mt-14 overflow-hidden rounded-[28px] border border-white/10 bg-ink-900">
-          <img src="/assets/site/section-m.png" alt="Section M Compliance Grader scoring a proposal against the evaluation criteria" width="1440" height="900" class="block w-full" loading="lazy" />
+        <div class="reveal shot mt-14">
+          <div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span><em>Section M Compliance Grader</em></div>
+          <img src="/assets/site/section-m.webp" srcset="/assets/site/section-m-900.webp 900w, /assets/site/section-m.webp 1600w" sizes="(min-width: 1200px) 1120px, 92vw" alt="Section M Compliance Grader scoring a proposal against the evaluation criteria" width="1600" height="1000" class="block w-full" loading="lazy" />
         </div>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <article class="tile reveal"><h3 class="tile-h3">Predictive Bid Matchmaker</h3><p class="tile-p2">Open SAM.gov opportunities for your NAICS codes, ranked by how likely you are to win.</p></article>
-          <article class="tile reveal"><h3 class="tile-h3">Section M Compliance Grader</h3><p class="tile-p2">Grades your draft against the evaluation criteria before the government does.</p></article>
-          <article class="tile reveal"><h3 class="tile-h3">Auto-Teaming Legal Engine</h3><p class="tile-p2">Mutual NDAs and FAR 9.6 teaming agreements, filled in from your profile and your sub.</p></article>
-          <article class="tile reveal"><h3 class="tile-h3">RFI Ghostwriter</h3><p class="tile-p2">Turns gaps in a solicitation into clear questions for the contracting officer.</p></article>
-          <article class="tile reveal"><h3 class="tile-h3">Your winning voice</h3><p class="tile-p2">Learns from proposals you have won and writes every new one in that voice.</p></article>
-          <article class="tile reveal"><h3 class="tile-h3">Fringe/G&amp;A engine</h3><p class="tile-p2">Fully loaded labor rates with fringe, overhead, G&amp;A and fee, the way DCAA expects.</p></article>
-          <article class="tile reveal"><h3 class="tile-h3">Top-rated subs, with contacts</h3><p class="tile-p2">Local businesses near the job with ratings, phone numbers and websites.</p></article>
-          <article class="tile reveal"><h3 class="tile-h3">Live Compliance Pulse</h3><p class="tile-p2">2026 FAR and DFARS changes, CMMC phases and the 65% Buy American rule in one feed.</p></article>
-          <article class="tile reveal"><h3 class="tile-h3">Past performance portfolio</h3><p class="tile-p2">Case studies, capability lines and proposal-ready paragraphs, plus a per-state bid directory and Sub-Safe vetting.</p></article>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Predictive Bid Matchmaker</h3><p class="tile-p2">Open SAM.gov opportunities for your NAICS codes, ranked by how likely you are to win.</p></article>
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Section M Compliance Grader</h3><p class="tile-p2">Grades your draft against the evaluation criteria before the government does.</p></article>
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Auto-Teaming Legal Engine</h3><p class="tile-p2">Mutual NDAs and FAR 9.6 teaming agreements, filled in from your profile and your sub.</p></article>
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">RFI Ghostwriter</h3><p class="tile-p2">Turns gaps in a solicitation into clear questions for the contracting officer.</p></article>
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Your winning voice</h3><p class="tile-p2">Learns from proposals you have won and writes every new one in that voice.</p></article>
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Fringe/G&amp;A engine</h3><p class="tile-p2">Fully loaded labor rates with fringe, overhead, G&amp;A and fee, the way DCAA expects.</p></article>
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Live Compliance Pulse</h3><p class="tile-p2">2026 FAR and DFARS changes, CMMC phases and the 65% Buy American rule in one feed.</p></article>
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Past performance portfolio</h3><p class="tile-p2">Case studies and proposal-ready paragraphs, plus a per-state bid directory and Sub-Safe vetting.</p></article>
         </div>
       </div>
     </section>
 
-    <!-- Compare -->
-    <section id="editions" class="px-4 py-24 sm:px-6 sm:py-32">
-      <div class="mx-auto max-w-4xl">
-        <div class="reveal text-center"><h2 class="h2">Pick your edition.</h2><p class="mt-4 text-lg text-mist-400">Both include the full proposal workflow. Enterprise adds scale and the advanced tools.</p></div>
-        <div class="reveal mt-12 grid gap-4 sm:grid-cols-2">
-          <div class="plan">
+    <!-- Pricing -->
+    <section id="editions" class="section border-t border-white/[0.06]">
+      <div class="mx-auto max-w-5xl">
+        <div class="reveal text-center"><p class="eyebrow">Pricing</p><h2 class="h2">Pick your edition.</h2><p class="lede mx-auto mt-4 max-w-2xl">Own it with a one-time purchase. Both include the full proposal workflow. Enterprise adds scale and the advanced tools.</p></div>
+        <div class="reveal mt-12 grid gap-4 md:grid-cols-2">
+          <div class="plan glow">
             <p class="text-sm font-semibold text-brand-blueSoft">Core Edition</p>
-            <p class="mt-2 text-5xl font-semibold tracking-tight text-white">$997</p>
-            <p class="mt-1 text-sm text-mist-400">One-time purchase, plus the Core monthly access plan for hosting, support and updates.</p>
-            <p class="mt-5 text-xl font-semibold text-white">10 proposals<span class="text-base font-normal text-mist-500"> a month</span></p>
+            <p class="mt-3 flex items-baseline gap-2"><span class="price">$997</span><span class="text-sm text-mist-500">one-time</span></p>
+            <p class="mt-2 text-sm text-mist-400">Plus the Core monthly access plan.</p>
+            <p class="mt-6 text-xl font-semibold text-white">10 proposals<span class="text-base font-normal text-mist-500"> a month</span></p>
             <ul class="plan-list">
               <li>Proposal Engine and Bid Decryptor</li><li>Go/No-Go Indicator</li><li>Smart Vendor Scraper and 1-Click Outreach</li>
               <li>Profit Pricing Matrix</li><li>FOIA Automator</li><li>Visual Bid CRM</li><li>Milestones and SF-1034/1035 invoicing</li>
@@ -163,11 +321,12 @@
             <a href="__CORE_URL__" class="btn-lg mt-8 w-full">Get Core</a>
             <a href="__CORE_ACCESS_URL__" class="mt-4 text-center text-sm text-mist-400 hover:text-white">Already bought Core? Start your monthly access ›</a>
           </div>
-          <div class="plan plan-ent">
+          <div class="plan plan-ent glow">
+            <span class="plan-badge">Most complete</span>
             <p class="text-sm font-semibold"><span class="grad-text">Enterprise Edition</span></p>
-            <p class="mt-2 text-5xl font-semibold tracking-tight text-white">$4,997</p>
-            <p class="mt-1 text-sm text-mist-400">One-time purchase, plus the Enterprise monthly access plan for hosting, support and updates.</p>
-            <p class="mt-5 text-xl font-semibold text-white">50 proposals<span class="text-base font-normal text-mist-500"> a month</span></p>
+            <p class="mt-3 flex items-baseline gap-2"><span class="price">$4,997</span><span class="text-sm text-mist-500">one-time</span></p>
+            <p class="mt-2 text-sm text-mist-400">Plus the Enterprise monthly access plan.</p>
+            <p class="mt-6 text-xl font-semibold text-white">50 proposals<span class="text-base font-normal text-mist-500"> a month</span></p>
             <ul class="plan-list">
               <li>Everything in Core</li><li>Predictive Bid Matchmaker</li><li>Section M Compliance Grader</li><li>NDA and Teaming Agreement engine</li>
               <li>RFI Ghostwriter</li><li>Winning voice from your past proposals</li><li>Fringe/G&amp;A pricing engine</li>
@@ -177,23 +336,85 @@
             <a href="__ENTERPRISE_ACCESS_URL__" class="mt-4 text-center text-sm text-mist-400 hover:text-white">Already bought Enterprise? Start your monthly access ›</a>
           </div>
         </div>
+
+        <div class="reveal mt-4 grid gap-4 md:grid-cols-3">
+          <div class="mini"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><p class="mini-h">Secure checkout by Whop</p><p class="mini-p">Payment is handled by Whop. We never see your card number.</p></div></div>
+          <div class="mini"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></span><div><p class="mini-h">Your login by email</p><p class="mini-p">Right after purchase you get a link to create your login.</p></div></div>
+          <div class="mini"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></span><div><p class="mini-h">Monthly access plan</p><p class="mini-p">Keeps your account active with hosting, support, updates and your monthly proposals.</p></div></div>
+        </div>
+
+        <!-- Full comparison -->
+        <div class="reveal mt-16">
+          <h3 class="text-center text-2xl font-semibold tracking-tight text-white sm:text-3xl">Compare every feature</h3>
+          <div class="table-wrap mt-8">
+            <table class="ctable">
+              <thead><tr><th scope="col">Feature</th><th scope="col">Core</th><th scope="col"><span class="grad-text">Enterprise</span></th></tr></thead>
+              <tbody>
+                <tr class="grp"><th scope="rowgroup" colspan="3">Win work</th></tr>
+                <tr><th scope="row">Proposals a month</th><td>10</td><td>50</td></tr>
+                <tr><th scope="row">AI Proposal Engine</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">AI Bid Decryptor</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Go/No-Go Indicator</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Visual Bid CRM</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Predictive Bid Matchmaker</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr class="grp"><th scope="rowgroup" colspan="3">Subs and pricing</th></tr>
+                <tr><th scope="row">Smart Vendor Scraper (SAM.gov)</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">1-Click Outreach Sequences</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Profit Pricing Matrix</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Fringe/G&amp;A labor rates</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">FOIA Automator</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Auto-Teaming Legal Engine</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Sub-Safe SAM.gov vetting</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr class="grp"><th scope="rowgroup" colspan="3">Review and submit</th></tr>
+                <tr><th scope="row">Section M Compliance Grader</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">RFI Ghostwriter</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Winning voice from past proposals</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Past performance portfolio</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr class="grp"><th scope="rowgroup" colspan="3">After award and compliance</th></tr>
+                <tr><th scope="row">Post-award milestone tracker</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">SF-1034/1035 invoicing</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Capability statement</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">CMMC Level 1 readiness</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">FAR 52.219-14 subcontracting checker</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">SAM.gov checklist and deadline alerts</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Live Compliance Pulse</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Per-state bid directory</th><td class="n">Not included</td><td class="y">Included</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- How it works -->
-    <section id="how" class="border-t border-white/[0.06] px-4 py-24 sm:px-6 sm:py-32">
-      <div class="mx-auto max-w-5xl">
-        <h2 class="reveal h2 text-center">From solicitation to submitted.</h2>
-        <ol class="mt-14 grid gap-4 sm:grid-cols-3">
-          <li class="tile reveal"><span class="step">1</span><h3 class="tile-h3">Upload the solicitation</h3><p class="tile-p2">PDF or Word, with every amendment. Get the brief and a Go/No-Go score.</p></li>
-          <li class="tile reveal"><span class="step">2</span><h3 class="tile-h3">Source and price</h3><p class="tile-p2">Find subs, send quote requests and build your price with overhead and profit.</p></li>
-          <li class="tile reveal"><span class="step">3</span><h3 class="tile-h3">Generate and submit</h3><p class="tile-p2">A compliant proposal in your company's voice, ready to review, export and send.</p></li>
-        </ol>
+    <!-- Trust -->
+    <section id="trust" class="section-tight border-y border-white/[0.06] bg-ink-900/50">
+      <div class="mx-auto max-w-6xl">
+        <h2 class="reveal text-center text-2xl font-semibold tracking-tight text-white sm:text-3xl">Your business data stays yours.</h2>
+        <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><p class="mini-h">Private to your account</p><p class="mini-p">Your profile, documents and proposals are visible only to you.</p></div>
+          <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><p class="mini-h">Encrypted in transit</p><p class="mini-p">HTTPS everywhere, hashed passwords and secure sessions. AI keys never reach your browser.</p></div>
+          <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 3 2 5 3 6v3h8v-3c1-1 3-3 3-6a7 7 0 0 0-7-7z"/><path d="M9 22h6"/><path d="m4 4 16 16"/></svg></span><p class="mini-h">Not used to train AI</p><p class="mini-p">Your solicitations and proposals are processed to do the work, not to train AI models.</p></div>
+          <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg></span><p class="mini-h">No made-up clauses</p><p class="mini-p">FAR clauses come only from your solicitation. Anything unconfirmed is flagged for you.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Founders' note -->
+    <section id="founders" class="section">
+      <div class="reveal note mx-auto max-w-3xl">
+        <img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-10 w-auto" />
+        <p class="mt-8 text-2xl font-medium leading-snug tracking-tight text-white sm:text-[28px]">“Government contracts should not be reserved for companies with a proposal team.”</p>
+        <div class="mt-6 space-y-4 text-lg leading-relaxed text-mist-400">
+          <p>We built GovProposalPro for the small business owner who wants to win federal work and keep running their business at the same time. It puts the way we approach every bid into one place: read the solicitation, decide if it is worth it, line up subs, price it right and submit something you are proud of.</p>
+          <p>If you have a question before you buy, email us at <a href="mailto:contact@govproposalpro.com" class="text-brand-blueSoft hover:text-white">contact@govproposalpro.com</a>. A real person will answer.</p>
+        </div>
+        <p class="sig mt-8">Kinno &amp; Jalen</p>
+        <p class="text-sm text-mist-500">The ContractBros</p>
       </div>
     </section>
 
     <!-- FAQ -->
-    <section id="faq" class="px-4 py-24 sm:px-6 sm:py-32">
+    <section id="faq" class="section border-t border-white/[0.06]">
       <div class="mx-auto max-w-3xl">
         <h2 class="reveal h2 text-center">Questions.</h2>
         <div class="mt-12 divide-y divide-white/[0.08] border-y border-white/[0.08]">
@@ -203,30 +424,46 @@
           <details class="faq reveal"><summary>Is my company information private?</summary><p>Your profile, documents and proposals are visible only to your account. Passwords are hashed, sessions are secure, and AI keys never reach the browser.</p></details>
           <details class="faq reveal"><summary>What is the difference between Core and Enterprise?</summary><p>Core gives you 10 proposals a month and the full bid-to-invoice workflow. Enterprise raises that to 50 a month and adds the Matchmaker, Section M grading, teaming agreements, RFI drafting, your winning voice and advanced pricing.</p></details>
           <details class="faq reveal"><summary>How does pricing work?</summary><p>Core Edition is a one-time $997 purchase and Enterprise Edition is a one-time $4,997 purchase. After checkout, you set up the monthly access plan for your edition, which keeps your access active and covers hosting, support and updates. Both are handled securely through Whop.</p></details>
+          <details class="faq reveal"><summary>Is checkout secure?</summary><p>Yes. Checkout runs on Whop, which processes the payment. Your card details go to Whop, never to us.</p></details>
           <details class="faq reveal"><summary>How do I get my login?</summary><p>After you purchase, you get an email with a link to create your login. Already a member? <a href="/app/login" class="text-brand-blueSoft hover:text-white">Sign in here</a>.</p></details>
         </div>
       </div>
     </section>
 
     <!-- Final CTA -->
-    <section class="relative overflow-hidden px-4 pb-28 pt-10 sm:px-6">
-      <div class="reveal relative mx-auto max-w-5xl overflow-hidden rounded-[32px] border border-white/10 bg-ink-900 px-6 py-16 text-center sm:px-16">
-        <div class="cta-glow" aria-hidden="true"></div>
+    <section class="relative overflow-hidden px-4 pb-28 pt-6 sm:px-6">
+      <div class="reveal final relative mx-auto max-w-5xl overflow-hidden rounded-[36px] px-6 py-20 text-center sm:px-16">
+        <div class="aurora aurora-soft" aria-hidden="true"><span class="aurora-a"></span><span class="aurora-b"></span><span class="aurora-c"></span></div>
+        <div class="grain" aria-hidden="true"></div>
         <img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="relative mx-auto h-14 w-auto" />
-        <h2 class="relative mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl">Your next contract starts here.</h2>
-        <p class="relative mx-auto mt-4 max-w-xl text-lg text-mist-400">Join the members already winning with GovProposalPro.</p>
-        <div class="relative mt-8 flex flex-wrap justify-center gap-3"><a href="__CTA_URL__" class="btn-lg">Get access</a><a href="/app/login" class="btn-lg-ghost">Sign in</a></div>
+        <h2 class="relative mt-7 text-4xl font-semibold tracking-[-0.035em] text-white sm:text-6xl">Your next contract<br class="hidden sm:block" /> starts here.</h2>
+        <p class="relative mx-auto mt-5 max-w-xl text-lg text-mist-300">Join the members already bidding and winning with GovProposalPro.</p>
+        <div class="relative mt-9 flex flex-wrap justify-center gap-3"><a href="__CTA_URL__" class="btn-lg btn-shine">Get access <span aria-hidden="true">→</span></a><a href="/app/login" class="btn-lg-ghost">Sign in</a></div>
       </div>
     </section>
   </main>
 
-  <footer class="border-t border-white/[0.06] px-4 py-10 text-sm text-mist-500 sm:px-6">
-    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
-      <div class="flex items-center gap-2"><img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-6 w-auto" /><span>GovProposalPro by Contract Bros</span></div>
-      <p>Kinno &amp; Jalen, The ContractBros</p>
-      <div class="flex flex-wrap gap-5"><a href="/app/login" class="hover:text-white">Sign in</a><a href="/access" class="hover:text-white">Create your login</a><a href="/terms" class="hover:text-white">Terms</a><a href="/privacy" class="hover:text-white">Privacy</a></div>
+  <footer class="border-t border-white/[0.06] px-4 pb-28 pt-14 text-sm text-mist-500 sm:px-6 md:pb-12">
+    <div class="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div>
+        <a href="/" class="flex items-center gap-2.5" aria-label="GovProposalPro home"><img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-7 w-auto" /><span class="text-[15px] font-semibold tracking-tight text-white">GovProposal<span class="text-mist-400">Pro</span></span></a>
+        <p class="mt-4 max-w-xs leading-relaxed">The Command Center for small businesses that win government contracts. By Contract Bros.</p>
+        <p class="mt-4"><a href="mailto:contact@govproposalpro.com" class="hover:text-white">contact@govproposalpro.com</a></p>
+      </div>
+      <div><p class="foot-h">Product</p><ul class="foot-list"><li><a href="#how">How it works</a></li><li><a href="#features">Core Edition</a></li><li><a href="#enterprise">Enterprise Edition</a></li><li><a href="#editions">Pricing</a></li></ul></div>
+      <div><p class="foot-h">Members</p><ul class="foot-list"><li><a href="/app/login">Sign in</a></li><li><a href="/access">Create your login</a></li><li><a href="#wins">Member wins</a></li><li><a href="#faq">FAQ</a></li></ul></div>
+      <div><p class="foot-h">Legal</p><ul class="foot-list"><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li></ul></div>
     </div>
-    <p class="mx-auto mt-6 max-w-6xl text-center text-xs text-mist-500 sm:text-left">© <span id="year">2026</span> Contract Bros. GovProposalPro is not affiliated with or endorsed by any government agency.</p>
+    <div class="mx-auto mt-12 flex max-w-6xl flex-col gap-3 border-t border-white/[0.06] pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
+      <p>© <span id="year">2026</span> Contract Bros. GovProposalPro is not affiliated with or endorsed by any government agency.</p>
+      <p>Kinno &amp; Jalen, The ContractBros</p>
+    </div>
   </footer>
+
+  <!-- Phones: buy button stays in reach after the hero -->
+  <div id="mobile-cta" class="mobile-cta md:hidden" aria-hidden="true">
+    <div><p class="text-[13px] font-semibold text-white">GovProposalPro</p><p class="text-xs text-mist-400">From $997 one-time</p></div>
+    <a href="__CTA_URL__" class="btn-sm px-5 py-2.5 text-sm" tabindex="-1">Get access</a>
+  </div>
 </body>
 </html>
