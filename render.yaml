@@ -31,6 +31,36 @@ services:
         sync: false
       - key: WHOP_WEBHOOK_SECRET
         sync: false
+      # --- Command Center (dashboard at /app) ---
+      - key: ANTHROPIC_API_KEY
+        sync: false # Claude API key for the Proposal Engine and Bid Decryptor
+      - key: APP_LAUNCH_AT
+        value: "2026-10-18T13:00:00Z" # members can sign in from Sunday Oct 18, 9:00 AM Eastern
+      - key: APP_EARLY_ACCESS_EMAILS
+        sync: false # comma-separated emails allowed to sign in before launch (the team)
+      - key: SAM_API_KEY
+        sync: false # SAM.gov public API key for Sub-Safe vetting (sam.gov > Account Details > API Key)
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false # optional, Enterprise top-rated subs (Google Places API New)
+      - key: SITE_CTA_URL
+        sync: false # landing page "Get access" button (https)
+      - key: WHOP_CORE_CHECKOUT_URL
+        sync: false # landing page "Get Core" button (https Whop checkout link)
+      - key: WHOP_ENTERPRISE_CHECKOUT_URL
+        sync: false # landing page "Get Enterprise" button
+      - key: LEGAL_ENTITY
+        sync: false # legal business name on /terms and /privacy, e.g. Contract Bros LLC
+      - key: LEGAL_STATE
+        sync: false # governing-law state for /terms, e.g. Texas
+      - key: SUPPORT_EMAIL
+        sync: false # contact email on /terms and /privacy
+      # --- Admin dashboard (at /admin) ---
+      - key: ADMIN_OWNER_EMAILS
+        value: "jalen@contractbros.com,kinno@contractbros.com" # owners; created on deploy, emailed a setup link
+      - key: ADMIN_VA_EMAILS
+        value: "va1@govproposalpro.com,va2@govproposalpro.com,va3@govproposalpro.com,va4@govproposalpro.com,va5@govproposalpro.com"
+      - key: APP_BASE_URL
+        value: "https://access.govproposalpro.com" # used in password reset and setup links
 
 databases:
   - name: govproposalpro-db
