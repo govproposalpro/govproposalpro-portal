@@ -4,6 +4,7 @@
 
 const express = require('express');
 const mammoth = require('mammoth');
+const rateLimit = require('express-rate-limit');
 const db = require('../../db');
 const ai = require('../ai');
 const { requireAuth } = require('../session');
@@ -12,6 +13,16 @@ const { parseProfileUpdate } = require('../profile');
 const router = express.Router();
 const MAX_PDF_BYTES = 20 * 1024 * 1024;
 const MAX_DOCS = 30;
+const DOCS_PER_DAY = Math.max(1, Number.parseInt(process.env.DOCS_PER_DAY || '15', 10));
+// Each upload is read by Claude, so cap it per member per day (deleting and re-uploading does not reset it).
+const docLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: DOCS_PER_DAY,
+  keyGenerator: (req) => `u${req.user.id}`,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: `You can upload ${DOCS_PER_DAY} documents a day. Try again tomorrow.` },
+});
 const DOC_KINDS = ['capability_statement', 'past_performance', 'resume', 'company_overview', 'other'];
 
 router.patch('/me/profile', requireAuth, express.json({ limit: '128kb' }), async (req, res, next) => {
@@ -69,7 +80,7 @@ router.get('/me/documents', requireAuth, async (req, res, next) => {
   }
 });
 
-router.post('/me/documents', requireAuth, express.json({ limit: '28mb' }), async (req, res, next) => {
+router.post('/me/documents', requireAuth, docLimiter, express.json({ limit: '28mb' }), async (req, res, next) => {
   try {
     if (!ai.enabled()) return res.status(503).json({ error: 'Document reading is being switched on. Please try again shortly.' });
     const b = req.body || {};

@@ -13,9 +13,21 @@ const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5-5';
 // recommended fallback model inside the same call.
 const FALLBACK = { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
 
+// Site-wide circuit breaker on Claude calls per UTC day, on top of the per-member caps,
+// so a bug or abuse can never run up the bill.
+const DAILY_CALL_CAP = Math.max(1, Number.parseInt(process.env.AI_DAILY_CALL_CAP || '300', 10));
+const usage = { day: '', calls: 0 };
+
 let client;
 function anthropic() {
   if (!process.env.ANTHROPIC_API_KEY) throw new AiError('AI features are not configured yet. Please contact support.');
+  const day = new Date().toISOString().slice(0, 10);
+  if (usage.day !== day) Object.assign(usage, { day, calls: 0 });
+  if (usage.calls >= DAILY_CALL_CAP) {
+    console.error(`[ai] daily call cap of ${DAILY_CALL_CAP} reached`);
+    throw new AiError('AI features are busy right now. Please try again tomorrow or contact support.');
+  }
+  usage.calls += 1;
   if (!client) client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 3, timeout: 15 * 60 * 1000 });
   return client;
 }

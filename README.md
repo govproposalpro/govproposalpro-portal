@@ -37,7 +37,7 @@ npm run db:migrate              # creates the tables
 npm start                     # serves on PORT (default 3000)
 ```
 
-Deploy anywhere that runs Node 18+ behind HTTPS (Render, Railway, Fly, a VPS with Nginx). Set `TRUST_PROXY=1` behind a proxy so rate limiting sees real client IPs. Paste the public URL into the Whop PDF where it says `[INSERT YOUR CLAUDE-BUILT PAGE LINK HERE]`.
+Deploy anywhere that runs Node 20+ behind HTTPS (Render, Railway, Fly, a VPS with Nginx). Set `TRUST_PROXY=1` behind a proxy so rate limiting sees real client IPs. Paste the public URL into the Whop PDF where it says `[INSERT YOUR CLAUDE-BUILT PAGE LINK HERE]`.
 
 ## The purchase gate (important)
 
@@ -108,7 +108,7 @@ member's next request; tier comes from the live purchase record; the CSP allows 
 scripts and styles; uploaded RFPs are sent to Claude and never stored, only the summary is.
 
 Env: `ANTHROPIC_API_KEY` (required for AI features), `APP_LAUNCH_AT` (sign-in opens at this time),
-`APP_EARLY_ACCESS_EMAILS` (team accounts allowed in early), `DECRYPTS_PER_DAY` (default 25).
+`APP_EARLY_ACCESS_EMAILS` (team accounts allowed in early), `DECRYPTS_PER_DAY` (default 25), `DOCS_PER_DAY` (default 15), `AI_DAILY_CALL_CAP` (site-wide Claude calls per day, default 300).
 
 ## Admin dashboard (at `/admin`)
 
