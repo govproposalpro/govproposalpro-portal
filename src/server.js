@@ -10,6 +10,7 @@ const helmet = require('helmet');
 
 const registerRouter = require('./routes/register');
 const whopWebhookRouter = require('./routes/whopWebhook');
+const leadsRouter = require('./routes/leads');
 const { corsForSignup } = require('./cors');
 const authRouter = require('./app/routes/auth');
 const { router: bidsRouter } = require('./app/routes/bids');
@@ -64,6 +65,7 @@ app.use('/api', whopWebhookRouter);
 app.use('/api/register', corsForSignup);
 app.use('/api', registerRouter);
 app.use('/api', winsPublicRouter);
+app.use('/api', leadsRouter);
 
 // Dashboard API. Responses are per-member, so never cache them anywhere.
 app.use(['/api/auth', '/api/me', '/api/bids', '/api/decryptor', '/api/proposals', '/api/capability-statements',
@@ -119,7 +121,7 @@ const dollars = (name) => {
 const checkoutMode = (process.env.SITE_CHECKOUT_MODE || '').trim().toLowerCase() === 'link' ? 'link' : 'embed';
 const youtubeId = /^[A-Za-z0-9_-]{11}$/.test((process.env.SITE_VSL_YOUTUBE_ID || '').trim()) ? process.env.SITE_VSL_YOUTUBE_ID.trim() : '';
 const whopLink = (plan) => `https://whop.com/checkout/${plan}`;
-const siteHtml = fs.readFileSync(path.join(SITE_DIR, 'index.html'), 'utf8')
+const fillSite = (file) => fs.readFileSync(path.join(SITE_DIR, file), 'utf8')
   .replaceAll('__CTA_URL__', checkoutUrl('SITE_CTA_URL', '#editions'))
   .replaceAll('__CORE_URL__', checkoutUrl('WHOP_CORE_CHECKOUT_URL', whopLink(PLANS.core)))
   .replaceAll('__ENTERPRISE_URL__', checkoutUrl('WHOP_ENTERPRISE_CHECKOUT_URL', whopLink(PLANS.enterprise)))
@@ -138,6 +140,9 @@ const siteHtml = fs.readFileSync(path.join(SITE_DIR, 'index.html'), 'utf8')
   .replaceAll('__BOOKING_URL__', checkoutUrl('BOOKING_URL', ''))
   .replaceAll('__VSL_ID__', youtubeId)
   .replaceAll('__CHECKOUT_MODE__', checkoutMode);
+const siteHtml = fillSite('index.html');
+// The demo video page for ads: the video unlocks after a name, email and phone opt-in (routes/leads.js).
+const watchHtml = fillSite('watch.html');
 // The landing page alone also allows Whop's checkout: its loader script, the checkout iframe and the
 // <style> tags that script adds. Every other page keeps the strict policy above.
 const SITE_CSP = [
@@ -186,6 +191,11 @@ app.get('/', (req, res) => {
   if (isAccessHost(req)) return res.type('html').send(indexHtml);
   res.set('Content-Security-Policy', SITE_CSP);
   return res.type('html').send(siteHtml);
+});
+app.get(['/watch', '/demo'], (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Content-Security-Policy', SITE_CSP);
+  res.type('html').send(watchHtml);
 });
 app.get('/access', (_req, res) => {
   res.set('Cache-Control', 'no-store');

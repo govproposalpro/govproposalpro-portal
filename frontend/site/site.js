@@ -51,12 +51,12 @@
     // Mobile menu
     var btn = document.getElementById('menu-btn');
     var menu = document.getElementById('menu');
-    btn.addEventListener('click', function () {
+    if (btn && menu) btn.addEventListener('click', function () {
       var open = menu.classList.toggle('hidden') === false;
       btn.setAttribute('aria-expanded', String(open));
       if (open) nav.classList.add('scrolled');
     });
-    menu.addEventListener('click', function (e) { if (e.target.closest('a')) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); } });
+    if (menu) menu.addEventListener('click', function (e) { if (e.target.closest('a')) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); } });
 
     // Scroll reveal, staggered within each row
     var items = document.querySelectorAll('.reveal');
@@ -287,7 +287,9 @@
       holder.setAttribute('data-whop-checkout-theme', 'dark');
       holder.setAttribute('data-whop-checkout-skip-redirect', 'true');
       holder.setAttribute('data-whop-checkout-on-complete', 'gppCheckoutComplete');
-      if (buyerEmail) holder.setAttribute('data-whop-checkout-prefill-email', buyerEmail);
+      // The buyer's email from step one, or the one they gave to watch the demo (watch.js).
+      var prefill = buyerEmail || window.gppLeadEmail || '';
+      if (prefill) holder.setAttribute('data-whop-checkout-prefill-email', prefill);
       mountEl.appendChild(holder);
       paintSteps(false);
       addLoader();

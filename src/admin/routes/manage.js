@@ -471,4 +471,48 @@ router.delete('/admin/wins/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ---------------------------------------------------------------- leads (demo page opt-ins)
+
+const LEAD_COLS = `id, first_name AS "firstName", email, phone, page, utm_source AS "utmSource", utm_medium AS "utmMedium",
+  utm_campaign AS "utmCampaign", utm_content AS "utmContent", utm_term AS "utmTerm", click_id AS "clickId", referrer, visits,
+  ghl_contact_id IS NOT NULL AS "inGhl", created_at AS "createdAt", updated_at AS "updatedAt"`;
+
+router.get('/admin/leads', async (req, res, next) => {
+  try {
+    const q = clean(req.query.q, 100);
+    const page = Math.max(0, Number.parseInt(req.query.page, 10) || 0);
+    const params = [];
+    let where = '';
+    if (q) {
+      params.push(`%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`);
+      where = 'WHERE email ILIKE $1 OR first_name ILIKE $1 OR phone ILIKE $1 OR utm_source ILIKE $1 OR utm_campaign ILIKE $1';
+    }
+    params.push(100, page * 100);
+    const [list, counts] = await Promise.all([
+      db.query(`SELECT ${LEAD_COLS} FROM leads ${where} ORDER BY id DESC LIMIT $${params.length - 1} OFFSET $${params.length}`, params),
+      db.query(`SELECT count(*)::int AS total, count(*) FILTER (WHERE created_at > now() - interval '7 days')::int AS week,
+                       count(*) FILTER (WHERE created_at > now() - interval '1 day')::int AS today FROM leads`),
+    ]);
+    res.json({ leads: list.rows, page, more: list.rows.length === 100, ...counts.rows[0] });
+  } catch (err) { next(err); }
+});
+
+// Every lead as a CSV, for ad audiences or a backup of what is in GoHighLevel.
+router.get('/admin/leads.csv', async (req, res, next) => {
+  try {
+    const { rows } = await db.query(`SELECT ${LEAD_COLS} FROM leads ORDER BY id DESC LIMIT 50000`);
+    const cols = ['createdAt', 'firstName', 'email', 'phone', 'utmSource', 'utmMedium', 'utmCampaign', 'utmContent', 'utmTerm', 'clickId', 'referrer', 'page', 'visits', 'inGhl'];
+    // Quote every cell, and defuse spreadsheet formulas (=, +, -, @) in visitor-typed text.
+    const cell = (v) => {
+      let t = v instanceof Date ? v.toISOString() : String(v ?? '');
+      if (/^[=+\-@\t\r]/.test(t) && !/^\+\d+$/.test(t)) t = `'${t}`;
+      return `"${t.replace(/"/g, '""')}"`;
+    };
+    const csv = [cols.join(','), ...rows.map((r) => cols.map((c) => cell(r[c])).join(','))].join('\r\n');
+    await audit(req, 'leads.export', null, { count: rows.length });
+    res.set({ 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="govproposalpro-leads.csv"' });
+    res.send(csv);
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
