@@ -45,12 +45,29 @@
       still.addEventListener('error', function () { still.src = 'https://i.ytimg.com/vi/' + vslId + '/hqdefault.jpg'; }, { once: true });
     }
 
-    // The YouTube video once SITE_VSL_YOUTUBE_ID is set, otherwise the walkthrough hosted here.
-    function start() { play.replaceWith(window.gppVideo(vslId)); }
+    // The YouTube video once SITE_VSL_YOUTUBE_ID is set. Otherwise the intro plays first and rolls
+    // straight into the full walkthrough; the chapter buttons jump between the two.
+    var chapters = document.getElementById('chapters');
+    var current = play;
+    function show(clip) {
+      var v = window.gppVideo(vslId, clip);
+      current.replaceWith(v);
+      current = v;
+      if (vslId) return;
+      chapters.querySelectorAll('[data-clip]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.clip === clip)); });
+      if (clip === 'intro') v.addEventListener('ended', function () { show('demo'); });
+    }
+    function start() { show('intro'); }
+    if (!vslId) {
+      chapters.querySelectorAll('[data-clip]').forEach(function (b) {
+        b.addEventListener('click', function () { show(b.dataset.clip); });
+      });
+    }
     function unlock(autoplay) {
       stage.classList.remove('is-locked');
       gate.hidden = true;
       play.hidden = false;
+      if (!vslId) chapters.hidden = false;
       play.addEventListener('click', start, { once: true });
       if (autoplay) start();
     }

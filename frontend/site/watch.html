@@ -49,7 +49,7 @@
 
         <div class="reveal stage mt-10" id="stage">
           <div class="shot vsl" id="vsl">
-            <img id="vsl-still" src="/assets/site/demo-poster.webp" alt="" width="1280" height="720" class="vsl-thumb" />
+            <img id="vsl-still" src="/assets/site/intro-poster.webp" alt="" width="1280" height="720" class="vsl-thumb" />
             <button type="button" class="vsl-play" id="vsl-play" aria-label="Play the GovProposalPro demo video" hidden>
               <span class="vsl-btn" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span>
             </button>
@@ -70,6 +70,11 @@
             </div>
           </form>
         </div>
+        <div id="chapters" class="chapters" role="group" aria-label="Choose a video" hidden>
+          <button type="button" class="chapter" data-clip="intro" aria-pressed="false"><span class="chapter-n">1</span>The intro<span class="chapter-t">1:45</span></button>
+          <button type="button" class="chapter" data-clip="demo" aria-pressed="false"><span class="chapter-n">2</span>Full walkthrough<span class="chapter-t">3:30</span></button>
+        </div>
+        <p class="mt-3 text-[11px] text-mist-500">Intro music: "Voxel Revolution" by Kevin MacLeod (incompetech.com), licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" class="underline hover:text-white">CC BY 4.0</a>.</p>
 
         <div class="reveal mt-9 flex flex-wrap items-center justify-center gap-3">
           <a href="__CORE_URL__" data-checkout="core" class="btn-lg">Get Core · $897</a>

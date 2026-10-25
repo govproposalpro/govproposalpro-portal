@@ -11,8 +11,14 @@
   var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 8); };
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  // The demo player: the YouTube video when an id is set, otherwise the walkthrough hosted here.
-  window.gppVideo = function (yt) {
+  // Videos hosted here: the short VSL intro and the full walkthrough. New recordings get a new file
+  // name, since /assets is cached for 7 days.
+  var CLIPS = {
+    intro: { file: '/assets/site/intro-v1', poster: '/assets/site/intro-poster.webp', label: 'GovProposalPro intro' },
+    demo: { file: '/assets/site/demo-v2', poster: '/assets/site/demo-poster.webp', label: 'GovProposalPro demo' },
+  };
+  // The demo player: the YouTube video when an id is set, otherwise a clip hosted here (the walkthrough by default).
+  window.gppVideo = function (yt, clip) {
     var v;
     if (yt) {
       v = document.createElement('iframe');
@@ -21,20 +27,21 @@
       v.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
       v.allowFullscreen = true;
     } else {
+      var c = CLIPS[clip] || CLIPS.demo;
       v = document.createElement('video');
       // MP4 for Safari and most browsers; WebM for browsers without H.264.
-      [['/assets/site/demo-v2.mp4', 'video/mp4'], ['/assets/site/demo-v2.webm', 'video/webm']].forEach(function (f) {
+      [['.mp4', 'video/mp4'], ['.webm', 'video/webm']].forEach(function (f) {
         var s = document.createElement('source');
-        s.src = f[0];
+        s.src = c.file + f[0];
         s.type = f[1];
         v.appendChild(s);
       });
-      v.poster = '/assets/site/demo-poster.webp';
+      v.poster = c.poster;
       v.controls = true;
       v.autoplay = true;
       v.playsInline = true;
       v.preload = 'auto';
-      v.setAttribute('aria-label', 'GovProposalPro demo');
+      v.setAttribute('aria-label', c.label);
     }
     v.className = 'vsl-iframe';
     return v;
