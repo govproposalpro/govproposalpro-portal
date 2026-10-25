@@ -306,10 +306,6 @@
   .loop-h { @apply pt-1 font-semibold text-white; }
   .loop-p { @apply mt-1 text-[15px] leading-relaxed text-mist-400; }
 
-  .seg-billing { @apply w-auto; }
-  .seg-billing span { @apply px-6; }
-  .save-tag { @apply ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase not-italic tracking-wider text-white; background: linear-gradient(120deg, #0A66FF, #FF2D46); }
-  #plans[data-billing="monthly"] .bill-full, #plans[data-billing="full"] .bill-monthly { display: none; }
 
   /* Checkout and video dialogs */
   .co { @apply m-auto max-w-[560px] border-0 bg-transparent p-0 text-mist-100; width: calc(100% - 24px); max-height: calc(100dvh - 24px); }
@@ -335,6 +331,8 @@
   .co-done { @apply px-6 py-14 text-center; }
   .co-check { @apply mx-auto flex h-14 w-14 items-center justify-center rounded-full text-white; background: linear-gradient(135deg, #0A66FF, #FF2D46); }
   .co-foot { @apply flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] px-5 py-3 text-xs text-mist-500; }
+  .ds-body { @apply px-6 py-12 text-center sm:px-10; }
+  .ds-body[hidden] { display: none; }
   .vsl { @apply relative bg-black; aspect-ratio: 16 / 9; }
   .vsl-play { @apply absolute inset-0 block h-full w-full cursor-pointer; }
   .vsl-thumb { @apply absolute inset-0 h-full w-full object-cover opacity-80 transition duration-500; }
@@ -342,6 +340,21 @@
   .vsl-btn { @apply absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full pl-1 text-white transition duration-300;
     background: linear-gradient(135deg, #0A66FF, #5B3BFF 50%, #FF2D46); box-shadow: 0 20px 60px -10px rgba(91,59,255,0.8); }
   .vsl-play:hover .vsl-btn { transform: translate(-50%, -50%) scale(1.05); }
+  /* Demo page opt-in: below the still on phones and tablets, over it on wider screens. */
+  .stage { @apply relative mx-auto max-w-5xl; }
+  .stage.is-locked .vsl-thumb { filter: blur(6px) brightness(0.45); transform: scale(1.04); }
+  .gate { @apply relative z-10 mt-4 lg:absolute lg:inset-0 lg:mt-0 lg:flex lg:items-center lg:justify-center lg:p-4; }
+  .gate[hidden] { display: none; }
+  .gate-card { @apply mx-auto w-full max-w-md rounded-[28px] border border-white/10 bg-[#0d0d10]/90 p-6 text-center shadow-2xl backdrop-blur-2xl sm:p-7; }
+  .gate-f { @apply block; }
+  .gate-f span { @apply mb-1.5 block text-xs font-medium text-mist-400; }
+  .gate-f input { @apply w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 lg:py-2.5 text-[16px] text-white outline-none transition placeholder:text-mist-500 focus:border-brand-blue/70 focus:bg-white/[0.06]; }
+  .gate-f input[aria-invalid="true"] { @apply border-brand-red/70; }
+  .gate-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .card-step { @apply relative rounded-[24px] border border-white/[0.07] bg-white/[0.03] p-6 text-left; }
+  .step-n { @apply flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white; background: linear-gradient(135deg, #0A66FF, #5B3BFF 50%, #FF2D46); }
+  .step-h { @apply mt-5 text-lg font-semibold tracking-tight text-white; }
+  .step-p { @apply mt-2 text-sm leading-relaxed text-mist-400; }
   .vsl-iframe { @apply absolute inset-0 h-full w-full border-0; }
 }
 .ap-glow { position: absolute; inset: 0; pointer-events: none;

@@ -473,3 +473,25 @@ CREATE INDEX IF NOT EXISTS autopilot_items_user_idx ON autopilot_items (user_id,
 
 -- Proposals the Autopilot writes on the member's own key do not use the monthly allowance.
 ALTER TABLE proposals ADD COLUMN IF NOT EXISTS own_key BOOLEAN NOT NULL DEFAULT false;
+
+-- People who opt in on the demo video page (/watch) before buying. One row per email: the
+-- first visit's ad source stays, later visits refresh the name and phone and bump visits.
+CREATE TABLE IF NOT EXISTS leads (
+  id              BIGSERIAL     PRIMARY KEY,
+  email           VARCHAR(254)  NOT NULL UNIQUE,
+  first_name      VARCHAR(80)   NOT NULL,
+  phone           VARCHAR(20)   NOT NULL,
+  page            VARCHAR(40),
+  utm_source      VARCHAR(150),
+  utm_medium      VARCHAR(150),
+  utm_campaign    VARCHAR(150),
+  utm_content     VARCHAR(150),
+  utm_term        VARCHAR(150),
+  click_id        VARCHAR(255),
+  referrer        VARCHAR(300),
+  visits          INT           NOT NULL DEFAULT 1,
+  ghl_contact_id  VARCHAR(64),
+  created_at      TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS leads_created_idx ON leads (created_at DESC);

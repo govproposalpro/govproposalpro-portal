@@ -5,7 +5,8 @@
  *  - Signup page: CSS inlined into one self-contained public/index.html (no CDN scripts on the password page).
  *  - Dashboard: public/app/index.html plus public/app/static/{app.css,app.js}, cache-busted by content hash.
  *  - Admin: public/admin/index.html plus public/admin/static/admin.js (uses the dashboard CSS).
- *  - Landing page: public/site/index.html plus public/site/static/{site.css,site.js,wins.js}.
+ *  - Landing page: public/site/index.html and the demo video page public/site/watch.html, plus
+ *    public/site/static/{site.css,site.js,wins.js,watch.js}.
  */
 
 const { execFileSync } = require('child_process');
@@ -65,17 +66,19 @@ console.log(`Wrote public/admin (${(adminJs.length / 1024).toFixed(1)} KB JS)`);
 const siteCss = tailwind('frontend/site/tailwind.config.js', 'frontend/site/input.css');
 const siteJs = fs.readFileSync(path.join(root, 'frontend/site/site.js'), 'utf8');
 const winsJs = fs.readFileSync(path.join(root, 'frontend/site/wins.js'), 'utf8');
-const siteVersion = crypto.createHash('sha256').update(siteCss).update(siteJs).update(winsJs).digest('hex').slice(0, 12);
+const watchJs = fs.readFileSync(path.join(root, 'frontend/site/watch.js'), 'utf8');
+const siteVersion = crypto.createHash('sha256').update(siteCss).update(siteJs).update(winsJs).update(watchJs).digest('hex').slice(0, 12);
 const siteStatic = path.join(root, 'public/site/static');
 fs.mkdirSync(siteStatic, { recursive: true });
 fs.writeFileSync(path.join(siteStatic, 'site.css'), siteCss);
 fs.writeFileSync(path.join(siteStatic, 'site.js'), siteJs);
 fs.writeFileSync(path.join(siteStatic, 'wins.js'), winsJs);
+fs.writeFileSync(path.join(siteStatic, 'watch.js'), watchJs);
 fs.writeFileSync(
   path.join(root, 'public/site/index.html'),
   fs.readFileSync(path.join(root, 'frontend/site/index.html'), 'utf8').replaceAll('__VERSION__', siteVersion)
 );
-for (const page of ['terms', 'privacy', 'earnings-disclaimer']) {
+for (const page of ['watch', 'terms', 'privacy', 'earnings-disclaimer']) {
   fs.writeFileSync(path.join(root, `public/site/${page}.html`),
     fs.readFileSync(path.join(root, `frontend/site/${page}.html`), 'utf8').replaceAll('__VERSION__', siteVersion));
 }

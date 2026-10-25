@@ -252,7 +252,7 @@
             <span class="pill bg-brand-red/15 text-brand-redSoft lg:mt-3">Admin</span>
           </div>
           <nav class="flex gap-1 overflow-x-auto lg:block lg:space-y-0.5">
-            ${link('/', 'Overview')}${link('/members', 'Members')}${link('/access', 'Access')}${link('/wins', 'Contract wins')}
+            ${link('/', 'Overview')}${link('/members', 'Members')}${link('/access', 'Access')}${link('/wins', 'Contract wins')}${link('/leads', 'Leads')}
             ${owner ? link('/team', 'Team') + link('/audit', 'Audit log') : ''}${link('/account', 'My account')}
           </nav>
           <div class="mt-5 hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3 lg:block">
@@ -304,6 +304,7 @@
       else if ((m = path.match(/^\/members\/(\d+)$/))) await viewMember(view, m[1]);
       else if (path === '/access') await viewAccess(view);
       else if (path === '/wins') await viewWins(view);
+      else if (path === '/leads') await viewLeads(view);
       else if (path === '/team') await viewTeam(view);
       else if (path === '/audit') await viewAudit(view);
       else if (path === '/account') viewAccount(view);
@@ -514,6 +515,39 @@
   }
 
   // ------------------------------------------------------------------ contract wins (site popups)
+
+  // Opt-ins from the demo video page, newest first. They also go to GoHighLevel when it is connected.
+  async function viewLeads(view) {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q') || '';
+    const page = Math.max(0, Number.parseInt(params.get('page'), 10) || 0);
+    const data = await api(`/leads?page=${page}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
+    const go = (p) => navigate(`/leads?page=${p}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
+    const source = (l) => [l.utmSource, l.utmMedium].filter(Boolean).join(' / ') || 'Direct';
+    view.innerHTML = `
+      ${head('Leads', `${data.total} people have opted in on the demo page: ${data.today} today, ${data.week} in the last 7 days. Share govproposalpro.com/watch with UTM tags on each ad to see which one sent them.`,
+        '<a href="/api/admin/leads.csv" class="btn-ghost" download>Download CSV</a>')}
+      <form id="l-search" class="mb-4 flex gap-2"><input id="l-q" class="field" placeholder="Search name, email, phone, source or campaign" value="${esc(q)}" /><button class="btn-ghost">Search</button></form>
+      <div class="card overflow-x-auto">
+        <table class="w-full min-w-[860px] text-left text-sm">
+          <thead class="text-xs uppercase tracking-wider text-mist-500"><tr><th class="px-5 py-3">Name</th><th class="px-3 py-3">Email</th><th class="px-3 py-3">Phone</th><th class="px-3 py-3">Source</th><th class="px-3 py-3">Campaign</th><th class="px-3 py-3">GoHighLevel</th><th class="px-3 py-3">Opted in</th></tr></thead>
+          <tbody class="divide-y divide-white/[0.05]">
+            ${data.leads.map((l) => `<tr>
+              <td class="px-5 py-3 text-white">${esc(l.firstName)}${l.visits > 1 ? ` <span class="text-xs text-mist-500">×${l.visits}</span>` : ''}</td>
+              <td class="px-3 py-3"><a class="text-brand-blueSoft hover:text-white" href="mailto:${esc(l.email)}">${esc(l.email)}</a></td>
+              <td class="px-3 py-3"><a class="text-mist-300 hover:text-white" href="tel:${esc(l.phone)}">${esc(l.phone)}</a></td>
+              <td class="px-3 py-3 text-mist-300">${esc(source(l))}</td>
+              <td class="px-3 py-3 text-mist-300">${esc(l.utmCampaign || '')}${l.utmContent ? `<span class="block text-xs text-mist-500">${esc(l.utmContent)}</span>` : ''}</td>
+              <td class="px-3 py-3">${l.inGhl ? pill('Synced', 'green') : pill('Not yet', 'gray')}</td>
+              <td class="px-3 py-3 text-mist-400">${fmtDate(l.createdAt)}</td></tr>`).join('') || '<tr><td colspan="7" class="px-5 py-8 text-center text-mist-500">No leads yet. They appear here as soon as someone opts in on govproposalpro.com/watch.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 flex justify-between">${page ? '<button id="l-prev" class="btn-ghost">Previous</button>' : '<span></span>'}${data.more ? '<button id="l-next" class="btn-ghost">Next</button>' : ''}</div>`;
+    $('#l-search').addEventListener('submit', (e) => { e.preventDefault(); const v = $('#l-q').value.trim(); navigate('/leads' + (v ? `?q=${encodeURIComponent(v)}` : '')); });
+    if ($('#l-prev')) $('#l-prev').addEventListener('click', () => go(page - 1));
+    if ($('#l-next')) $('#l-next').addEventListener('click', () => go(page + 1));
+  }
 
   async function viewWins(view) {
     const params = new URLSearchParams(location.search);

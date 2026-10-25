@@ -16,7 +16,8 @@
 const { PROFILE_OPTIONS } = require('../validation');
 const { buildWelcomeEmail, buildPurchaseEmail } = require('./email');
 
-const BASE = 'https://services.leadconnectorhq.com';
+// GHL_API_BASE_URL only points tests at a local stand-in.
+const BASE = process.env.GHL_API_BASE_URL || 'https://services.leadconnectorhq.com';
 
 function enabled() {
   return Boolean(process.env.GHL_API_KEY && process.env.GHL_LOCATION_ID);
@@ -164,4 +165,41 @@ async function upsertContact({ email, tags = [] }) {
   return contactId;
 }
 
-module.exports = { onRegistered, onPurchased, enabled, upsertContact, sendEmail };
+// GHL tags are free text; keep ad-source tags short and predictable (utm-source-facebook).
+const tagPart = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+
+/**
+ * Runs when someone opts in on the demo video page: upserts the contact with their phone, tags
+ * them gpp-vsl-lead plus the ad source and campaign, and notes where they came from.
+ */
+async function onLead({ email, firstName, phone, page, utm = {}, clickId, referrer }) {
+  if (!enabled()) throw new Error('GHL_API_KEY / GHL_LOCATION_ID are not set');
+  const upsert = await call('POST', '/contacts/upsert', {
+    locationId: process.env.GHL_LOCATION_ID,
+    email,
+    firstName,
+    phone,
+    source: `GovProposalPro VSL${utm.source ? ` (${utm.source})` : ''}`,
+  });
+  const contactId = upsert.contact?.id;
+  if (!contactId) throw new Error('GHL upsert returned no contact id');
+  const tags = ['gpp-vsl-lead', `gpp-page-${tagPart(page) || 'watch'}`];
+  if (tagPart(utm.source)) tags.push(`utm-source-${tagPart(utm.source)}`);
+  if (tagPart(utm.campaign)) tags.push(`utm-campaign-${tagPart(utm.campaign)}`);
+  const note = [
+    `Opted in on the GovProposalPro demo page (/${page || 'watch'})`,
+    `Name: ${firstName}`, `Email: ${email}`, `Phone: ${phone}`,
+    `Source: ${utm.source || 'direct'} / ${utm.medium || 'none'}`,
+    utm.campaign && `Campaign: ${utm.campaign}`, utm.content && `Ad: ${utm.content}`, utm.term && `Term: ${utm.term}`,
+    clickId && `Click id: ${clickId}`, referrer && `Referrer: ${referrer}`,
+  ].filter(Boolean).join('\n');
+  for (const [name, run] of Object.entries({
+    tags: () => call('POST', `/contacts/${contactId}/tags`, { tags }),
+    note: () => call('POST', `/contacts/${contactId}/notes`, { body: note }),
+  })) {
+    try { await run(); } catch (err) { console.error(`[ghl] lead ${name} failed:`, err.message); }
+  }
+  return { contactId };
+}
+
+module.exports = { onRegistered, onPurchased, onLead, enabled, upsertContact, sendEmail };

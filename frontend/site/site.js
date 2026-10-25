@@ -11,6 +11,35 @@
   var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 8); };
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  // The demo player: the YouTube video when an id is set, otherwise the walkthrough hosted here.
+  window.gppVideo = function (yt) {
+    var v;
+    if (yt) {
+      v = document.createElement('iframe');
+      v.src = 'https://www.youtube-nocookie.com/embed/' + yt + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+      v.title = 'GovProposalPro demo';
+      v.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      v.allowFullscreen = true;
+    } else {
+      v = document.createElement('video');
+      // MP4 for Safari and most browsers; WebM for browsers without H.264.
+      [['/assets/site/demo.mp4', 'video/mp4'], ['/assets/site/demo.webm', 'video/webm']].forEach(function (f) {
+        var s = document.createElement('source');
+        s.src = f[0];
+        s.type = f[1];
+        v.appendChild(s);
+      });
+      v.poster = '/assets/site/demo-poster.webp';
+      v.controls = true;
+      v.autoplay = true;
+      v.playsInline = true;
+      v.preload = 'auto';
+      v.setAttribute('aria-label', 'GovProposalPro demo');
+    }
+    v.className = 'vsl-iframe';
+    return v;
+  };
+
   function money(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
   function shortMoney(n) {
     if (n >= 1e9) return '$' + (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
@@ -51,12 +80,12 @@
     // Mobile menu
     var btn = document.getElementById('menu-btn');
     var menu = document.getElementById('menu');
-    btn.addEventListener('click', function () {
+    if (btn && menu) btn.addEventListener('click', function () {
       var open = menu.classList.toggle('hidden') === false;
       btn.setAttribute('aria-expanded', String(open));
       if (open) nav.classList.add('scrolled');
     });
-    menu.addEventListener('click', function (e) { if (e.target.closest('a')) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); } });
+    if (menu) menu.addEventListener('click', function (e) { if (e.target.closest('a')) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); } });
 
     // Scroll reveal, staggered within each row
     var items = document.querySelectorAll('.reveal');
@@ -162,14 +191,14 @@
       var calc = function () {
         var v = Number(value.value), m = Number(margin.value);
         var ed = document.querySelector('input[name="roi-ed"]:checked');
-        var price = Number(ed ? ed.value : 997);
+        var price = Number(ed ? ed.value : 897);
         var profit = v * m / 100;
         var multiple = profit / price;
         document.getElementById('roi-value-out').textContent = money(v);
         document.getElementById('roi-margin-out').textContent = m + '%';
         document.getElementById('roi-profit').textContent = money(profit);
         document.getElementById('roi-multiple').textContent = (multiple >= 10 ? Math.round(multiple) : multiple.toFixed(1).replace(/\.0$/, '')) + '×';
-        document.getElementById('roi-ed-name').textContent = price > 997 ? 'Enterprise Edition' : 'Core Edition';
+        document.getElementById('roi-ed-name').textContent = price > 897 ? 'Enterprise Edition' : 'Core Edition';
         [value, margin].forEach(function (r) {
           var pct = (r.value - r.min) / (r.max - r.min) * 100;
           r.style.background = 'linear-gradient(90deg, #4DA3FF 0%, #9D7BFF ' + pct + '%, rgba(255,255,255,0.1) ' + pct + '%)';
@@ -180,21 +209,13 @@
       calc();
     }
 
-    // Pricing: Monthly / Pay in full toggle, plus the optional "save" line when access prices are set.
-    var plans = document.getElementById('plans');
-    document.querySelectorAll('input[name="billing"]').forEach(function (r) {
-      r.addEventListener('change', function () { if (r.checked && plans) plans.setAttribute('data-billing', r.value); });
-    });
+    // Pricing leads with pay in full; the access plan price shows once it is set.
     var co = document.getElementById('checkout');
     var cfg = co ? co.dataset : {};
-    [['core', 997, 199], ['enterprise', 4997, 999]].forEach(function (e) {
-      var maint = Number(cfg[e[0] + 'Maint']);
-      if (!(maint > 0)) return;
-      var m = document.querySelector('[data-maint="' + e[0] + '"]');
-      if (m) m.textContent = ' at ' + money(maint) + ' a month';
-      var save = e[2] * 12 - (e[1] + maint * 12);
-      var line = document.querySelector('[data-save="' + e[0] + '"]');
-      if (line && save > 0) line.textContent = 'Save ' + money(save) + ' in your first year versus monthly.';
+    ['core', 'enterprise'].forEach(function (ed) {
+      var maint = Number(cfg[ed + 'Maint']);
+      var m = document.querySelector('[data-maint="' + ed + '"]');
+      if (m && maint > 0) m.textContent = ' at ' + money(maint) + ' a month';
     });
 
     // Optional extras: the call calendar and the demo video show only once they are configured.
@@ -203,25 +224,23 @@
       // With a calendar set, the Enterprise call leads and buy-now steps back to a second button.
       document.querySelectorAll('[data-call-first]').forEach(function (n) { n.className = n.getAttribute('data-call-first'); });
     }
-    // Demo video: a still from YouTube until someone presses play, then the nocookie player.
+    // Demo video: the recorded walkthrough hosted here, or the YouTube video once SITE_VSL_YOUTUBE_ID
+    // is set. Either way only a still loads until someone presses play.
     var vslSection = document.querySelector('[data-vsl-section]');
-    if (vslSection && /^[A-Za-z0-9_-]{11}$/.test(cfg.vslId || '')) {
+    if (vslSection) {
+      var yt = /^[A-Za-z0-9_-]{11}$/.test(cfg.vslId || '') ? cfg.vslId : '';
       vslSection.hidden = false;
       document.querySelectorAll('[data-vsl]').forEach(function (n) { n.hidden = false; });
       document.querySelectorAll('[data-vsl-alt]').forEach(function (n) { n.hidden = true; });
       var thumb = document.getElementById('vsl-thumb');
-      thumb.src = 'https://i.ytimg.com/vi/' + cfg.vslId + '/maxresdefault.jpg';
-      thumb.addEventListener('error', function () { thumb.src = 'https://i.ytimg.com/vi/' + cfg.vslId + '/hqdefault.jpg'; }, { once: true });
+      if (yt) {
+        thumb.src = 'https://i.ytimg.com/vi/' + yt + '/maxresdefault.jpg';
+        thumb.addEventListener('error', function () { thumb.src = 'https://i.ytimg.com/vi/' + yt + '/hqdefault.jpg'; }, { once: true });
+      } else {
+        thumb.src = '/assets/site/demo-poster.webp';
+      }
       var play = document.getElementById('vsl-play');
-      play.addEventListener('click', function () {
-        var f = document.createElement('iframe');
-        f.src = 'https://www.youtube-nocookie.com/embed/' + cfg.vslId + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
-        f.title = 'GovProposalPro demo';
-        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-        f.allowFullscreen = true;
-        f.className = 'vsl-iframe';
-        play.replaceWith(f);
-      });
+      play.addEventListener('click', function () { play.replaceWith(window.gppVideo(yt)); });
     }
 
     function openDialog(d) {
@@ -233,20 +252,20 @@
     document.querySelectorAll('dialog.co').forEach(function (d) {
       d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('[data-co-close]')) d.close(); });
       d.addEventListener('close', function () {
-        document.body.classList.remove('co-lock');
-        if (d.id === 'checkout') resetCheckout();
+        if (!document.querySelector('dialog.co[open]')) document.body.classList.remove('co-lock');
+        if (d.id === 'checkout') { var left = flowKey && !finished && stepIdx === 0 ? flowKey : ''; resetCheckout(); offerDownsell(left); }
       });
     });
 
     // Embedded Whop checkout. Buy buttons keep their whop.com link as the fallback (no script,
     // old browser); with script the checkout opens here: the edition, then its monthly access plan.
     var FLOWS = {
-      core: [{ plan: cfg.corePlan, title: 'Core Edition', sub: '$997 one-time' }, { plan: cfg.coreAccessPlan, title: 'Core monthly access', sub: 'Keeps your account, support and proposals active' }],
+      core: [{ plan: cfg.corePlan, title: 'Core Edition', sub: '$897 one-time' }, { plan: cfg.coreAccessPlan, title: 'Core monthly access', sub: 'Keeps your account, support and proposals active' }],
       enterprise: [{ plan: cfg.enterprisePlan, title: 'Enterprise Edition', sub: '$4,997 one-time' }, { plan: cfg.enterpriseAccessPlan, title: 'Enterprise monthly access', sub: 'Keeps your account, support and Autopilot active' }],
       'core-monthly': [{ plan: cfg.coreMonthlyPlan, title: 'Core Edition, monthly', sub: '$199 a month until you cancel' }],
       'enterprise-monthly': [{ plan: cfg.enterpriseMonthlyPlan, title: 'Enterprise Edition, monthly', sub: '$999 a month until you cancel' }],
     };
-    var flow = null, stepIdx = 0, mountSeq = 0, buyerEmail = '';
+    var flow = null, flowKey = '', finished = false, stepIdx = 0, mountSeq = 0, buyerEmail = '';
     var mountEl = document.getElementById('co-mount');
     var doneEl = document.getElementById('co-done');
     var fallback = document.getElementById('co-fallback');
@@ -287,12 +306,15 @@
       holder.setAttribute('data-whop-checkout-theme', 'dark');
       holder.setAttribute('data-whop-checkout-skip-redirect', 'true');
       holder.setAttribute('data-whop-checkout-on-complete', 'gppCheckoutComplete');
-      if (buyerEmail) holder.setAttribute('data-whop-checkout-prefill-email', buyerEmail);
+      // The buyer's email from step one, or the one they gave to watch the demo (watch.js).
+      var prefill = buyerEmail || window.gppLeadEmail || '';
+      if (prefill) holder.setAttribute('data-whop-checkout-prefill-email', prefill);
       mountEl.appendChild(holder);
       paintSteps(false);
       addLoader();
     }
     function showDone() {
+      finished = true;
       mountEl.textContent = '';
       mountEl.hidden = true;
       doneEl.hidden = false;
@@ -301,7 +323,18 @@
       document.getElementById('co-sub').textContent = 'Your login link is on its way';
       paintSteps(true);
     }
-    function resetCheckout() { if (mountEl) mountEl.textContent = ''; flow = null; }
+    function resetCheckout() { if (mountEl) mountEl.textContent = ''; flow = null; flowKey = ''; finished = false; }
+
+    // Monthly is only offered as a downsell: once per visit, to someone who opens the pay-in-full
+    // checkout for an edition and closes it without paying.
+    var ds = document.getElementById('downsell');
+    function offerDownsell(key) {
+      if (!ds || (key !== 'core' && key !== 'enterprise')) return;
+      try { if (sessionStorage.getItem('gpp_ds')) return; sessionStorage.setItem('gpp_ds', '1'); } catch (e) { /* show it anyway */ }
+      ds.querySelectorAll('[data-ds]').forEach(function (n) { n.hidden = n.getAttribute('data-ds') !== key; });
+      setTimeout(function () { openDialog(ds); }, 250);
+    }
+    if (ds) ds.addEventListener('click', function (e) { if (e.target.closest('[data-checkout]')) ds.close(); });
     // Whop calls this by name when a payment completes inside the embedded checkout.
     window.gppCheckoutComplete = function () {
       if (!flow) return;
@@ -326,7 +359,7 @@
         var f = FLOWS[key];
         if (!f || !f.every(function (s) { return /^plan_/.test(s.plan || ''); })) return;
         e.preventDefault();
-        flow = f; stepIdx = start;
+        flow = f; flowKey = key; finished = false; stepIdx = start;
         mountStep();
         openDialog(co);
       });
