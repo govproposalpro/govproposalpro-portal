@@ -14,7 +14,7 @@
   // Videos hosted here: the short VSL intro and the full walkthrough. New recordings get a new file
   // name, since /assets is cached for 7 days.
   var CLIPS = {
-    intro: { file: '/assets/site/intro-v1', poster: '/assets/site/intro-poster.webp', label: 'GovProposalPro intro' },
+    intro: { file: '/assets/site/intro-v4', poster: '/assets/site/intro-v4-poster.webp', label: 'GovProposalPro intro' },
     demo: { file: '/assets/site/demo-v2', poster: '/assets/site/demo-poster.webp', label: 'GovProposalPro demo' },
   };
   // Points a video element at a clip hosted here, or at a full https video URL (SITE_VSL_VIDEO_URL).
