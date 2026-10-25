@@ -23,7 +23,7 @@
     } else {
       v = document.createElement('video');
       // MP4 for Safari and most browsers; WebM for browsers without H.264.
-      [['/assets/site/demo.mp4', 'video/mp4'], ['/assets/site/demo.webm', 'video/webm']].forEach(function (f) {
+      [['/assets/site/demo-v2.mp4', 'video/mp4'], ['/assets/site/demo-v2.webm', 'video/webm']].forEach(function (f) {
         var s = document.createElement('source');
         s.src = f[0];
         s.type = f[1];
