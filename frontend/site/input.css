@@ -306,10 +306,6 @@
   .loop-h { @apply pt-1 font-semibold text-white; }
   .loop-p { @apply mt-1 text-[15px] leading-relaxed text-mist-400; }
 
-  .seg-billing { @apply w-auto; }
-  .seg-billing span { @apply px-6; }
-  .save-tag { @apply ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase not-italic tracking-wider text-white; background: linear-gradient(120deg, #0A66FF, #FF2D46); }
-  #plans[data-billing="monthly"] .bill-full, #plans[data-billing="full"] .bill-monthly { display: none; }
 
   /* Checkout and video dialogs */
   .co { @apply m-auto max-w-[560px] border-0 bg-transparent p-0 text-mist-100; width: calc(100% - 24px); max-height: calc(100dvh - 24px); }
@@ -335,6 +331,8 @@
   .co-done { @apply px-6 py-14 text-center; }
   .co-check { @apply mx-auto flex h-14 w-14 items-center justify-center rounded-full text-white; background: linear-gradient(135deg, #0A66FF, #FF2D46); }
   .co-foot { @apply flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] px-5 py-3 text-xs text-mist-500; }
+  .ds-body { @apply px-6 py-12 text-center sm:px-10; }
+  .ds-body[hidden] { display: none; }
   .vsl { @apply relative bg-black; aspect-ratio: 16 / 9; }
   .vsl-play { @apply absolute inset-0 block h-full w-full cursor-pointer; }
   .vsl-thumb { @apply absolute inset-0 h-full w-full object-cover opacity-80 transition duration-500; }
