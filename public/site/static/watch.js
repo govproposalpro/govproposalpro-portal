@@ -79,7 +79,7 @@
         b.addEventListener('click', function () { show(b.dataset.clip); });
       });
     }
-    if (vslUrl) still.src = '/assets/site/intro-poster.webp';
+    if (vslUrl) still.src = '/assets/site/intro-v4-poster.webp';
     function unlock(autoplay) {
       stage.classList.remove('is-locked');
       gate.hidden = true;
