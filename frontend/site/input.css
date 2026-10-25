@@ -340,7 +340,6 @@
   .vsl-btn { @apply absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full pl-1 text-white transition duration-300;
     background: linear-gradient(135deg, #0A66FF, #5B3BFF 50%, #FF2D46); box-shadow: 0 20px 60px -10px rgba(91,59,255,0.8); }
   .vsl-play:hover .vsl-btn { transform: translate(-50%, -50%) scale(1.05); }
-  .vsl-soon { @apply absolute inset-x-4 bottom-4 rounded-2xl border border-white/10 bg-black/70 px-5 py-4 text-center backdrop-blur-xl sm:inset-x-auto sm:left-1/2 sm:w-[28rem] sm:-translate-x-1/2; }
   /* Demo page opt-in: below the still on phones and tablets, over it on wider screens. */
   .stage { @apply relative mx-auto max-w-5xl; }
   .stage.is-locked .vsl-thumb { filter: blur(6px) brightness(0.45); transform: scale(1.04); }

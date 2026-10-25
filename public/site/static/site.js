@@ -11,6 +11,35 @@
   var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 8); };
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  // The demo player: the YouTube video when an id is set, otherwise the walkthrough hosted here.
+  window.gppVideo = function (yt) {
+    var v;
+    if (yt) {
+      v = document.createElement('iframe');
+      v.src = 'https://www.youtube-nocookie.com/embed/' + yt + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+      v.title = 'GovProposalPro demo';
+      v.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      v.allowFullscreen = true;
+    } else {
+      v = document.createElement('video');
+      // MP4 for Safari and most browsers; WebM for browsers without H.264.
+      [['/assets/site/demo.mp4', 'video/mp4'], ['/assets/site/demo.webm', 'video/webm']].forEach(function (f) {
+        var s = document.createElement('source');
+        s.src = f[0];
+        s.type = f[1];
+        v.appendChild(s);
+      });
+      v.poster = '/assets/site/demo-poster.webp';
+      v.controls = true;
+      v.autoplay = true;
+      v.playsInline = true;
+      v.preload = 'auto';
+      v.setAttribute('aria-label', 'GovProposalPro demo');
+    }
+    v.className = 'vsl-iframe';
+    return v;
+  };
+
   function money(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
   function shortMoney(n) {
     if (n >= 1e9) return '$' + (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
@@ -195,25 +224,23 @@
       // With a calendar set, the Enterprise call leads and buy-now steps back to a second button.
       document.querySelectorAll('[data-call-first]').forEach(function (n) { n.className = n.getAttribute('data-call-first'); });
     }
-    // Demo video: a still from YouTube until someone presses play, then the nocookie player.
+    // Demo video: the recorded walkthrough hosted here, or the YouTube video once SITE_VSL_YOUTUBE_ID
+    // is set. Either way only a still loads until someone presses play.
     var vslSection = document.querySelector('[data-vsl-section]');
-    if (vslSection && /^[A-Za-z0-9_-]{11}$/.test(cfg.vslId || '')) {
+    if (vslSection) {
+      var yt = /^[A-Za-z0-9_-]{11}$/.test(cfg.vslId || '') ? cfg.vslId : '';
       vslSection.hidden = false;
       document.querySelectorAll('[data-vsl]').forEach(function (n) { n.hidden = false; });
       document.querySelectorAll('[data-vsl-alt]').forEach(function (n) { n.hidden = true; });
       var thumb = document.getElementById('vsl-thumb');
-      thumb.src = 'https://i.ytimg.com/vi/' + cfg.vslId + '/maxresdefault.jpg';
-      thumb.addEventListener('error', function () { thumb.src = 'https://i.ytimg.com/vi/' + cfg.vslId + '/hqdefault.jpg'; }, { once: true });
+      if (yt) {
+        thumb.src = 'https://i.ytimg.com/vi/' + yt + '/maxresdefault.jpg';
+        thumb.addEventListener('error', function () { thumb.src = 'https://i.ytimg.com/vi/' + yt + '/hqdefault.jpg'; }, { once: true });
+      } else {
+        thumb.src = '/assets/site/demo-poster.webp';
+      }
       var play = document.getElementById('vsl-play');
-      play.addEventListener('click', function () {
-        var f = document.createElement('iframe');
-        f.src = 'https://www.youtube-nocookie.com/embed/' + cfg.vslId + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
-        f.title = 'GovProposalPro demo';
-        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-        f.allowFullscreen = true;
-        f.className = 'vsl-iframe';
-        play.replaceWith(f);
-      });
+      play.addEventListener('click', function () { play.replaceWith(window.gppVideo(yt)); });
     }
 
     function openDialog(d) {

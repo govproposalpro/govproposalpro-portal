@@ -151,6 +151,7 @@ const SITE_CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://*.whop.com https://i.ytimg.com",
   "font-src 'self'",
+  "media-src 'self'",
   "connect-src 'self' https://whop.com https://*.whop.com https://t.whop.tw",
   "worker-src 'self' blob:",
   "frame-src https://whop.com https://*.whop.com https://*.plaid.com https://www.youtube-nocookie.com",

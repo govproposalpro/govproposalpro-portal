@@ -37,7 +37,6 @@
     var gate = document.getElementById('gate');
     var play = document.getElementById('vsl-play');
     var still = document.getElementById('vsl-still');
-    var soon = document.getElementById('vsl-soon');
     var err = document.getElementById('gate-err');
     var go = document.getElementById('gate-go');
 
@@ -46,25 +45,14 @@
       still.addEventListener('error', function () { still.src = 'https://i.ytimg.com/vi/' + vslId + '/hqdefault.jpg'; }, { once: true });
     }
 
-    function start() {
-      var f = document.createElement('iframe');
-      f.src = 'https://www.youtube-nocookie.com/embed/' + vslId + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
-      f.title = 'GovProposalPro demo';
-      f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-      f.allowFullscreen = true;
-      f.className = 'vsl-iframe';
-      play.replaceWith(f);
-    }
+    // The YouTube video once SITE_VSL_YOUTUBE_ID is set, otherwise the walkthrough hosted here.
+    function start() { play.replaceWith(window.gppVideo(vslId)); }
     function unlock(autoplay) {
       stage.classList.remove('is-locked');
       gate.hidden = true;
-      if (vslId) {
-        play.hidden = false;
-        play.addEventListener('click', start, { once: true });
-        if (autoplay) start();
-      } else {
-        soon.hidden = false;
-      }
+      play.hidden = false;
+      play.addEventListener('click', start, { once: true });
+      if (autoplay) start();
     }
 
     if (lead && lead.email) { unlock(false); return; }
