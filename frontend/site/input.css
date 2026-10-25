@@ -345,6 +345,13 @@
   .step-n { @apply flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white; background: linear-gradient(135deg, #0A66FF, #5B3BFF 50%, #FF2D46); }
   .step-h { @apply mt-5 text-lg font-semibold tracking-tight text-white; }
   .step-p { @apply mt-2 text-sm leading-relaxed text-mist-400; }
+  .chapters { @apply mt-5 flex flex-wrap items-center justify-center gap-2; }
+  .chapters[hidden] { display: none; }
+  .chapter { @apply inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] py-2 pl-2 pr-4 text-sm font-medium text-mist-300 transition hover:border-white/25 hover:text-white; }
+  .chapter[aria-pressed="true"] { @apply border-white/30 bg-white/[0.1] text-white; }
+  .chapter-n { @apply flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white; }
+  .chapter[aria-pressed="true"] .chapter-n { background: linear-gradient(135deg, #2563EB, #E11D48); }
+  .chapter-t { @apply text-xs text-mist-500; }
   .vsl-iframe { @apply absolute inset-0 h-full w-full border-0; }
 }
 .ap-glow { position: absolute; inset: 0; pointer-events: none;
