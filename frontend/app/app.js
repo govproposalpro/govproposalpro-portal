@@ -90,6 +90,7 @@
     map: '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
     radar: '<circle cx="12" cy="12" r="9"/><path d="M12 12 18 6"/><circle cx="12" cy="12" r="4"/>',
     doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
   };
   const icon = (name, cls = 'h-5 w-5') =>
     `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name] || ICON.spark}</svg>`;
@@ -138,7 +139,9 @@
       } else {
         const para = [];
         while (i < lines.length && lines[i].trim() && !isBlockStart(lines[i])) para.push(lines[i++]);
-        out.push(`<p>${inline(para.join(' '))}</p>`);
+        // Short stacked lines (signature blocks, addresses) keep their line breaks; prose lines join.
+        const stacked = para.length > 1 && para.every((x) => x.trim().length < 70);
+        out.push(`<p>${para.map((x) => inline(x.trim())).join(stacked ? '<br>' : ' ')}</p>`);
       }
     }
     return out.join('\n');
@@ -163,6 +166,7 @@
   window.addEventListener('popstate', render);
 
   const ROUTE_OF = {
+    autopilot: '/autopilot',
     proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
     vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
     section_m: '/section-m', rfi_ghostwriter: '/rfi', milestones: '/milestones', invoicing: '/invoices',
@@ -171,6 +175,7 @@
     state_directory: '/states', deadline_alerts: '/alerts',
   };
   const ICON_OF = {
+    autopilot: 'bolt',
     proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
     vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
     section_m: 'grade', rfi_ghostwriter: 'question', milestones: 'flag', invoicing: 'receipt',
@@ -179,6 +184,7 @@
     state_directory: 'map', deadline_alerts: 'bell',
   };
   const NAV_GROUPS = [
+    ['Autopilot', ['autopilot']],
     ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker']],
     ['Subs and pricing', ['vendor_scraper', 'outreach', 'pricing_matrix', 'foia', 'teaming_legal', 'sub_vetting']],
     ['Review and submit', ['section_m', 'rfi_ghostwriter']],
@@ -187,6 +193,7 @@
       'subcontracting_check', 'sam_checklist', 'state_directory', 'deadline_alerts']],
   ];
   const ABOUT = {
+    autopilot: 'Your hands-off government contracting assistant. It learns your business, finds matching solicitations on SAM.gov, reads them, emails vendors for quotes, checks what the government really paid, prices every line at your margin and writes the proposal, as many bids a day as you set.',
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
     invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
     winning_voice: 'Upload your past winning proposals and every new draft is written in your own proven voice.',
@@ -317,6 +324,8 @@
     if (feature && !feature.unlocked) return viewFeature(view, gated);
     try {
       if (path === '/') await viewHome(view);
+      else if (path === '/autopilot') await viewAutopilot(view);
+      else if ((m = path.match(/^\/autopilot\/(\d+)$/))) await viewAutopilotItem(view, m[1]);
       else if (path === '/welcome') await viewWelcome(view);
       else if (path === '/capability') await viewCapabilityList(view);
       else if ((m = path.match(/^\/capability\/(\d+)$/))) await viewCapability(view, m[1]);
@@ -445,7 +454,7 @@
     const won = bids.filter((b) => b.stage === 'won').length;
 
     const ent = me.tier.key === 'enterprise';
-    const quick = (ent ? [['matchmaker', 'bid_matchmaker', 'Find matched bids'], ['section-m', 'section_m', 'Grade a proposal'], ['pricing', 'pricing_matrix', 'Price with Fringe/G&A'], ['teaming', 'teaming_legal', 'Draft a teaming agreement']]
+    const quick = (ent ? [['autopilot', 'autopilot', 'Run the Autopilot'], ['matchmaker', 'bid_matchmaker', 'Find matched bids'], ['section-m', 'section_m', 'Grade a proposal'], ['pricing', 'pricing_matrix', 'Price with Fringe/G&A']]
       : [['go-no-go', 'go_no_go', 'Go/No-Go a bid'], ['vendors', 'vendor_scraper', 'Find subcontractors'], ['pricing', 'pricing_matrix', 'Price a bid'], ['cmmc', 'cmmc_checklist', 'CMMC Level 1 check']]);
 
     view.innerHTML = `
@@ -453,9 +462,9 @@
         <div class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-40 blur-3xl accent-glow"></div>
         <span class="edition-badge">${ent ? 'Enterprise Edition' : 'Core Edition'}</span>
         <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">${ent ? 'Your <span class="accent-text">Enterprise</span> Command Center.' : 'Your <span class="accent-text">Core</span> Command Center.'}</h1>
-        <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? '50 proposals a month, predictive bid matching, legal teaming, compliance grading and your winning voice.' : '10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
+        <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? 'Your GovCon Autopilot finds, prices and writes bids for you. Plus 50 proposals a month, predictive matching, legal teaming, compliance grading and your winning voice.' : 'Upload a solicitation and the engine writes the proposal. 10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
         <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06]">${icon(ICON_OF[key] || 'spark', 'h-4 w-4')}${label}</a>`).join('')}</div>
-        ${ent ? '' : '<p class="mt-5 text-xs text-mist-500">Enterprise adds the Predictive Bid Matchmaker, Section M grading, teaming agreements, RFI Ghostwriter and 50 proposals a month.</p>'}
+        ${ent ? '' : '<p class="mt-5 text-xs text-mist-500">Enterprise adds the GovCon Autopilot (it finds the bids, gets vendor quotes, prices and writes the proposals for you), the Predictive Bid Matchmaker, Section M grading, teaming agreements and 50 proposals a month.</p>'}
       </section>
       ${pageHead('Today', 'Your pipeline, deadlines and proposals at a glance.',
         '<a href="/app/decryptor" data-link class="btn-ghost">' + icon('decrypt', 'h-4 w-4') + 'Decrypt an RFP</a><a href="/app/proposals/new" data-link class="btn-primary">' + icon('proposal', 'h-4 w-4') + 'New proposal</a>')}
@@ -1058,6 +1067,8 @@
       sub: 'Review every [INSERT] and [CONFIRM] placeholder before you submit.',
       md: p.contentMd,
       save: (md) => api('/proposals/' + p.id, { method: 'PATCH', body: { contentMd: md } }),
+      book: (md) => openProposalBook(p, md),
+      word: async (md) => proposalWord(await proposalContext(p), md),
     });
   }
 
@@ -1101,22 +1112,23 @@
     </li>`;
 
   /** Read-only document view with edit, copy, Word and print. Used by proposals and capability statements. */
-  function docViewer(view, { title, sub, md, save }) {
+  function docViewer(view, { title, sub, md, save, book, word }) {
     let content = md;
     const slug = (title || 'document').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'document';
     view.innerHTML = `
       <div class="no-print">${pageHead(esc(title), esc(sub),
         `<button id="edit" class="btn-ghost">Edit</button><button id="copy" class="btn-ghost">Copy</button>
-         <button id="word" class="btn-ghost">Download Word</button><button id="print" class="btn-primary">Print / PDF</button>`)}</div>
+         <button id="word" class="btn-ghost">Download Word</button><button id="print" class="btn-primary">${book ? 'Proposal PDF' : 'Print / PDF'}</button>`)}</div>
       <article class="card print-area p-6 sm:p-10"><div id="doc" class="doc">${markdown(content)}</div>
         <div id="editor" class="no-print hidden"><textarea id="md" rows="30" class="field font-mono !text-[13px] leading-relaxed">${esc(content)}</textarea>
           <div class="mt-3 flex justify-end gap-2"><button id="cancel-edit" class="btn-ghost">Cancel</button><button id="save" class="btn-primary">Save changes</button></div></div>
       </article>`;
-    $('#print').addEventListener('click', () => window.print());
+    $('#print').addEventListener('click', () => (book ? book(content).catch((err) => toast(err.message, 'error')) : window.print()));
     $('#copy').addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(content); toast('Copied to clipboard.'); } catch { toast('Copy failed. Select the text instead.', 'error'); }
     });
     $('#word').addEventListener('click', () => {
+      if (word) { word(content).catch((err) => toast(err.message, 'error')); return; }
       const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(title)}</title>
         <style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.45}h1{font-size:20pt;color:#0B1F5C}h2{font-size:14pt;color:#1E3A8A;margin-top:18pt}h3{font-size:12pt}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:4pt;vertical-align:top}th{background:#E8EDFF}.ph{background:#FFE4E8;color:#9B0020}</style></head><body>${markdown(content)}</body></html>`;
       download(slug + '.doc', new Blob(['﻿', html], { type: 'application/msword' }));
@@ -1477,8 +1489,13 @@
           await api('/me/onboarding/complete', { method: 'POST' });
           await refreshMe();
           state.shellReady = false;
-          toast('Your company profile is set. Every proposal will use it.');
-          navigate('/');
+          if (hasTool('autopilot')) {
+            toast('Your company is set. Now teach the Autopilot what to hunt for.');
+            navigate('/autopilot?setup=1');
+          } else {
+            toast('Your company profile is set. Every proposal will use it.');
+            navigate('/');
+          }
         }
       } catch (err) {
         showMsg('ob-error', err.message);
@@ -1505,6 +1522,11 @@
             <div id="docs" class="mt-4"></div>
           </section>
           <section class="card p-6">
+            <h2 class="font-semibold text-white">Company logo</h2>
+            <p class="mt-1 text-sm text-mist-400">Shown on your proposal PDF cover and at the top of every page.</p>
+            <div id="logo-panel" class="mt-4"></div>
+          </section>
+          <section class="card p-6">
             <h2 class="font-semibold text-white">Email reminders</h2>
             <label class="mt-3 flex items-start gap-3 text-sm text-mist-100"><input id="alerts-toggle" type="checkbox" class="mt-1 accent-brand-blue" ${u.emailAlerts ? 'checked' : ''} />
               <span>Email me 7, 3 and 1 days before a bid or questions deadline, and before my SAM.gov registration expires.</span></label>
@@ -1525,6 +1547,7 @@
       </div>`;
     const form = $('#profile-form');
     const pp = ppEditor(form, u.pastPerformance);
+    logoPanel($('#logo-panel'));
     await documentsPanel($('#docs'), (d) => {
       const n = fillFromDocument(form, pp, d.extracted);
       toast(n ? `Filled in ${n} empty field${n === 1 ? '' : 's'} from ${d.fileName}. Review them, then save.` : `Read ${d.fileName}.`);
@@ -1727,7 +1750,7 @@
     $$('[data-accent]').forEach((b) => b.addEventListener('click', async () => {
       try { await save({ ...c, accent: b.dataset.accent }); redraw(); } catch (err) { toast(err.message, 'error'); }
     }));
-    $('#print').addEventListener('click', () => window.print());
+    $('#print').addEventListener('click', () => (book ? book(content).catch((err) => toast(err.message, 'error')) : window.print()));
     $('#copy').addEventListener('click', async () => {
       const md = (await load()).contentMd;
       try { await navigator.clipboard.writeText(md); toast('Copied to clipboard.'); } catch { toast('Copy failed.', 'error'); }

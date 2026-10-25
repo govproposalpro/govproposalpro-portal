@@ -127,13 +127,23 @@ const naicsList = (s) => [...new Set(String(s || '').match(/\b\d{6}\b/g) || [])]
 async function matchOpportunities(user) {
   const codes = naicsList(user.naics);
   if (!codes.length) return { codes, matches: [], needsNaics: true };
-  const lists = await Promise.all(codes.map((code) => cached(`sam:opps:${code}`, 6 * 3600_000, () => sam.searchOpportunities(code))));
+  const lists = await Promise.all(codes.map((code) => opportunitiesFor(code)));
+  return { codes, matches: scoreOpportunities(user, codes, lists.flat()).slice(0, 60) };
+}
+
+/** Last 30 days of notices for one NAICS code, shared by every member for 6 hours. */
+function opportunitiesFor(code, apiKey) {
+  return cached(`sam:opps2:${code}`, 6 * 3600_000, () => sam.searchOpportunities(code, 30, { apiKey }));
+}
+
+/** Scores open notices for one member, best first. */
+function scoreOpportunities(user, codes, list) {
   const certs = String(user.certifications || '').split(',').filter(Boolean);
   const eligible = new Set([...SMALL_BUSINESS, ...certs.flatMap((c) => SET_ASIDE_FOR_CERT[c] || [])]);
   const home = String([user.service_area, user.address].join(' ')).toUpperCase();
   const seen = new Set();
   const matches = [];
-  for (const o of lists.flat()) {
+  for (const o of list) {
     if (!o.noticeId || seen.has(o.noticeId)) continue;
     seen.add(o.noticeId);
     const due = o.responseDeadline ? Date.parse(o.responseDeadline) : NaN;
@@ -154,7 +164,7 @@ async function matchOpportunities(user) {
     matches.push({ ...o, score: Math.max(1, Math.min(99, score)), reasons });
   }
   matches.sort((a, b) => b.score - a.score || String(a.responseDeadline).localeCompare(String(b.responseDeadline)));
-  return { codes, matches: matches.slice(0, 60) };
+  return matches;
 }
 
 // ---------------------------------------------------------------- Top-rated local subcontractors (Google Places)
@@ -189,4 +199,4 @@ async function topRatedPlaces(query) {
     .sort((a, b) => (b.rating || 0) * Math.log10((b.reviews || 0) + 10) - (a.rating || 0) * Math.log10((a.reviews || 0) + 10));
 }
 
-module.exports = { cached, compliancePulse, matchOpportunities, placesEnabled, topRatedPlaces, naicsList };
+module.exports = { cached, compliancePulse, matchOpportunities, opportunitiesFor, scoreOpportunities, placesEnabled, topRatedPlaces, naicsList };

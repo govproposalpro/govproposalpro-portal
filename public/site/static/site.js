@@ -180,6 +180,158 @@
       calc();
     }
 
+    // Pricing: Monthly / Pay in full toggle, plus the optional "save" line when access prices are set.
+    var plans = document.getElementById('plans');
+    document.querySelectorAll('input[name="billing"]').forEach(function (r) {
+      r.addEventListener('change', function () { if (r.checked && plans) plans.setAttribute('data-billing', r.value); });
+    });
+    var co = document.getElementById('checkout');
+    var cfg = co ? co.dataset : {};
+    [['core', 997, 199], ['enterprise', 4997, 999]].forEach(function (e) {
+      var maint = Number(cfg[e[0] + 'Maint']);
+      if (!(maint > 0)) return;
+      var m = document.querySelector('[data-maint="' + e[0] + '"]');
+      if (m) m.textContent = ' at ' + money(maint) + ' a month';
+      var save = e[2] * 12 - (e[1] + maint * 12);
+      var line = document.querySelector('[data-save="' + e[0] + '"]');
+      if (line && save > 0) line.textContent = 'Save ' + money(save) + ' in your first year versus monthly.';
+    });
+
+    // Optional extras: the call calendar and the demo video show only once they are configured.
+    if (/^https:\/\//.test(cfg.bookingUrl || '')) {
+      document.querySelectorAll('[data-booking], [data-booking-wrap]').forEach(function (n) { n.hidden = false; });
+      // With a calendar set, the Enterprise call leads and buy-now steps back to a second button.
+      document.querySelectorAll('[data-call-first]').forEach(function (n) { n.className = n.getAttribute('data-call-first'); });
+    }
+    // Demo video: a still from YouTube until someone presses play, then the nocookie player.
+    var vslSection = document.querySelector('[data-vsl-section]');
+    if (vslSection && /^[A-Za-z0-9_-]{11}$/.test(cfg.vslId || '')) {
+      vslSection.hidden = false;
+      document.querySelectorAll('[data-vsl]').forEach(function (n) { n.hidden = false; });
+      document.querySelectorAll('[data-vsl-alt]').forEach(function (n) { n.hidden = true; });
+      var thumb = document.getElementById('vsl-thumb');
+      thumb.src = 'https://i.ytimg.com/vi/' + cfg.vslId + '/maxresdefault.jpg';
+      thumb.addEventListener('error', function () { thumb.src = 'https://i.ytimg.com/vi/' + cfg.vslId + '/hqdefault.jpg'; }, { once: true });
+      var play = document.getElementById('vsl-play');
+      play.addEventListener('click', function () {
+        var f = document.createElement('iframe');
+        f.src = 'https://www.youtube-nocookie.com/embed/' + cfg.vslId + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+        f.title = 'GovProposalPro demo';
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        f.allowFullscreen = true;
+        f.className = 'vsl-iframe';
+        play.replaceWith(f);
+      });
+    }
+
+    function openDialog(d) {
+      if (typeof d.showModal !== 'function') return false;
+      d.showModal();
+      document.body.classList.add('co-lock');
+      return true;
+    }
+    document.querySelectorAll('dialog.co').forEach(function (d) {
+      d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('[data-co-close]')) d.close(); });
+      d.addEventListener('close', function () {
+        document.body.classList.remove('co-lock');
+        if (d.id === 'checkout') resetCheckout();
+      });
+    });
+
+    // Embedded Whop checkout. Buy buttons keep their whop.com link as the fallback (no script,
+    // old browser); with script the checkout opens here: the edition, then its monthly access plan.
+    var FLOWS = {
+      core: [{ plan: cfg.corePlan, title: 'Core Edition', sub: '$997 one-time' }, { plan: cfg.coreAccessPlan, title: 'Core monthly access', sub: 'Keeps your account, support and proposals active' }],
+      enterprise: [{ plan: cfg.enterprisePlan, title: 'Enterprise Edition', sub: '$4,997 one-time' }, { plan: cfg.enterpriseAccessPlan, title: 'Enterprise monthly access', sub: 'Keeps your account, support and Autopilot active' }],
+      'core-monthly': [{ plan: cfg.coreMonthlyPlan, title: 'Core Edition, monthly', sub: '$199 a month until you cancel' }],
+      'enterprise-monthly': [{ plan: cfg.enterpriseMonthlyPlan, title: 'Enterprise Edition, monthly', sub: '$999 a month until you cancel' }],
+    };
+    var flow = null, stepIdx = 0, mountSeq = 0, buyerEmail = '';
+    var mountEl = document.getElementById('co-mount');
+    var doneEl = document.getElementById('co-done');
+    var fallback = document.getElementById('co-fallback');
+    var loaderAdded = false;
+    function addLoader() {
+      if (loaderAdded) return;
+      loaderAdded = true;
+      var sc = document.createElement('script');
+      sc.src = 'https://js.whop.com/static/checkout/loader.js';
+      sc.async = true;
+      document.head.appendChild(sc);
+    }
+    function paintSteps(final) {
+      var two = flow.length > 1;
+      co.querySelectorAll('[data-co-step]').forEach(function (li) {
+        var n = Number(li.getAttribute('data-co-step'));
+        li.hidden = n === 2 && !two;
+        var pos = final ? 3 : (two ? stepIdx + 1 : 1);
+        li.classList.toggle('is-on', n === pos);
+        li.classList.toggle('is-done', n < pos && !(n === 2 && !two));
+      });
+      var first = co.querySelector('[data-co-step="1"]');
+      if (first) first.lastChild.textContent = two ? 'Your edition' : 'Your plan';
+    }
+    function mountStep() {
+      var step = flow[stepIdx];
+      document.getElementById('co-title').textContent = step.title;
+      document.getElementById('co-sub').textContent = step.sub;
+      fallback.href = 'https://whop.com/checkout/' + step.plan;
+      fallback.hidden = false;
+      doneEl.hidden = true;
+      mountEl.hidden = false;
+      mountEl.textContent = '';
+      var holder = document.createElement('div');
+      holder.id = 'gpp-co-' + (++mountSeq);
+      holder.setAttribute('data-whop-checkout-plan-id', step.plan);
+      holder.setAttribute('data-whop-checkout-identifier', holder.id);
+      holder.setAttribute('data-whop-checkout-theme', 'dark');
+      holder.setAttribute('data-whop-checkout-skip-redirect', 'true');
+      holder.setAttribute('data-whop-checkout-on-complete', 'gppCheckoutComplete');
+      if (buyerEmail) holder.setAttribute('data-whop-checkout-prefill-email', buyerEmail);
+      mountEl.appendChild(holder);
+      paintSteps(false);
+      addLoader();
+    }
+    function showDone() {
+      mountEl.textContent = '';
+      mountEl.hidden = true;
+      doneEl.hidden = false;
+      fallback.hidden = true;
+      document.getElementById('co-title').textContent = "You're all set";
+      document.getElementById('co-sub').textContent = 'Your login link is on its way';
+      paintSteps(true);
+    }
+    function resetCheckout() { if (mountEl) mountEl.textContent = ''; flow = null; }
+    // Whop calls this by name when a payment completes inside the embedded checkout.
+    window.gppCheckoutComplete = function () {
+      if (!flow) return;
+      var id = 'gpp-co-' + mountSeq;
+      var next = function () {
+        if (stepIdx + 1 < flow.length) { stepIdx += 1; mountStep(); } else showDone();
+      };
+      // Carry the buyer's email into the access plan so it lands on the same account.
+      var got = null;
+      try { if (window.wco && window.wco.getEmail) got = window.wco.getEmail(id, 2000); } catch (e) { got = null; }
+      Promise.race([Promise.resolve(got), new Promise(function (r) { setTimeout(r, 2500); })])
+        .then(function (email) { if (typeof email === 'string' && email.indexOf('@') > 0) buyerEmail = email; })
+        .catch(function () {})
+        .then(next);
+    };
+    document.querySelectorAll('[data-checkout]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        if (!co || cfg.mode === 'link' || typeof co.showModal !== 'function' || e.metaKey || e.ctrlKey || e.shiftKey) return;
+        var key = a.getAttribute('data-checkout');
+        var start = 0;
+        if (/-access$/.test(key)) { key = key.replace(/-access$/, ''); start = 1; }
+        var f = FLOWS[key];
+        if (!f || !f.every(function (s) { return /^plan_/.test(s.plan || ''); })) return;
+        e.preventDefault();
+        flow = f; stepIdx = start;
+        mountStep();
+        openDialog(co);
+      });
+    });
+
     // Live member wins: hero pill, stats, agency strip and the wins wall. Sections stay hidden
     // unless there is real published data to show.
     getJson('/api/public/wins/stats').then(function (s) {

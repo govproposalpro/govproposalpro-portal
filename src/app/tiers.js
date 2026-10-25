@@ -14,6 +14,7 @@ const TIERS = {
 const BOTH = ['core', 'enterprise'];
 const ENT = ['enterprise'];
 const FEATURES = [
+  { key: 'autopilot', name: 'GovCon Autopilot', tiers: ENT, status: 'live' },
   { key: 'proposal_engine', name: 'AI Proposal Engine', tiers: BOTH, status: 'live' },
   { key: 'bid_decryptor', name: 'AI Bid Decryptor', tiers: BOTH, status: 'live' },
   { key: 'go_no_go', name: 'Go/No-Go Indicator', tiers: BOTH, status: 'live' },

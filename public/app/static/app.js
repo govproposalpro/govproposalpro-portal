@@ -90,6 +90,7 @@
     map: '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
     radar: '<circle cx="12" cy="12" r="9"/><path d="M12 12 18 6"/><circle cx="12" cy="12" r="4"/>',
     doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
   };
   const icon = (name, cls = 'h-5 w-5') =>
     `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name] || ICON.spark}</svg>`;
@@ -138,7 +139,9 @@
       } else {
         const para = [];
         while (i < lines.length && lines[i].trim() && !isBlockStart(lines[i])) para.push(lines[i++]);
-        out.push(`<p>${inline(para.join(' '))}</p>`);
+        // Short stacked lines (signature blocks, addresses) keep their line breaks; prose lines join.
+        const stacked = para.length > 1 && para.every((x) => x.trim().length < 70);
+        out.push(`<p>${para.map((x) => inline(x.trim())).join(stacked ? '<br>' : ' ')}</p>`);
       }
     }
     return out.join('\n');
@@ -163,6 +166,7 @@
   window.addEventListener('popstate', render);
 
   const ROUTE_OF = {
+    autopilot: '/autopilot',
     proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
     vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
     section_m: '/section-m', rfi_ghostwriter: '/rfi', milestones: '/milestones', invoicing: '/invoices',
@@ -171,6 +175,7 @@
     state_directory: '/states', deadline_alerts: '/alerts',
   };
   const ICON_OF = {
+    autopilot: 'bolt',
     proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
     vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
     section_m: 'grade', rfi_ghostwriter: 'question', milestones: 'flag', invoicing: 'receipt',
@@ -179,6 +184,7 @@
     state_directory: 'map', deadline_alerts: 'bell',
   };
   const NAV_GROUPS = [
+    ['Autopilot', ['autopilot']],
     ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker']],
     ['Subs and pricing', ['vendor_scraper', 'outreach', 'pricing_matrix', 'foia', 'teaming_legal', 'sub_vetting']],
     ['Review and submit', ['section_m', 'rfi_ghostwriter']],
@@ -187,6 +193,7 @@
       'subcontracting_check', 'sam_checklist', 'state_directory', 'deadline_alerts']],
   ];
   const ABOUT = {
+    autopilot: 'Your hands-off government contracting assistant. It learns your business, finds matching solicitations on SAM.gov, reads them, emails vendors for quotes, checks what the government really paid, prices every line at your margin and writes the proposal, as many bids a day as you set.',
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
     invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
     winning_voice: 'Upload your past winning proposals and every new draft is written in your own proven voice.',
@@ -317,6 +324,8 @@
     if (feature && !feature.unlocked) return viewFeature(view, gated);
     try {
       if (path === '/') await viewHome(view);
+      else if (path === '/autopilot') await viewAutopilot(view);
+      else if ((m = path.match(/^\/autopilot\/(\d+)$/))) await viewAutopilotItem(view, m[1]);
       else if (path === '/welcome') await viewWelcome(view);
       else if (path === '/capability') await viewCapabilityList(view);
       else if ((m = path.match(/^\/capability\/(\d+)$/))) await viewCapability(view, m[1]);
@@ -445,7 +454,7 @@
     const won = bids.filter((b) => b.stage === 'won').length;
 
     const ent = me.tier.key === 'enterprise';
-    const quick = (ent ? [['matchmaker', 'bid_matchmaker', 'Find matched bids'], ['section-m', 'section_m', 'Grade a proposal'], ['pricing', 'pricing_matrix', 'Price with Fringe/G&A'], ['teaming', 'teaming_legal', 'Draft a teaming agreement']]
+    const quick = (ent ? [['autopilot', 'autopilot', 'Run the Autopilot'], ['matchmaker', 'bid_matchmaker', 'Find matched bids'], ['section-m', 'section_m', 'Grade a proposal'], ['pricing', 'pricing_matrix', 'Price with Fringe/G&A']]
       : [['go-no-go', 'go_no_go', 'Go/No-Go a bid'], ['vendors', 'vendor_scraper', 'Find subcontractors'], ['pricing', 'pricing_matrix', 'Price a bid'], ['cmmc', 'cmmc_checklist', 'CMMC Level 1 check']]);
 
     view.innerHTML = `
@@ -453,9 +462,9 @@
         <div class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-40 blur-3xl accent-glow"></div>
         <span class="edition-badge">${ent ? 'Enterprise Edition' : 'Core Edition'}</span>
         <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">${ent ? 'Your <span class="accent-text">Enterprise</span> Command Center.' : 'Your <span class="accent-text">Core</span> Command Center.'}</h1>
-        <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? '50 proposals a month, predictive bid matching, legal teaming, compliance grading and your winning voice.' : '10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
+        <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? 'Your GovCon Autopilot finds, prices and writes bids for you. Plus 50 proposals a month, predictive matching, legal teaming, compliance grading and your winning voice.' : 'Upload a solicitation and the engine writes the proposal. 10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
         <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06]">${icon(ICON_OF[key] || 'spark', 'h-4 w-4')}${label}</a>`).join('')}</div>
-        ${ent ? '' : '<p class="mt-5 text-xs text-mist-500">Enterprise adds the Predictive Bid Matchmaker, Section M grading, teaming agreements, RFI Ghostwriter and 50 proposals a month.</p>'}
+        ${ent ? '' : '<p class="mt-5 text-xs text-mist-500">Enterprise adds the GovCon Autopilot (it finds the bids, gets vendor quotes, prices and writes the proposals for you), the Predictive Bid Matchmaker, Section M grading, teaming agreements and 50 proposals a month.</p>'}
       </section>
       ${pageHead('Today', 'Your pipeline, deadlines and proposals at a glance.',
         '<a href="/app/decryptor" data-link class="btn-ghost">' + icon('decrypt', 'h-4 w-4') + 'Decrypt an RFP</a><a href="/app/proposals/new" data-link class="btn-primary">' + icon('proposal', 'h-4 w-4') + 'New proposal</a>')}
@@ -1058,6 +1067,8 @@
       sub: 'Review every [INSERT] and [CONFIRM] placeholder before you submit.',
       md: p.contentMd,
       save: (md) => api('/proposals/' + p.id, { method: 'PATCH', body: { contentMd: md } }),
+      book: (md) => openProposalBook(p, md),
+      word: async (md) => proposalWord(await proposalContext(p), md),
     });
   }
 
@@ -1101,22 +1112,23 @@
     </li>`;
 
   /** Read-only document view with edit, copy, Word and print. Used by proposals and capability statements. */
-  function docViewer(view, { title, sub, md, save }) {
+  function docViewer(view, { title, sub, md, save, book, word }) {
     let content = md;
     const slug = (title || 'document').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'document';
     view.innerHTML = `
       <div class="no-print">${pageHead(esc(title), esc(sub),
         `<button id="edit" class="btn-ghost">Edit</button><button id="copy" class="btn-ghost">Copy</button>
-         <button id="word" class="btn-ghost">Download Word</button><button id="print" class="btn-primary">Print / PDF</button>`)}</div>
+         <button id="word" class="btn-ghost">Download Word</button><button id="print" class="btn-primary">${book ? 'Proposal PDF' : 'Print / PDF'}</button>`)}</div>
       <article class="card print-area p-6 sm:p-10"><div id="doc" class="doc">${markdown(content)}</div>
         <div id="editor" class="no-print hidden"><textarea id="md" rows="30" class="field font-mono !text-[13px] leading-relaxed">${esc(content)}</textarea>
           <div class="mt-3 flex justify-end gap-2"><button id="cancel-edit" class="btn-ghost">Cancel</button><button id="save" class="btn-primary">Save changes</button></div></div>
       </article>`;
-    $('#print').addEventListener('click', () => window.print());
+    $('#print').addEventListener('click', () => (book ? book(content).catch((err) => toast(err.message, 'error')) : window.print()));
     $('#copy').addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(content); toast('Copied to clipboard.'); } catch { toast('Copy failed. Select the text instead.', 'error'); }
     });
     $('#word').addEventListener('click', () => {
+      if (word) { word(content).catch((err) => toast(err.message, 'error')); return; }
       const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(title)}</title>
         <style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.45}h1{font-size:20pt;color:#0B1F5C}h2{font-size:14pt;color:#1E3A8A;margin-top:18pt}h3{font-size:12pt}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:4pt;vertical-align:top}th{background:#E8EDFF}.ph{background:#FFE4E8;color:#9B0020}</style></head><body>${markdown(content)}</body></html>`;
       download(slug + '.doc', new Blob(['﻿', html], { type: 'application/msword' }));
@@ -1477,8 +1489,13 @@
           await api('/me/onboarding/complete', { method: 'POST' });
           await refreshMe();
           state.shellReady = false;
-          toast('Your company profile is set. Every proposal will use it.');
-          navigate('/');
+          if (hasTool('autopilot')) {
+            toast('Your company is set. Now teach the Autopilot what to hunt for.');
+            navigate('/autopilot?setup=1');
+          } else {
+            toast('Your company profile is set. Every proposal will use it.');
+            navigate('/');
+          }
         }
       } catch (err) {
         showMsg('ob-error', err.message);
@@ -1505,6 +1522,11 @@
             <div id="docs" class="mt-4"></div>
           </section>
           <section class="card p-6">
+            <h2 class="font-semibold text-white">Company logo</h2>
+            <p class="mt-1 text-sm text-mist-400">Shown on your proposal PDF cover and at the top of every page.</p>
+            <div id="logo-panel" class="mt-4"></div>
+          </section>
+          <section class="card p-6">
             <h2 class="font-semibold text-white">Email reminders</h2>
             <label class="mt-3 flex items-start gap-3 text-sm text-mist-100"><input id="alerts-toggle" type="checkbox" class="mt-1 accent-brand-blue" ${u.emailAlerts ? 'checked' : ''} />
               <span>Email me 7, 3 and 1 days before a bid or questions deadline, and before my SAM.gov registration expires.</span></label>
@@ -1525,6 +1547,7 @@
       </div>`;
     const form = $('#profile-form');
     const pp = ppEditor(form, u.pastPerformance);
+    logoPanel($('#logo-panel'));
     await documentsPanel($('#docs'), (d) => {
       const n = fillFromDocument(form, pp, d.extracted);
       toast(n ? `Filled in ${n} empty field${n === 1 ? '' : 's'} from ${d.fileName}. Review them, then save.` : `Read ${d.fileName}.`);
@@ -1727,7 +1750,7 @@
     $$('[data-accent]').forEach((b) => b.addEventListener('click', async () => {
       try { await save({ ...c, accent: b.dataset.accent }); redraw(); } catch (err) { toast(err.message, 'error'); }
     }));
-    $('#print').addEventListener('click', () => window.print());
+    $('#print').addEventListener('click', () => (book ? book(content).catch((err) => toast(err.message, 'error')) : window.print()));
     $('#copy').addEventListener('click', async () => {
       const md = (await load()).contentMd;
       try { await navigator.clipboard.writeText(md); toast('Copied to clipboard.'); } catch { toast('Copy failed.', 'error'); }
@@ -1964,7 +1987,346 @@
     });
   }
 
-    // ---- 10-shared.js
+    // ---- 05-autopilot.js
+  // ------------------------------------------------------------------ GovCon Autopilot (Enterprise)
+
+  const AP_STAGES = [
+    ['reading', 'Reading', 'Solicitation, attachments and Go/No-Go'],
+    ['quoting', 'Sourcing', 'Market prices and vendor quotes'],
+    ['pricing', 'Pricing', 'Cost, overhead and your margin'],
+    ['writing', 'Writing', 'The full proposal'],
+    ['ready', 'Ready', 'Waiting for your review'],
+    ['submitted', 'Submitted', 'Sent to the government'],
+  ];
+  const AP_ORDER = ['found', ...AP_STAGES.map((s) => s[0])];
+  const apStagePill = (s) => ({
+    ready: '<span class="pill bg-emerald-500/15 text-emerald-300">Ready for review</span>',
+    submitted: '<span class="pill bg-white/[0.08] text-mist-300">Submitted</span>',
+    skipped: '<span class="pill bg-white/[0.06] text-mist-400">Skipped</span>',
+    failed: '<span class="pill bg-brand-red/15 text-brand-redSoft">Stopped</span>',
+  }[s] || `<span class="pill bg-brand-blue/20 text-brand-blueSoft"><span class="spinner !h-3 !w-3"></span>${esc((AP_STAGES.find((x) => x[0] === s) || [s, 'Working'])[1])}</span>`);
+
+  const keyState = (k) => (k.broken ? '<span class="pill bg-brand-red/15 text-brand-redSoft">Re-enter</span>'
+    : k.set ? `<span class="pill bg-emerald-500/15 text-emerald-300">Saved ····${esc(k.last4)}</span>` : '<span class="pill bg-white/[0.06] text-mist-400">Not set</span>');
+
+  async function viewAutopilot(view) {
+    const data = await api('/autopilot');
+    const s = data.settings;
+    const ready = s.configured && s.samKey.set && !s.samKey.broken && s.aiKey.set && !s.aiKey.broken && s.naics;
+    if (!ready || new URLSearchParams(location.search).get('setup')) return viewAutopilotSetup(view, data);
+
+    const run = data.lastRun;
+    const working = run && run.status === 'working';
+    const left = Math.max(0, s.dailyQuota - data.today);
+    const active = data.items.filter((i) => !['skipped', 'failed', 'submitted'].includes(i.stage));
+    const done = data.items.filter((i) => ['skipped', 'failed', 'submitted'].includes(i.stage));
+    const lane = (key, label) => {
+      const items = active.filter((i) => (key === 'reading' ? ['found', 'reading'].includes(i.stage) : i.stage === key));
+      return `<section class="ap-lane"><header class="mb-3 flex items-center justify-between px-1"><h3 class="text-sm font-semibold text-white">${label}</h3><span class="text-xs text-mist-500">${items.length}</span></header>
+        <div class="flex flex-col gap-2.5">${items.map(apCard).join('') || '<p class="px-1 text-xs text-mist-500">Nothing here</p>'}</div></section>`;
+    };
+
+    view.innerHTML = `
+      <section class="ap-hero card relative mb-6 overflow-hidden p-6 sm:p-8">
+        <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-40 blur-3xl accent-glow"></div>
+        <div class="relative flex flex-wrap items-start justify-between gap-6">
+          <div class="max-w-2xl">
+            <span class="edition-badge">${icon('bolt', 'h-3.5 w-3.5')}GovCon Autopilot</span>
+            <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">${working ? 'Autopilot is <span class="accent-text">working</span>.' : left ? 'Ready when <span class="accent-text">you are</span>.' : 'Today\'s bids are <span class="accent-text">done</span>.'}</h1>
+            <p class="mt-2 text-mist-400">It finds solicitations that fit ${esc(memberCompany())}, reads them, emails vendors for quotes, checks real award prices, prices every line at your ${esc(s.marginPct)}% margin and writes the proposal. You review and submit.</p>
+            <div class="mt-5 flex flex-wrap gap-2 text-xs">
+              <span class="pill bg-white/[0.06] text-mist-300">NAICS ${esc(s.naics)}</span>
+              <span class="pill bg-white/[0.06] text-mist-300">${esc(s.marginPct)}% margin · ${esc(s.overheadPct)}% overhead</span>
+              <span class="pill bg-white/[0.06] text-mist-300">${s.states ? esc(s.states) : 'All states'}</span>
+              <span class="pill ${data.mailboxReady ? 'bg-emerald-500/15 text-emerald-300' : 'bg-white/[0.06] text-mist-400'}">${data.mailboxReady ? (s.autoEmail ? 'Emails vendors automatically' : 'Email connected') : 'Email not connected'}</span>
+            </div>
+          </div>
+          <div class="w-full rounded-3xl border border-white/[0.08] bg-black/30 p-5 sm:w-72">
+            <p class="text-sm text-mist-400">Bids today</p>
+            <p class="mt-1 text-4xl font-bold text-white">${data.today}<span class="text-xl font-medium text-mist-500"> / ${s.dailyQuota}</span></p>
+            <div class="meter mt-3"><span id="ap-meter"></span></div>
+            <button id="ap-run" class="btn-primary mt-5 w-full" ${working || !left ? 'disabled' : ''}>${working ? '<span class="spinner"></span>Running' : `${icon('bolt', 'h-4 w-4')}Run Autopilot${left > 1 ? ` (${left} bids)` : ''}`}</button>
+            <a href="/app/autopilot?setup=1" data-link class="btn-ghost mt-2 w-full">Settings</a>
+          </div>
+        </div>
+      </section>
+
+      ${run ? `<section class="card mb-6 p-5 sm:p-6">
+        <div class="mb-3 flex items-center justify-between"><h2 class="font-semibold text-white">${working ? 'Live run' : 'Last run'}</h2><span class="text-xs text-mist-500">${fmtDate(run.createdAt)} ${new Date(run.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span></div>
+        <ol class="ap-log">${(run.log || []).slice(-14).map((l) => `<li><span>${new Date(l.at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}</span>${esc(l.msg)}</li>`).join('') || '<li><span></span>Starting up</li>'}
+        ${working ? '<li class="ap-live"><span></span><i class="spinner !h-3 !w-3"></i></li>' : ''}</ol>
+      </section>` : ''}
+
+      ${data.items.length ? `
+      <div class="-mx-4 overflow-x-auto px-4 pb-4 sm:-mx-8 sm:px-8"><div class="flex gap-4">
+        ${lane('reading', 'Reading')}${lane('quoting', 'Sourcing')}${lane('pricing', 'Pricing')}${lane('writing', 'Writing')}${lane('ready', 'Ready for you')}
+      </div></div>
+      ${done.length ? `<section class="card mt-6 p-6"><h2 class="mb-3 font-semibold text-white">History</h2><ul class="space-y-2">${done.slice(0, 20).map((i) => `
+        <li><a href="/app/autopilot/${i.id}" data-link class="row-link"><span class="min-w-0"><span class="block truncate text-sm font-medium text-white">${esc(i.title)}</span>
+          <span class="block truncate text-xs text-mist-500">${esc(i.reason || i.agency || '')}</span></span>${apStagePill(i.stage)}</a></li>`).join('')}</ul></section>` : ''}`
+      : emptyState('Your pipeline is empty', 'Press Run Autopilot. It searches SAM.gov with your settings and builds today\'s bids while you do other work.')}`;
+
+    requestAnimationFrame(() => { const m = $('#ap-meter'); if (m) m.style.width = Math.min(100, (data.today / s.dailyQuota) * 100) + '%'; });
+    $('#ap-run').addEventListener('click', async (e) => {
+      e.currentTarget.disabled = true;
+      try {
+        await api('/autopilot/run', { method: 'POST', body: { count: left } });
+        toast('Autopilot started. You can leave this page; it keeps working.');
+        render();
+      } catch (err) {
+        toast(err.message, 'error');
+        if (err.data && err.data.setupRequired) navigate('/autopilot?setup=1');
+        else e.currentTarget.disabled = false;
+      }
+    });
+    if (working || active.some((i) => !['ready'].includes(i.stage))) every(4000, async () => {
+      const fresh = await api('/autopilot').catch(() => null);
+      if (!fresh) return;
+      const sig = (d) => JSON.stringify([d.lastRun && [d.lastRun.status, (d.lastRun.log || []).length], d.items.map((i) => i.stage)]);
+      if (sig(fresh) !== sig(data)) render();
+    });
+  }
+
+  const apCard = (i) => `<a href="/app/autopilot/${i.id}" data-link class="bid-card !cursor-pointer block">
+    <div class="flex items-start gap-3">${scoreRing(i.score, 'h-10 w-10 text-xs')}
+      <div class="min-w-0"><p class="text-sm font-semibold leading-snug text-white">${esc(i.title)}</p>
+        ${i.agency ? `<p class="mt-1 truncate text-xs text-mist-400">${esc(i.agency)}</p>` : ''}</div></div>
+    <div class="mt-2.5 flex flex-wrap gap-1.5">
+      ${i.dueAt ? `<span class="pill bg-white/[0.06] text-mist-300">${icon('cal', 'h-3 w-3')}${fmtDate(i.dueAt)}</span>` : ''}
+      ${i.priceTotal ? `<span class="pill bg-white/[0.06] text-mist-300">${fmtMoney(i.priceTotal)}</span>` : ''}
+      ${i.quoteCount ? `<span class="pill bg-emerald-500/15 text-emerald-300">${i.quoteCount} quote${i.quoteCount === 1 ? '' : 's'}</span>` : ''}
+      ${apStagePill(i.stage)}
+    </div></a>`;
+
+  // ------------------------------------------------------------------ Autopilot item
+
+  async function viewAutopilotItem(view, id) {
+    const { item: i } = await api('/autopilot/items/' + id);
+    const at = AP_ORDER.indexOf(i.stage);
+    const m = i.market || {};
+    const p = i.pricing || {};
+    const ap = p.autopilot || {};
+    const unitPrice = (it) => num(it.cost) * (1 + num(p.overheadPct) / 100) * (1 + num(p.markupPct) / 100);
+    const steps = AP_STAGES.map(([k, label, sub], n) => {
+      const st = ['skipped', 'failed'].includes(i.stage) ? (n === 0 ? 'stop' : '') : at > n + 1 || i.stage === 'submitted' ? 'done' : at === n + 1 ? 'now' : '';
+      return `<li class="ap-step ${st}"><span class="ap-dot">${st === 'done' ? icon('check', 'h-3.5 w-3.5') : n + 1}</span><span><b>${label}</b><small>${sub}</small></span></li>`;
+    }).join('');
+
+    view.innerHTML = `
+      <a href="/app/autopilot" data-link class="mb-4 inline-flex items-center gap-1 text-sm text-mist-400 hover:text-white">&larr; Autopilot</a>
+      <section class="card relative mb-6 overflow-hidden p-6 sm:p-8">
+        <div class="flex flex-wrap items-start gap-5">
+          ${scoreRing(i.score, 'h-16 w-16')}
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap gap-2">${apStagePill(i.stage)}${i.solNumber ? `<span class="pill bg-white/[0.06] text-mist-300">${esc(i.solNumber)}</span>` : ''}${i.dueAt ? `<span class="pill bg-white/[0.06] text-mist-300">${icon('cal', 'h-3 w-3')}Due ${fmtDate(i.dueAt)}</span>` : ''}</div>
+            <h1 class="mt-3 text-2xl font-bold tracking-tight text-white">${esc(i.title)}</h1>
+            <p class="mt-1 text-mist-400">${esc(i.agency || '')}</p>
+            ${i.reason ? `<p class="mt-3 text-sm ${['skipped', 'failed'].includes(i.stage) ? 'text-brand-redSoft' : 'text-mist-400'}">${esc(i.reason)}</p>` : ''}
+          </div>
+          <div class="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-col">
+            ${i.proposalId ? `<a href="/app/proposals/${i.proposalId}" data-link class="btn-primary">${icon('proposal', 'h-4 w-4')}Open proposal</a>` : ''}
+            ${i.rfpSummaryId ? `<a href="/app/decryptor/${i.rfpSummaryId}" data-link class="btn-ghost">${icon('decrypt', 'h-4 w-4')}Solicitation summary</a>` : ''}
+            ${i.pricingSheetId ? `<a href="/app/pricing/${i.pricingSheetId}" data-link class="btn-ghost">${icon('dollar', 'h-4 w-4')}Pricing sheet</a>` : ''}
+            <a href="${esc(i.url)}" target="_blank" rel="noopener noreferrer" class="btn-ghost">Open on SAM.gov</a>
+          </div>
+        </div>
+        <ol class="ap-steps mt-8">${steps}</ol>
+        ${i.stage === 'ready' ? `<div class="mt-6 flex flex-wrap gap-2 border-t border-white/[0.06] pt-5"><button id="ap-submitted" class="btn-primary">I submitted it</button><button id="ap-pass" class="btn-ghost">Pass on this one</button>
+          <p class="w-full text-xs text-mist-500">Read the proposal, confirm every price and fill any [INSERT] placeholders before you submit. The government only sees what you send.</p></div>` : ''}
+      </section>
+
+      <div class="grid items-start gap-6 xl:grid-cols-2">
+        ${sectionCard('Market check', m.count ? `
+          <p class="text-sm text-mist-400">${esc(m.count)} comparable federal awards (${esc(m.basis)}) from USAspending.gov.</p>
+          <div class="mt-4 grid grid-cols-3 gap-2">${[['Low', m.low], ['Median', m.median], ['High', m.high]].map(([l, v]) => `<div class="tile"><p class="text-xs text-mist-500">${l}</p><p class="mt-1 text-lg font-bold text-white">${fmtMoney(v)}</p></div>`).join('')}</div>
+          <div class="mt-4 overflow-x-auto"><table class="tbl"><thead><tr><th>Awardee</th><th>Agency</th><th class="text-right">Amount</th></tr></thead><tbody>${(m.awards || []).map((a) => `
+            <tr><td>${a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer" class="text-brand-blueSoft hover:text-white">${esc(a.recipient)}</a>` : esc(a.recipient)}<p class="text-xs text-mist-500">${esc(a.description).slice(0, 110)}</p></td>
+              <td class="text-mist-400">${esc(a.agency || '')}<p class="text-xs text-mist-500">${esc(a.start || '')}</p></td><td class="text-right">${fmtMoney(a.amount)}</td></tr>`).join('')}</tbody></table></div>`
+          : '<p class="text-sm text-mist-500">No market data yet for this one.</p>')}
+
+        ${sectionCard('Price build-up', (p.items || []).length ? `
+          <p class="text-sm text-mist-400">Cost estimate, plus ${esc(p.overheadPct)}% overhead and a ${esc(ap.marginPct ?? '')}% profit margin. Confidence: <b class="text-white">${esc(ap.confidence || 'n/a')}</b>.</p>
+          <div class="mt-4 overflow-x-auto"><table class="tbl"><thead><tr><th>Item</th><th class="text-right">Qty</th><th class="text-right">Your cost</th><th class="text-right">Bid price</th></tr></thead><tbody>${p.items.map((it) => `
+            <tr><td>${esc(it.description)}<p class="text-xs text-mist-500">${esc(it.basis || '')}</p></td><td class="text-right">${esc(it.quantity)} ${esc(it.unit)}</td>
+              <td class="text-right text-mist-400">${money2(it.cost)}</td><td class="text-right font-medium">${money2(unitPrice(it))}</td></tr>`).join('')}</tbody></table></div>
+          <p class="mt-3 text-right text-lg font-bold text-white">Total ${money2(i.priceTotal)}</p>
+          ${(ap.assumptions || []).length ? `<div class="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm text-amber-100"><p class="font-semibold">Confirm before you submit</p><ul class="mt-2 space-y-1">${ap.assumptions.map((a) => `<li>• ${esc(a)}</li>`).join('')}</ul></div>` : ''}`
+          : '<p class="text-sm text-mist-500">Pricing appears here once the Autopilot reaches this step.</p>')}
+
+        ${sectionCard('Vendors and subcontractors', `
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="text-sm text-mist-400">Active SAM.gov registrants near the work. Replies with a price land here on your next run.</p>
+            ${i.subs.some((x) => x.email && !(x.outreach || {}).quote_request) ? '<button id="ap-quotes" class="btn-ghost">' + icon('mail', 'h-4 w-4') + 'Email quote requests</button>' : ''}</div>
+          ${i.subs.length ? `<ul class="space-y-2">${i.subs.map((x) => `<li class="tile flex flex-wrap items-center justify-between gap-2">
+            <span class="min-w-0"><span class="block truncate text-sm font-medium text-white">${esc(x.company)}</span><span class="block truncate text-xs text-mist-500">${esc([x.contactName, x.email || 'No email listed', x.phone, x.location].filter(Boolean).join(' · '))}</span></span>
+            ${x.quote ? `<span class="pill bg-emerald-500/15 text-emerald-300">Quoted ${fmtMoney(x.quote)}</span>` : (x.outreach || {}).quote_request ? '<span class="pill bg-brand-blue/15 text-brand-blueSoft">Asked ' + fmtDate((x.outreach || {}).quote_request) + '</span>' : ''}</li>`).join('')}</ul>`
+            : '<p class="text-sm text-mist-500">None found yet.</p>'}`)}
+
+        ${sectionCard('Quotes received', (i.quotes || []).length ? `<ul class="space-y-2">${i.quotes.map((q) => `<li class="tile"><div class="flex items-center justify-between gap-2"><span class="truncate text-sm text-white">${esc(q.from)}</span><b class="text-white">${money2(q.total)}</b></div>
+          <p class="mt-1 text-xs text-mist-500">${esc([q.leadTime && `Lead time ${q.leadTime}`, q.notes, fmtDate(q.receivedAt)].filter(Boolean).join(' · '))}</p></li>`).join('')}</ul>
+          <p class="mt-3 text-xs text-mist-500">Swap a quote into the pricing sheet to tighten your price before you submit.</p>`
+          : '<p class="text-sm text-mist-500">No vendor quotes yet. They are picked up from your inbox each time the Autopilot runs.</p>')}
+      </div>`;
+
+    const q = $('#ap-quotes');
+    if (q) q.addEventListener('click', async () => {
+      q.disabled = true;
+      try { const r = await api(`/autopilot/items/${id}/send-quotes`, { method: 'POST' }); toast(r.sent ? `Sent ${r.sent} quote request${r.sent === 1 ? '' : 's'} from your email.` : 'Nothing new to send.'); render(); }
+      catch (err) { toast(err.message, 'error'); q.disabled = false; }
+    });
+    const mark = (stage, msg) => async () => {
+      try { await api('/autopilot/items/' + id, { method: 'PATCH', body: { stage } }); toast(msg); navigate('/autopilot'); } catch (err) { toast(err.message, 'error'); }
+    };
+    if ($('#ap-submitted')) $('#ap-submitted').addEventListener('click', mark('submitted', 'Marked submitted. It moved to Submitted on your Bid CRM.'));
+    if ($('#ap-pass')) $('#ap-pass').addEventListener('click', mark('skipped', 'Passed. The Autopilot will not bring it back.'));
+    if (['reading', 'quoting', 'pricing', 'writing'].includes(i.stage)) every(5000, () => render());
+  }
+
+  // ------------------------------------------------------------------ Autopilot setup (the learning phase)
+
+  function viewAutopilotSetup(view, data) {
+    const s = data.settings;
+    const learned = s.learned || {};
+    const sec = (n, title, sub, body) => `<section class="card p-6 sm:p-8"><div class="flex gap-4"><span class="ap-num">${n}</span><div class="min-w-0 flex-1">
+      <h2 class="text-lg font-semibold text-white">${title}</h2><p class="mt-1 text-sm text-mist-400">${sub}</p><div class="mt-5">${body}</div></div></div></section>`;
+    const pct = (id, label, v, help) => `<div><label class="label" for="${id}">${label}</label><div class="relative"><input id="${id}" class="field !pr-9" inputmode="decimal" value="${esc(v)}" /><span class="absolute right-4 top-1/2 -translate-y-1/2 text-mist-500">%</span></div><p class="mt-1 text-xs text-mist-500">${help}</p></div>`;
+    const learnedHtml = () => (learned.summary ? `<div class="ap-learned mt-5"><p class="text-xs font-semibold uppercase tracking-widest text-brand-blueSoft">What the Autopilot learned</p>
+      <p class="mt-2 text-sm text-mist-100">${esc(learned.summary)}</p>
+      <div class="mt-3 flex flex-wrap gap-1.5">${(learned.naics || []).map((n) => `<span class="pill bg-brand-blue/15 text-brand-blueSoft">${esc(n.code)} ${esc(n.title)}</span>`).join('')}</div>
+      ${(learned.ideal_contracts || []).length ? `<p class="mt-4 text-xs font-semibold text-mist-300">Goes after first</p><ul class="mt-1 space-y-1 text-sm text-mist-400">${learned.ideal_contracts.map((x) => `<li>• ${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${(learned.avoid || []).length ? `<p class="mt-3 text-xs font-semibold text-mist-300">Skips</p><ul class="mt-1 space-y-1 text-sm text-mist-400">${learned.avoid.map((x) => `<li>• ${esc(x)}</li>`).join('')}</ul>` : ''}</div>` : '');
+
+    view.innerHTML = `
+      <div class="mx-auto max-w-3xl space-y-6">
+        <div>
+          <span class="edition-badge">${icon('bolt', 'h-3.5 w-3.5')}GovCon Autopilot</span>
+          <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">Teach it your business once.<br /><span class="accent-text">It bids for you every day.</span></h1>
+          <p class="mt-3 text-mist-400">Tell it what you do, connect your SAM.gov and Anthropic accounts, set your margin and how many bids a day. Then press Run whenever you want it to work. It never runs on its own.</p>
+        </div>
+
+        ${sec(1, 'What do you do?', 'In your own words: what you do today or plan to do, where you work, and whether you want prime contracts, subcontracts or both. Landscaper, janitorial company, IT shop, supplier: anything goes.', `
+          <textarea id="ap-desc" class="field min-h-[130px]" maxlength="6000" placeholder="Example: We're a 6-person landscaping and snow removal company in Columbus, Ohio. We maintain HOA and commercial properties and want federal grounds maintenance work at VA clinics, Army Reserve centers and post offices within 150 miles. We can also sub to a bigger prime.">${esc(s.description)}</textarea>
+          <div class="mt-3 flex flex-wrap items-center gap-3"><button id="ap-learn" class="btn-primary">${icon('spark', 'h-4 w-4')}Learn my business</button><span class="text-xs text-mist-500">Uses your Anthropic key if saved below.</span></div>
+          <div id="ap-learned">${learnedHtml()}</div>
+          <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2"><label class="label" for="ap-naics">NAICS codes it searches *</label><input id="ap-naics" class="field" value="${esc(s.naics)}" placeholder="561730, 561720" /></div>
+            <div class="sm:col-span-2"><label class="label" for="ap-keywords">Words to look for in titles</label><input id="ap-keywords" class="field" value="${esc(s.keywords)}" placeholder="grounds maintenance, mowing, snow removal" /></div>
+            <div><label class="label" for="ap-role">You want to be the</label><select id="ap-role" class="field">${[['prime', 'Prime contractor'], ['sub', 'Subcontractor'], ['both', 'Either']].map(([v, l]) => `<option value="${v}" ${s.role === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+            <div><label class="label" for="ap-states">States (blank = anywhere)</label><input id="ap-states" class="field" value="${esc(s.states)}" placeholder="OH, KY, IN" /></div>
+          </div>`)}
+
+        ${sec(2, 'Connect your accounts', 'The Autopilot searches SAM.gov and writes with Claude on your own accounts, so you control the usage and the bill. Keys are encrypted the moment you save them and are never shown again.', `
+          <div class="space-y-5">
+            <div><div class="flex items-center justify-between gap-2"><label class="label !mb-0" for="ap-sam">SAM.gov API key *</label>${keyState(s.samKey)}</div>
+              <input id="ap-sam" class="field mt-1.5" type="password" autocomplete="off" placeholder="${s.samKey.set ? 'Saved. Paste a new key to replace it.' : 'Paste your SAM.gov public API key'}" />
+              <p class="mt-1 text-xs text-mist-500">Free. Sign in at sam.gov, open Workspace, then your profile's Account Details, and request a Public API Key.</p>
+              <button type="button" data-test="sam" class="btn-ghost mt-2 !py-1.5 !text-xs" ${s.samKey.set ? '' : 'disabled'}>Test SAM.gov key</button></div>
+            <div><div class="flex items-center justify-between gap-2"><label class="label !mb-0" for="ap-ai">Anthropic API key *</label>${keyState(s.aiKey)}</div>
+              <input id="ap-ai" class="field mt-1.5" type="password" autocomplete="off" placeholder="${s.aiKey.set ? 'Saved. Paste a new key to replace it.' : 'sk-ant-...'}" />
+              <p class="mt-1 text-xs text-mist-500">Create one at console.anthropic.com under API Keys and add a few dollars of credit. Anthropic bills you directly for what the Autopilot reads and writes. Set a monthly spend limit there for peace of mind.</p>
+              <button type="button" data-test="ai" class="btn-ghost mt-2 !py-1.5 !text-xs" ${s.aiKey.set ? '' : 'disabled'}>Test Anthropic key</button></div>
+          </div>`)}
+
+        ${sec(3, 'Your email, for vendor quotes', 'Optional. Quote requests go out from your own address so vendors reply to you, and the Autopilot reads their prices from your inbox. Gmail, Outlook, Yahoo and iCloud need an app password, not your normal one.', `
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div><label class="label" for="ap-email">Email address</label><input id="ap-email" class="field" type="email" autocomplete="off" value="${esc(s.smtpUser)}" /></div>
+            <div><div class="flex items-center justify-between gap-2"><label class="label !mb-0" for="ap-pass">App password</label>${keyState(s.email)}</div><input id="ap-pass" class="field mt-1.5" type="password" autocomplete="new-password" placeholder="${s.email.set ? 'Saved' : ''}" /></div>
+            <div><label class="label" for="ap-from">Send as</label><input id="ap-from" class="field" value="${esc(s.fromName)}" /></div>
+            <div class="flex items-end"><label class="flex items-start gap-3 text-sm text-mist-100"><input id="ap-auto" type="checkbox" class="mt-1 accent-brand-blue" ${s.autoEmail ? 'checked' : ''} /><span>Email vendors automatically during a run (up to ${5} per bid). Off: you send them with one click.</span></label></div>
+          </div>
+          <details class="mt-4 text-sm text-mist-400"><summary class="cursor-pointer text-mist-300">Other email provider</summary>
+            <div class="mt-3 grid gap-4 sm:grid-cols-4">
+              <div class="sm:col-span-3"><label class="label" for="ap-smtp">SMTP server</label><input id="ap-smtp" class="field" value="${esc(s.smtpHost)}" placeholder="smtp.yourdomain.com" /></div>
+              <div><label class="label" for="ap-smtp-port">Port</label><input id="ap-smtp-port" class="field" inputmode="numeric" value="${esc(s.smtpPort)}" /></div>
+              <div class="sm:col-span-3"><label class="label" for="ap-imap">IMAP server</label><input id="ap-imap" class="field" value="${esc(s.imapHost)}" placeholder="imap.yourdomain.com" /></div>
+              <div><label class="label" for="ap-imap-port">Port</label><input id="ap-imap-port" class="field" inputmode="numeric" value="${esc(s.imapPort)}" /></div>
+            </div><p class="mt-2 text-xs text-mist-500">Leave these blank for Gmail, Outlook, Yahoo, iCloud and Zoho; we fill them in.</p></details>
+          <button type="button" data-test="email" class="btn-ghost mt-4 !py-1.5 !text-xs" ${s.email.set ? '' : 'disabled'}>Test email sign-in</button>`)}
+
+        ${sec(4, 'Your pricing and pace', 'Every line item is priced as your cost, plus overhead, plus your profit margin. The Autopilot stops once it has finished this many bids in a day.', `
+          <div class="grid gap-5 sm:grid-cols-2">
+            ${pct('ap-margin', 'Profit margin *', s.marginPct, 'Share of the final price you keep. 20% is common for small business bids.')}
+            ${pct('ap-overhead', 'Overhead', s.overheadPct, 'Insurance, admin, fuel and everything not in a quote.')}
+            <div><label class="label" for="ap-quota">Bids per day</label><select id="ap-quota" class="field">${[1, 2, 3, 4, 5].map((n) => `<option ${Number(s.dailyQuota) === n ? 'selected' : ''}>${n}</option>`).join('')}</select><p class="mt-1 text-xs text-mist-500">Finished proposals per day. No-go solicitations it skips don't count.</p></div>
+            <div><label class="label" for="ap-days">Skip if due in fewer than</label><div class="relative"><input id="ap-days" class="field !pr-14" inputmode="numeric" value="${esc(s.minDaysLeft)}" /><span class="absolute right-4 top-1/2 -translate-y-1/2 text-mist-500">days</span></div></div>
+          </div>`)}
+
+        ${errBox('ap-error')}
+        <div class="sticky bottom-4 flex flex-wrap justify-end gap-2">
+          ${s.configured ? '<a href="/app/autopilot" data-link class="btn-ghost bg-black/70 backdrop-blur">Cancel</a>' : ''}
+          <button id="ap-save" class="btn-primary">${icon('bolt', 'h-4 w-4')}Save and open Autopilot</button>
+        </div>
+      </div>`;
+
+    const v = (id) => $('#' + id).value;
+    const collect = () => {
+      const body = {
+        description: v('ap-desc'), naics: v('ap-naics'), keywords: v('ap-keywords'), role: v('ap-role'), states: v('ap-states'),
+        marginPct: num(v('ap-margin')), overheadPct: num(v('ap-overhead')), dailyQuota: num(v('ap-quota')), minDaysLeft: num(v('ap-days')),
+        smtpUser: v('ap-email').trim(), fromName: v('ap-from'), autoEmail: $('#ap-auto').checked,
+        smtpHost: v('ap-smtp').trim(), smtpPort: v('ap-smtp-port') ? num(v('ap-smtp-port')) : null, imapHost: v('ap-imap').trim(), imapPort: v('ap-imap-port') ? num(v('ap-imap-port')) : null,
+      };
+      if (v('ap-sam').trim()) body.samKey = v('ap-sam').trim();
+      if (v('ap-ai').trim()) body.aiKey = v('ap-ai').trim();
+      if (v('ap-pass')) body.emailPassword = v('ap-pass');
+      if (!body.smtpUser) Object.assign(body, { smtpUser: '', smtpHost: '', imapHost: '' });
+      if (!body.naics.trim()) delete body.naics;
+      return body;
+    };
+    const saveAll = async () => {
+      const r = await api('/autopilot/settings', { method: 'PUT', body: collect() });
+      ['ap-sam', 'ap-ai', 'ap-pass'].forEach((id) => { $('#' + id).value = ''; });
+      return r.settings;
+    };
+
+    $('#ap-learn').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Learning';
+      try {
+        if (v('ap-ai').trim()) await saveAll();
+        const r = await api('/autopilot/learn', { method: 'POST', body: { description: v('ap-desc') } });
+        Object.assign(learned, r.learned);
+        $('#ap-learned').innerHTML = learnedHtml();
+        $('#ap-naics').value = r.settings.naics;
+        $('#ap-keywords').value = r.settings.keywords;
+        $('#ap-role').value = r.settings.role;
+        toast('Got it. Check the codes and words, then finish setup.');
+      } catch (err) { toast(err.message, 'error'); }
+      btn.disabled = false;
+      btn.innerHTML = icon('spark', 'h-4 w-4') + 'Learn my business';
+    });
+    $$('[data-test]', view).forEach((b) => b.addEventListener('click', async () => {
+      b.disabled = true;
+      try {
+        await saveAll();
+        const r = await api('/autopilot/test', { method: 'POST', body: { what: b.dataset.test } });
+        toast(r.message);
+      } catch (err) { toast(err.message, 'error'); }
+      b.disabled = false;
+    }));
+    ['ap-sam', 'ap-ai', 'ap-pass'].forEach((id) => $('#' + id).addEventListener('input', () => {
+      const t = { 'ap-sam': 'sam', 'ap-ai': 'ai', 'ap-pass': 'email' }[id];
+      const b = $(`[data-test="${t}"]`);
+      if (b && $('#' + id).value.trim()) b.disabled = false;
+    }));
+    $('#ap-save').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      $('#ap-error').classList.add('hidden');
+      try {
+        const saved = await saveAll();
+        const missing = [!saved.naics && 'NAICS codes', !saved.samKey.set && 'your SAM.gov API key', !saved.aiKey.set && 'your Anthropic API key'].filter(Boolean);
+        if (missing.length) { showMsg('ap-error', `Saved. Add ${missing.join(' and ')} to switch the Autopilot on.`); btn.disabled = false; return; }
+        toast('Autopilot is set. Press Run whenever you want bids built.');
+        navigate('/autopilot');
+      } catch (err) {
+        showMsg('ap-error', err.message);
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // ---- 10-shared.js
   /* Edition toolkit: shared helpers for the views in frontend/app/tools/. Spliced into app.js. */
 
   const num = (v) => {
@@ -2045,6 +2407,317 @@
 
   /** Polls a list page while any row is still working. */
   const pollWhileWorking = (rows) => { if (rows.some((r) => r.status === 'working')) every(5000, () => render()); };
+
+  // ---- 15-proposal-pdf.js
+  // ------------------------------------------------------------------ Proposal PDF in the house format
+  //
+  // Lays a proposal out the way winning small-business proposals look: a two-column cover page
+  // (submitted to, offeror, business size, title, solicitation number, response date, photos),
+  // a table of contents with real page numbers, the company logo banner on every page, numbered
+  // "Part N:" sections that each start a new page, blue-ruled price tables and "Page N" footers.
+  // Pages are laid out here at US Letter size so the preview, the PDF and the page numbers agree.
+
+  const BOOK_CERTS = { '8a': '8(a)', wosb: 'WOSB', sdvosb: 'SDVOSB', vosb: 'VOSB', hubzone: 'HUBZone', sdb: 'SDB' };
+
+  /** Everything the cover and part headers need, from the solicitation summary and the profile. */
+  async function proposalContext(p) {
+    const [sum, logo] = await Promise.all([
+      p.rfpSummaryId ? api('/decryptor/' + p.rfpSummaryId).then((r) => r.summary.summary || {}).catch(() => ({})) : {},
+      api('/me/logo').then((r) => r.logo).catch(() => null),
+    ]);
+    const u = state.me.user;
+    const has = (v) => v && !/^not stated$/i.test(String(v).trim());
+    const co = sum.contracting_officer || {};
+    const certs = (u.certifications || []).map((c) => BOOK_CERTS[c] || c);
+    return {
+      title: has(sum.title) ? sum.title : p.title.replace(/^Proposal:\s*/i, ''),
+      solNumber: has(sum.solicitation_number) ? sum.solicitation_number : '[INSERT: solicitation number]',
+      responseDue: has(sum.response_due) ? sum.response_due : '[INSERT: response date]',
+      submittedTo: [has(co.name) && `${co.name}${has(co.title) ? `-${co.title}` : ''}`, co.email, sum.agency, co.office, co.address].filter(has),
+      company: u.businessName || '[INSERT: company name]',
+      offeror: [u.fullName && `${u.fullName}${u.contactTitle ? `-${u.contactTitle}` : ''}`, u.address, u.phone && `Phone: ${u.phone}`,
+        u.uei && `UEI: ${u.uei}`, u.cageCode && `Cage: ${u.cageCode}`].filter(Boolean),
+      email: u.email,
+      website: u.website,
+      size: ['Small Business', ...certs].join(', '),
+      logo,
+      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    };
+  }
+
+  /** Splits the proposal Markdown into parts (one per H2), dropping the AI's own cover page. */
+  function proposalParts(md) {
+    const holder = document.createElement('div');
+    holder.innerHTML = markdown(md);
+    const parts = [];
+    let cur = null;
+    for (const node of [...holder.children]) {
+      if (node.tagName === 'H2') {
+        const name = node.textContent.replace(/^\s*(part\s*\d+\s*[:.\-–]\s*|\d+[.)]\s*)/i, '').trim();
+        cur = /^cover( page)?$/i.test(name) ? null : { name, html: node.innerHTML.replace(/^\s*(part\s*\d+\s*[:.\-–]\s*|\d+[.)]\s*)/i, ''), blocks: [] };
+        if (cur) parts.push(cur);
+      } else if (cur && node.tagName !== 'H1') cur.blocks.push(node);
+    }
+    if (!parts.length) parts.push({ name: 'Proposal', html: 'Proposal', blocks: [...holder.children].filter((n) => n.tagName !== 'H1') });
+    return parts;
+  }
+
+  function bookPage(ctx, cls = '') {
+    const page = document.createElement('section');
+    page.className = 'bp ' + cls;
+    page.innerHTML = `<header class="bp-head">${ctx.logo ? `<img class="bp-logo" alt="" src="${esc(ctx.logo)}" />` : `<span class="bp-logo-box">${esc(ctx.company)}</span>`}</header>
+      <div class="bp-body"></div><footer class="bp-foot"></footer>`;
+    return page;
+  }
+
+  /** Flows blocks into pages, splitting long tables and lists across pages. Returns the pages. */
+  function flowBlocks(book, ctx, blocks, onBlock) {
+    const pages = [];
+    let page;
+    let body;
+    const newPage = () => {
+      page = bookPage(ctx);
+      book.appendChild(page);
+      pages.push(page);
+      body = page.querySelector('.bp-body');
+    };
+    const fits = () => body.scrollHeight <= body.clientHeight + 1;
+    newPage();
+    const queue = [...blocks];
+    while (queue.length) {
+      const block = queue.shift();
+      body.appendChild(block);
+      if (fits()) { if (onBlock) onBlock(block, pages.length); continue; }
+      body.removeChild(block);
+      const empty = !body.children.length;
+      // Tables and lists continue on the next page rather than leaving a gap or overflowing.
+      if (block.tagName === 'TABLE' || block.tagName === 'UL' || block.tagName === 'OL') {
+        const rowsOf = (el) => (el.tagName === 'TABLE' ? [...el.tBodies[0].rows] : [...el.children]);
+        const shell = () => {
+          const c = block.cloneNode(false);
+          if (block.tagName === 'TABLE') { if (block.tHead) c.appendChild(block.tHead.cloneNode(true)); c.appendChild(document.createElement('tbody')); }
+          return c;
+        };
+        const target = (el) => (el.tagName === 'TABLE' ? el.tBodies[0] : el);
+        const rows = rowsOf(block);
+        const first = shell();
+        body.appendChild(first);
+        let moved = 0;
+        for (const r of rows) {
+          target(first).appendChild(r);
+          if (!fits()) { target(first).removeChild(r); break; }
+          moved += 1;
+        }
+        if (moved) {
+          if (onBlock) onBlock(first, pages.length);
+          const rest = shell();
+          rows.slice(moved).forEach((r) => target(rest).appendChild(r));
+          if (rows.length > moved) { newPage(); queue.unshift(rest); }
+          continue;
+        }
+        body.removeChild(first);
+        target(block).insertBefore(rows[0], target(block).firstChild);
+      }
+      if (empty) {
+        // Taller than a whole page: let it run over rather than loop forever.
+        body.appendChild(block);
+        if (onBlock) onBlock(block, pages.length);
+        if (queue.length) newPage();
+        continue;
+      }
+      // Keep a heading with what follows it.
+      const last = body.lastElementChild;
+      newPage();
+      if (last && /^H[1-4]$/.test(last.tagName) && !last.classList.contains('bp-part')) queue.unshift(last);
+      queue.unshift(block);
+    }
+    return pages;
+  }
+
+  const tocLine = (cls, label, page) => `<p class="${cls}"><span>${label}</span><i></i><b>${page ?? ''}</b></p>`;
+
+  function coverPage(ctx, photos) {
+    const page = document.createElement('section');
+    page.className = 'bp bp-cover';
+    page.innerHTML = `
+      <div class="bpc-grid">
+        <div class="bpc-left">
+          <div class="bpc-logo">${ctx.logo ? `<img alt="" src="${esc(ctx.logo)}" />` : `<span class="bp-logo-box bp-logo-lg">${esc(ctx.company)}</span>`}</div>
+          <h3>SUBMITTED TO:</h3>
+          <p>${ctx.submittedTo.length ? ctx.submittedTo.map(esc).join('<br>') : '<span class="ph">[INSERT: contracting officer, agency and address]</span>'}</p>
+          <h3>OFFEROR:</h3>
+          <p>${[ctx.company, ...ctx.offeror].map(esc).join('<br>')}</p>
+          <p class="bpc-links">${ctx.email ? `<span>${esc(ctx.email)}</span>` : ''}${ctx.website ? `<span>${esc(ctx.website)}</span>` : ''}</p>
+          <h4>Business Size and Type</h4>
+          <p class="bpc-size">${esc(ctx.size)}</p>
+        </div>
+        <div class="bpc-right">
+          <h1>${esc(ctx.title)}</h1>
+          <p><b>Solicitation Number</b>: ${markdownInline(ctx.solNumber)}</p>
+          <p><b>Response Date</b>: ${markdownInline(ctx.responseDue)}</p>
+          <div class="bpc-photos">${photos.map((src) => `<img alt="" src="${esc(src)}" />`).join('')}</div>
+        </div>
+      </div>`;
+    return page;
+  }
+
+  const markdownInline = (s) => esc(s).replace(/\[(INSERT|TBD|CONFIRM)[^\]]*\]/g, (m) => `<span class="ph">${m}</span>`);
+
+  /** Lays out the whole book into `book`. */
+  function layoutBook(book, ctx, md, photos) {
+    book.innerHTML = '';
+    const parts = proposalParts(md);
+    book.appendChild(coverPage(ctx, photos));
+
+    // Table of contents first with blank page numbers, to know how many pages it takes.
+    const toc = [];
+    parts.forEach((part, n) => {
+      toc.push({ cls: 'bp-toc1', label: `Part ${n + 1}: ${part.html}`, part: n });
+      let k = 0;
+      part.blocks.forEach((b) => {
+        if (b.tagName !== 'H3') return;
+        k += 1;
+        const clean = b.innerHTML.replace(/^\s*\d+(\.\d+)*[.)]?\s+/, '');
+        b.innerHTML = `${n + 1}.${k} ${clean}`;
+        toc.push({ cls: 'bp-toc2', label: b.innerHTML, node: b });
+      });
+    });
+    const tocBlocks = () => {
+      const h = document.createElement('h2');
+      h.className = 'bp-toc-title';
+      h.textContent = 'Table of Contents';
+      return [h, ...toc.map((t) => { const d = document.createElement('div'); d.innerHTML = tocLine(t.cls, t.label, t.page); return d.firstElementChild; })];
+    };
+    const tocPages = flowBlocks(book, ctx, tocBlocks());
+    const startAt = 2 + tocPages.length; // cover is page 1
+
+    let pageNo = startAt - 1;
+    parts.forEach((part, n) => {
+      const head = document.createElement('h2');
+      head.className = 'bp-part';
+      head.innerHTML = `Part ${n + 1}: ${part.html}`;
+      const meta = document.createElement('div');
+      meta.className = 'bp-meta';
+      meta.innerHTML = `<p><b>Solicitation Number:</b> ${markdownInline(ctx.solNumber)}</p><p><b>Offeror:</b> ${esc(ctx.company)}</p><p><b>Date of Submission:</b> ${esc(ctx.date)}</p>`;
+      const blocks = n === 0 ? [head, ...part.blocks] : [head, meta, ...part.blocks];
+      const before = pageNo;
+      const pages = flowBlocks(book, ctx, blocks, (block, idx) => {
+        const entry = toc.find((t) => t.node === block);
+        if (entry) entry.page = before + idx;
+      });
+      toc.find((t) => t.part === n).page = before + 1;
+      pageNo = before + pages.length;
+    });
+
+    // Tables: bold the subtotal and total rows, as on a real price schedule.
+    book.querySelectorAll('.bp-body table tr').forEach((tr) => {
+      const first = tr.cells[0] && tr.cells[0].textContent.trim();
+      if (/^(\**)?(sub)?total\b/i.test(first || '') || /^grand total/i.test(first || '')) tr.classList.add('bp-total');
+    });
+
+    // Now the real page numbers in the contents, and "Page N" on every page after the cover.
+    const holder = document.createElement('div');
+    book.insertBefore(holder, tocPages[0]);
+    tocPages.forEach((pg) => pg.remove());
+    flowBlocks(holder, ctx, tocBlocks()).forEach((pg) => book.insertBefore(pg, holder));
+    holder.remove();
+    [...book.querySelectorAll('.bp')].forEach((pg, i) => {
+      const foot = pg.querySelector('.bp-foot');
+      if (foot) foot.textContent = `Page ${i + 1}`;
+    });
+    return book.querySelectorAll('.bp').length;
+  }
+
+  /** Full-screen preview of the formatted proposal, with cover photos and Print / Save as PDF. */
+  async function openProposalBook(p, md) {
+    const ctx = await proposalContext(p);
+    const photos = [];
+    const wrap = document.createElement('div');
+    wrap.id = 'book-wrap';
+    wrap.className = 'book-wrap';
+    wrap.innerHTML = `
+      <div class="book-bar no-print">
+        <div class="min-w-0"><p class="truncate text-sm font-semibold text-white">${esc(ctx.title)}</p><p class="text-xs text-mist-400" id="book-count"></p></div>
+        <div class="flex flex-wrap gap-2">
+          <label class="btn-ghost cursor-pointer">${icon('upload', 'h-4 w-4')}Cover photos<input id="book-photos" type="file" accept="image/png,image/jpeg,image/webp" multiple class="sr-only" /></label>
+          <button id="book-word" class="btn-ghost">Word</button>
+          <button id="book-print" class="btn-primary">Save as PDF</button>
+          <button id="book-close" class="btn-ghost" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      ${ctx.logo ? '' : '<p class="book-tip no-print">Tip: add your company logo on your Profile page and it appears on the cover and every page header.</p>'}
+      <div id="book" class="book"></div>`;
+    document.body.appendChild(wrap);
+    document.body.classList.add('book-open');
+    const draw = () => { $('#book-count').textContent = `${layoutBook($('#book'), ctx, md, photos)} pages · US Letter`; };
+    draw();
+    const close = () => { wrap.remove(); document.body.classList.remove('book-open'); document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+    $('#book-close').addEventListener('click', close);
+    $('#book-print').addEventListener('click', () => window.print());
+    $('#book-word').addEventListener('click', () => proposalWord(ctx, md));
+    $('#book-photos').addEventListener('change', async (e) => {
+      const files = [...e.target.files].slice(0, 3);
+      photos.length = 0;
+      for (const f of files) {
+        if (f.size > 6 * 1024 * 1024) { toast(`${f.name} is over 6 MB.`, 'error'); continue; }
+        photos.push(await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(f); }));
+      }
+      draw();
+    });
+  }
+
+  /** The same layout as a Word document: cover table, contents, one part per page. */
+  function proposalWord(ctx, md) {
+    const parts = proposalParts(md);
+    const br = '<br clear="all" style="page-break-before:always">';
+    const cover = `<table class="cover"><tr><td width="50%">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="220">` : `<p class="logo">${esc(ctx.company)}</p>`}
+        <h3>SUBMITTED TO:</h3><p>${ctx.submittedTo.map(esc).join('<br>') || '[INSERT: contracting officer, agency and address]'}</p>
+        <h3>OFFEROR:</h3><p>${[ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>')}</p>
+        <h4>Business Size and Type</h4><p>${esc(ctx.size)}</p></td>
+      <td width="50%" align="center"><h1>${esc(ctx.title)}</h1><p><b>Solicitation Number</b>: ${esc(ctx.solNumber)}</p><p><b>Response Date</b>: ${esc(ctx.responseDue)}</p></td></tr></table>`;
+    const toc = `<h2 class="toc">Table of Contents</h2>${parts.map((pt, n) => `<p class="t1">Part ${n + 1}: ${pt.html}</p>`).join('')}`;
+    const body = parts.map((pt, n) => `<h2>Part ${n + 1}: ${pt.html}</h2>${n ? `<p><b>Solicitation Number:</b> ${esc(ctx.solNumber)}<br><b>Offeror:</b> ${esc(ctx.company)}<br><b>Date of Submission:</b> ${esc(ctx.date)}</p>` : ''}${pt.blocks.map((b) => b.outerHTML).join('')}`).join(br);
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(ctx.title)}</title>
+      <style>@page{size:8.5in 11in;margin:0.8in}body{font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.3}h1{font-size:16pt;text-transform:uppercase}
+      h2{font-size:14pt;color:#1F4E79;text-decoration:underline;margin-top:6pt}h3{font-size:12pt;text-decoration:underline}h4{font-size:12pt}
+      table{border-collapse:collapse;width:100%}td,th{border:1.5pt solid #1F4E8C;padding:4pt;vertical-align:top}th{text-align:center}
+      table.cover td{border:0;border-right:1.5pt solid #1F4E8C}.logo{background:#1F3A68;color:#fff;font-size:16pt;padding:14pt}
+      .toc{color:#000}.t1{font-weight:bold;font-size:12pt}.ph{background:#FFE4E8;color:#9B0020}</style></head>
+      <body>${cover}${br}${toc}${br}${body}</body></html>`;
+    const slug = ctx.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'proposal';
+    download(slug + '.doc', new Blob(['﻿', html], { type: 'application/msword' }));
+  }
+
+  /** Profile card: upload, preview and remove the company logo (shrunk in the browser to stay small). */
+  async function logoPanel(el) {
+    const { logo } = await api('/me/logo').catch(() => ({ logo: null }));
+    el.innerHTML = `<div class="flex items-center gap-4">
+        <div class="flex h-20 w-40 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white">${logo ? `<img alt="Your logo" src="${esc(logo)}" class="max-h-full max-w-full object-contain" />` : '<span class="text-xs text-black/50">No logo yet</span>'}</div>
+        <div class="flex flex-col gap-2"><label class="btn-ghost cursor-pointer !py-1.5 !text-xs">${icon('upload', 'h-4 w-4')}${logo ? 'Replace' : 'Upload logo'}<input type="file" accept="image/png,image/jpeg" class="sr-only" /></label>
+          ${logo ? '<button type="button" class="btn-ghost !py-1.5 !text-xs" data-remove>Remove</button>' : ''}</div></div>`;
+    $('input', el).addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const src = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = () => rej(new Error('That image could not be read.')); r.readAsDataURL(file); });
+        const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('That image could not be read.')); i.src = src; });
+        const scale = Math.min(1, 900 / img.width, 360 / img.height);
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        let data = c.toDataURL('image/png');
+        if (data.length > 380000) data = c.toDataURL('image/jpeg', 0.88);
+        await api('/me/logo', { method: 'PUT', body: { logo: data } });
+        toast('Logo saved. It now appears on your proposal PDFs.');
+        logoPanel(el);
+      } catch (err) { toast(err.message, 'error'); }
+    });
+    const rm = $('[data-remove]', el);
+    if (rm) rm.addEventListener('click', async () => { await api('/me/logo', { method: 'PUT', body: { logo: null } }); logoPanel(el); });
+  }
 
   // ---- 20-gonogo.js
   // ------------------------------------------------------------------ Go/No-Go Indicator

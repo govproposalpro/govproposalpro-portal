@@ -6,6 +6,6 @@ const fontFamily = { sans: ['"Inter Var"', ...base.theme.extend.fontFamily.sans]
 
 module.exports = {
   ...base,
-  content: [__dirname + '/index.html', __dirname + '/site.js', __dirname + '/terms.html', __dirname + '/privacy.html'],
+  content: [__dirname + '/index.html', __dirname + '/site.js', __dirname + '/terms.html', __dirname + '/privacy.html', __dirname + '/earnings-disclaimer.html'],
   theme: { ...base.theme, extend: { ...base.theme.extend, fontFamily } },
 };

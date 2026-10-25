@@ -34,6 +34,8 @@ services:
       # --- Command Center (dashboard at /app) ---
       - key: ANTHROPIC_API_KEY
         sync: false # Claude API key for the Proposal Engine and Bid Decryptor
+      - key: KEY_ENCRYPTION_SECRET
+        generateValue: true # encrypts the API keys and mailbox passwords members give the Autopilot; never change it once set
       - key: APP_LAUNCH_AT
         value: "2026-10-18T13:00:00Z" # members can sign in from Sunday Oct 18, 9:00 AM Eastern
       - key: APP_EARLY_ACCESS_EMAILS
@@ -48,6 +50,28 @@ services:
         sync: false # landing page "Get Core" button (https Whop checkout link)
       - key: WHOP_ENTERPRISE_CHECKOUT_URL
         sync: false # landing page "Get Enterprise" button
+      - key: WHOP_CORE_PLAN_ID
+        sync: false # optional: embedded checkout plan ids, defaults are the live plans
+      - key: WHOP_ENTERPRISE_PLAN_ID
+        sync: false
+      - key: WHOP_CORE_ACCESS_PLAN_ID
+        sync: false
+      - key: WHOP_ENTERPRISE_ACCESS_PLAN_ID
+        sync: false
+      - key: WHOP_CORE_MONTHLY_PLAN_ID
+        sync: false # optional: $199/mo Core plan (default plan_3fn88Y0V7nDy8); access ends when this membership ends
+      - key: WHOP_ENTERPRISE_MONTHLY_PLAN_ID
+        sync: false # optional: $999/mo Enterprise plan (default plan_dodFFyk8v95Fv)
+      - key: CORE_ACCESS_MONTHLY_PRICE
+        sync: false # optional: Core maintenance $/month, shows the "save" line on pay-in-full
+      - key: ENTERPRISE_ACCESS_MONTHLY_PRICE
+        sync: false # optional: Enterprise maintenance $/month
+      - key: BOOKING_URL
+        sync: false # optional: free call calendar (GoHighLevel); shows "Book a call" on the site and in emails
+      - key: SITE_VSL_YOUTUBE_ID
+        sync: false # optional: 11-character YouTube id of the demo video; shows "Watch the demo"
+      - key: SITE_CHECKOUT_MODE
+        sync: false # "link" sends buy buttons to whop.com instead of the on-page checkout
       - key: LEGAL_ENTITY
         sync: false # legal business name on /terms and /privacy, e.g. Contract Bros LLC
       - key: LEGAL_STATE

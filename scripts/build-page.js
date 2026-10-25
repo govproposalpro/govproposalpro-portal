@@ -75,7 +75,7 @@ fs.writeFileSync(
   path.join(root, 'public/site/index.html'),
   fs.readFileSync(path.join(root, 'frontend/site/index.html'), 'utf8').replaceAll('__VERSION__', siteVersion)
 );
-for (const page of ['terms', 'privacy']) {
+for (const page of ['terms', 'privacy', 'earnings-disclaimer']) {
   fs.writeFileSync(path.join(root, `public/site/${page}.html`),
     fs.readFileSync(path.join(root, `frontend/site/${page}.html`), 'utf8').replaceAll('__VERSION__', siteVersion));
 }

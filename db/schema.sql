@@ -42,6 +42,10 @@ ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS ghl_contact_id   VARCHAR(64);
 
 -- When the "set up your access" email went out after purchase (sent once per buyer).
 ALTER TABLE authorized_purchasers ADD COLUMN IF NOT EXISTS access_email_sent_at TIMESTAMPTZ;
+-- 'one_time' (an edition bought outright: only a refund revokes) or 'monthly' (access ends with the membership).
+ALTER TABLE authorized_purchasers ADD COLUMN IF NOT EXISTS billing VARCHAR(16);
+-- Everything granted before the monthly plans, and every manual or CSV grant, is one-time access.
+UPDATE authorized_purchasers SET billing = 'one_time' WHERE billing IS NULL;
 
 -- ============================================================================
 -- GovProposalPro app (dashboard). Same "Users" table, so portal logins carry over.
@@ -394,3 +398,78 @@ CREATE TABLE IF NOT EXISTS cache_entries (
 
 -- Winning proposals the member uploads so new drafts are written in their own voice.
 ALTER TABLE company_documents ADD COLUMN IF NOT EXISTS body_text TEXT;
+
+-- ============================================================================
+-- Enterprise Autopilot: finds, prices and writes bids for the member on demand.
+-- Runs on the member's own SAM.gov and Anthropic keys, encrypted at rest (src/app/secrets.js).
+-- ============================================================================
+
+-- Company logo shown on proposal PDFs (small PNG or JPEG data URL).
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS logo_data TEXT;
+
+CREATE TABLE IF NOT EXISTS autopilot_settings (
+  user_id        BIGINT        PRIMARY KEY REFERENCES "Users"(id) ON DELETE CASCADE,
+  description    TEXT,                                     -- the member's own words about the business
+  learned        JSONB         NOT NULL DEFAULT '{}',      -- what the intake step understood
+  role           VARCHAR(10)   NOT NULL DEFAULT 'prime',   -- prime | sub | both
+  naics          VARCHAR(200),
+  keywords       VARCHAR(400),
+  states         VARCHAR(200),                             -- two-letter codes, comma separated; empty = anywhere
+  set_asides     VARCHAR(200),
+  min_days_left  SMALLINT      NOT NULL DEFAULT 7,
+  daily_quota    SMALLINT      NOT NULL DEFAULT 1,
+  margin_pct     NUMERIC(5,2)  NOT NULL DEFAULT 20,
+  overhead_pct   NUMERIC(5,2)  NOT NULL DEFAULT 10,
+  sam_key_enc    TEXT,
+  ai_key_enc     TEXT,
+  smtp_host      VARCHAR(200),
+  smtp_port      INTEGER,
+  smtp_user      VARCHAR(254),
+  smtp_pass_enc  TEXT,
+  imap_host      VARCHAR(200),
+  imap_port      INTEGER,
+  from_name      VARCHAR(120),
+  auto_email     BOOLEAN       NOT NULL DEFAULT false,     -- send quote requests without asking
+  updated_at     TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS autopilot_runs (
+  id            BIGSERIAL     PRIMARY KEY,
+  user_id       BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  status        VARCHAR(20)   NOT NULL DEFAULT 'working',  -- working | done | failed
+  requested     SMALLINT      NOT NULL DEFAULT 1,
+  log           JSONB         NOT NULL DEFAULT '[]',
+  error         VARCHAR(300),
+  created_at    TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  completed_at  TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS autopilot_runs_user_idx ON autopilot_runs (user_id, created_at DESC);
+
+-- One opportunity the Autopilot picked up, and everything it built for it.
+CREATE TABLE IF NOT EXISTS autopilot_items (
+  id                BIGSERIAL     PRIMARY KEY,
+  user_id           BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  run_id            BIGINT        REFERENCES autopilot_runs(id) ON DELETE SET NULL,
+  notice_id         VARCHAR(100)  NOT NULL,
+  title             VARCHAR(300)  NOT NULL,
+  agency            VARCHAR(300),
+  sol_number        VARCHAR(100),
+  due_at            TIMESTAMPTZ,
+  url               VARCHAR(500),
+  score             SMALLINT,
+  stage             VARCHAR(20)   NOT NULL DEFAULT 'found',  -- found | reading | skipped | quoting | pricing | writing | ready | submitted | failed
+  reason            VARCHAR(400),
+  rfp_summary_id    BIGINT        REFERENCES rfp_summaries(id) ON DELETE SET NULL,
+  bid_id            BIGINT        REFERENCES bids(id) ON DELETE SET NULL,
+  pricing_sheet_id  BIGINT        REFERENCES pricing_sheets(id) ON DELETE SET NULL,
+  proposal_id       BIGINT        REFERENCES proposals(id) ON DELETE SET NULL,
+  market            JSONB,
+  quotes            JSONB         NOT NULL DEFAULT '[]',
+  created_at        TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  updated_at        TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  UNIQUE (user_id, notice_id)
+);
+CREATE INDEX IF NOT EXISTS autopilot_items_user_idx ON autopilot_items (user_id, created_at DESC);
+
+-- Proposals the Autopilot writes on the member's own key do not use the monthly allowance.
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS own_key BOOLEAN NOT NULL DEFAULT false;
