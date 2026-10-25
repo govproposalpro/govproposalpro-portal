@@ -33,6 +33,8 @@
     var co = document.getElementById('checkout');
     var vslId = co ? co.dataset.vslId : '';
     if (!/^[A-Za-z0-9_-]{11}$/.test(vslId || '')) vslId = '';
+    // A full video hosted elsewhere (SITE_VSL_VIDEO_URL, for example in GoHighLevel) plays on its own.
+    var vslUrl = !vslId && co && /^https:\/\//.test(co.dataset.vslUrl || '') ? co.dataset.vslUrl : '';
     var stage = document.getElementById('stage');
     var gate = document.getElementById('gate');
     var play = document.getElementById('vsl-play');
@@ -45,31 +47,55 @@
       still.addEventListener('error', function () { still.src = 'https://i.ytimg.com/vi/' + vslId + '/hqdefault.jpg'; }, { once: true });
     }
 
-    // The YouTube video once SITE_VSL_YOUTUBE_ID is set. Otherwise the intro plays first and rolls
-    // straight into the full walkthrough; the chapter buttons jump between the two.
+    // The YouTube video once SITE_VSL_YOUTUBE_ID is set, or the one full video at SITE_VSL_VIDEO_URL.
+    // Otherwise the intro plays first and rolls straight into the full walkthrough; the chapter
+    // buttons jump between the two. One video element is reused, so phones that allowed it to play
+    // with sound keep allowing it.
     var chapters = document.getElementById('chapters');
     var current = play;
+    var primed = null;
+    var useChapters = !vslId && !vslUrl;
     function show(clip) {
-      var v = window.gppVideo(vslId, clip);
-      current.replaceWith(v);
-      current = v;
-      if (vslId) return;
+      if (current.tagName === 'VIDEO') {
+        window.gppSetClip(current, clip);
+      } else {
+        var v = primed || window.gppVideo(vslId, clip);
+        if (primed) window.gppSetClip(v, clip);
+        primed = null;
+        current.replaceWith(v);
+        current = v;
+        if (!vslId) v.addEventListener('ended', function () { if (current.dataset.now === 'intro') show('demo'); });
+      }
+      if (current.tagName !== 'VIDEO') return;
+      current.dataset.now = clip;
+      var p = current.play();
+      if (p && p.catch) p.catch(function () { /* the browser wants a tap on play */ });
+      if (!useChapters) return;
       chapters.querySelectorAll('[data-clip]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.clip === clip)); });
-      if (clip === 'intro') v.addEventListener('ended', function () { show('demo'); });
     }
-    function start() { show('intro'); }
-    if (!vslId) {
+    function start() { show(vslUrl || 'intro'); }
+    if (useChapters) {
       chapters.querySelectorAll('[data-clip]').forEach(function (b) {
         b.addEventListener('click', function () { show(b.dataset.clip); });
       });
     }
+    if (vslUrl) still.src = '/assets/site/intro-poster.webp';
     function unlock(autoplay) {
       stage.classList.remove('is-locked');
       gate.hidden = true;
       play.hidden = false;
-      if (!vslId) chapters.hidden = false;
+      if (useChapters) chapters.hidden = false;
       play.addEventListener('click', start, { once: true });
       if (autoplay) start();
+    }
+    // Phones only let a video start with sound from a tap. Saving the opt-in takes a moment, so the
+    // player is created and started inside the Watch now tap, then paused until the opt-in is saved.
+    function prime() {
+      if (vslId || primed) return;
+      primed = window.gppVideo('', vslUrl || 'intro');
+      primed.autoplay = false;
+      var p = primed.play();
+      if (p && p.then) p.then(function () { if (primed) primed.pause(); }).catch(function () { /* fine: it starts after the save */ });
     }
 
     if (lead && lead.email) { unlock(false); return; }
@@ -98,6 +124,7 @@
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return fail('Please enter a valid email address.', 'email');
       if (data.phone.replace(/\D/g, '').length < 10) return fail('Please enter your mobile number with area code.', 'phone');
       err.hidden = true;
+      prime();
       go.disabled = true;
       var label = go.lastChild.textContent;
       go.lastChild.textContent = 'One moment…';
