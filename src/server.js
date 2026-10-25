@@ -144,7 +144,7 @@ const SITE_CSP = [
   "default-src 'self'",
   "script-src 'self' https://js.whop.com https://t.whop.tw https://cdn.plaid.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://*.whop.com",
+  "img-src 'self' data: https://*.whop.com https://i.ytimg.com",
   "font-src 'self'",
   "connect-src 'self' https://whop.com https://*.whop.com https://t.whop.tw",
   "worker-src 'self' blob:",

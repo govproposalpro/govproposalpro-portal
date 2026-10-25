@@ -200,24 +200,28 @@
     // Optional extras: the call calendar and the demo video show only once they are configured.
     if (/^https:\/\//.test(cfg.bookingUrl || '')) {
       document.querySelectorAll('[data-booking], [data-booking-wrap]').forEach(function (n) { n.hidden = false; });
+      // With a calendar set, the Enterprise call leads and buy-now steps back to a second button.
+      document.querySelectorAll('[data-call-first]').forEach(function (n) { n.className = n.getAttribute('data-call-first'); });
     }
-    var vsl = document.getElementById('vsl');
-    if (vsl && /^[A-Za-z0-9_-]{11}$/.test(cfg.vslId || '')) {
-      document.querySelectorAll('[data-vsl]').forEach(function (b) {
-        b.hidden = false;
-        b.addEventListener('click', function () {
-          var frame = document.getElementById('vsl-frame');
-          var f = document.createElement('iframe');
-          f.src = 'https://www.youtube-nocookie.com/embed/' + cfg.vslId + '?autoplay=1&rel=0&modestbranding=1';
-          f.title = 'GovProposalPro demo';
-          f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-          f.allowFullscreen = true;
-          frame.textContent = '';
-          frame.appendChild(f);
-          openDialog(vsl);
-        });
-      });
+    // Demo video: a still from YouTube until someone presses play, then the nocookie player.
+    var vslSection = document.querySelector('[data-vsl-section]');
+    if (vslSection && /^[A-Za-z0-9_-]{11}$/.test(cfg.vslId || '')) {
+      vslSection.hidden = false;
+      document.querySelectorAll('[data-vsl]').forEach(function (n) { n.hidden = false; });
       document.querySelectorAll('[data-vsl-alt]').forEach(function (n) { n.hidden = true; });
+      var thumb = document.getElementById('vsl-thumb');
+      thumb.src = 'https://i.ytimg.com/vi/' + cfg.vslId + '/maxresdefault.jpg';
+      thumb.addEventListener('error', function () { thumb.src = 'https://i.ytimg.com/vi/' + cfg.vslId + '/hqdefault.jpg'; }, { once: true });
+      var play = document.getElementById('vsl-play');
+      play.addEventListener('click', function () {
+        var f = document.createElement('iframe');
+        f.src = 'https://www.youtube-nocookie.com/embed/' + cfg.vslId + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+        f.title = 'GovProposalPro demo';
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        f.allowFullscreen = true;
+        f.className = 'vsl-iframe';
+        play.replaceWith(f);
+      });
     }
 
     function openDialog(d) {
@@ -230,7 +234,6 @@
       d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('[data-co-close]')) d.close(); });
       d.addEventListener('close', function () {
         document.body.classList.remove('co-lock');
-        if (d.id === 'vsl') document.getElementById('vsl-frame').textContent = '';
         if (d.id === 'checkout') resetCheckout();
       });
     });

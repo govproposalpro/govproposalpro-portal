@@ -318,7 +318,6 @@
   .co-panel { @apply flex flex-col overflow-hidden rounded-[28px] border border-white/10 bg-ink-900; max-height: calc(100dvh - 24px);
     box-shadow: 0 60px 160px -40px rgba(10,102,255,0.5), 0 30px 80px -30px rgba(255,45,70,0.3); }
   .co-panel-wide { @apply max-w-none; }
-  #vsl { max-width: 1000px; }
   .co-head { @apply flex items-center justify-between gap-3 border-b border-white/[0.06] px-5 py-4; }
   .co-title { @apply truncate text-[15px] font-semibold text-white; }
   .co-sub { @apply truncate text-xs text-mist-400; }
@@ -336,8 +335,14 @@
   .co-done { @apply px-6 py-14 text-center; }
   .co-check { @apply mx-auto flex h-14 w-14 items-center justify-center rounded-full text-white; background: linear-gradient(135deg, #0A66FF, #FF2D46); }
   .co-foot { @apply flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] px-5 py-3 text-xs text-mist-500; }
-  .vsl-frame { @apply relative w-full bg-black; aspect-ratio: 16 / 9; }
-  .vsl-frame iframe { @apply absolute inset-0 h-full w-full border-0; }
+  .vsl { @apply relative bg-black; aspect-ratio: 16 / 9; }
+  .vsl-play { @apply absolute inset-0 block h-full w-full cursor-pointer; }
+  .vsl-thumb { @apply absolute inset-0 h-full w-full object-cover opacity-80 transition duration-500; }
+  .vsl-play:hover .vsl-thumb { opacity: 1; }
+  .vsl-btn { @apply absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full pl-1 text-white transition duration-300;
+    background: linear-gradient(135deg, #0A66FF, #5B3BFF 50%, #FF2D46); box-shadow: 0 20px 60px -10px rgba(91,59,255,0.8); }
+  .vsl-play:hover .vsl-btn { transform: translate(-50%, -50%) scale(1.05); }
+  .vsl-iframe { @apply absolute inset-0 h-full w-full border-0; }
 }
 .ap-glow { position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(900px 500px at 50% 0%, rgba(91,59,255,0.18), transparent 70%), radial-gradient(700px 400px at 90% 60%, rgba(255,45,70,0.10), transparent 70%); }

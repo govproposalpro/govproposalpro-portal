@@ -67,7 +67,7 @@
         <p class="reveal lede mx-auto mt-6 max-w-2xl">GovProposalPro surfaces public contract opportunities, decodes the solicitation, prices from real federal award data and writes compliant, award-ready proposals in the format contracting officers expect. On Enterprise, the Autopilot runs the whole bid for you.</p>
         <div class="reveal mt-9 flex flex-wrap items-center justify-center gap-3">
           <a href="__CTA_URL__" class="btn-lg btn-shine">Get access <span aria-hidden="true">→</span></a>
-          <button type="button" class="btn-lg-ghost" data-vsl hidden><svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Watch the demo</button>
+          <a href="#demo" class="btn-lg-ghost" data-vsl hidden><svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Watch the demo</a>
           <a href="#autopilot" class="btn-lg-ghost" data-vsl-alt>See the Autopilot <span aria-hidden="true">›</span></a>
         </div>
         <div class="reveal chooser mx-auto mt-10 max-w-2xl" role="group" aria-label="Where are you starting?">
@@ -98,6 +98,31 @@
           <span class="fc-icon"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
           <span><span class="fc-kicker">Autopilot</span><span class="block font-semibold text-white">Proposal ready for review</span><span class="block text-mist-500">Found, priced and written today</span></span>
         </div>
+      </div>
+    </section>
+
+    <!-- Demo video (the ad landing spot): shown once SITE_VSL_YOUTUBE_ID is set. The YouTube player
+         (youtube-nocookie) loads only when someone presses play. -->
+    <section id="demo" class="relative px-4 pb-16 pt-6 sm:px-6" data-vsl-section hidden>
+      <div class="mx-auto max-w-5xl">
+        <div class="reveal text-center">
+          <p class="eyebrow">Watch the demo</p>
+          <h2 class="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-5xl">See one solicitation become a proposal.</h2>
+        </div>
+        <div class="reveal shot vsl mt-10">
+          <button type="button" class="vsl-play" id="vsl-play" aria-label="Play the GovProposalPro demo video">
+            <img id="vsl-thumb" alt="" width="1280" height="720" class="vsl-thumb" />
+            <span class="vsl-btn" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+          </button>
+        </div>
+        <div class="reveal mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a href="__CORE_MONTHLY_URL__" data-checkout="core-monthly" class="btn-lg">Start Core · $199/mo</a>
+          <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="btn-lg-grad" hidden>Book an Enterprise call</a>
+          <a href="__ENTERPRISE_MONTHLY_URL__" data-checkout="enterprise-monthly" data-call-first="btn-lg-ghost ring-1 ring-white/15" class="btn-lg-grad">Start Enterprise · $999/mo</a>
+        </div>
+        <p class="reveal mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-mist-400">
+          <a href="#editions" class="hover:text-white">Or pay in full and save ›</a>
+        </p>
       </div>
     </section>
 
@@ -521,14 +546,14 @@
               <li>RFI Ghostwriter and your winning voice</li><li>Fringe/G&amp;A pricing engine</li>
               <li>Compliance Pulse, state directory and Sub-Safe vetting</li>
             </ul>
-            <div class="bill-monthly mt-8">
-              <a href="__ENTERPRISE_MONTHLY_URL__" data-checkout="enterprise-monthly" class="btn-lg-grad w-full">Start Enterprise for $999/mo</a>
+            <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="btn-lg-grad mt-8 w-full" hidden>Book a 20-minute call</a>
+            <div class="bill-monthly mt-8" data-call-first="bill-monthly mt-3">
+              <a href="__ENTERPRISE_MONTHLY_URL__" data-checkout="enterprise-monthly" data-call-first="btn-lg-ghost w-full ring-1 ring-white/15" class="btn-lg-grad w-full">Start Enterprise for $999/mo</a>
             </div>
-            <div class="bill-full mt-8">
-              <a href="__ENTERPRISE_URL__" data-checkout="enterprise" class="btn-lg-grad w-full">Get Enterprise for $4,997</a>
+            <div class="bill-full mt-8" data-call-first="bill-full mt-3">
+              <a href="__ENTERPRISE_URL__" data-checkout="enterprise" data-call-first="btn-lg-ghost w-full ring-1 ring-white/15" class="btn-lg-grad w-full">Get Enterprise for $4,997</a>
               <a href="__ENTERPRISE_ACCESS_URL__" data-checkout="enterprise-access" class="mt-4 block text-center text-sm text-mist-400 hover:text-white">Already bought Enterprise? Start your monthly access ›</a>
             </div>
-            <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="mt-4 block text-center text-sm font-medium text-white hover:text-brand-blueSoft" hidden>Not sure yet? Book a free 20-minute call ›</a>
           </div>
         </div>
 
@@ -671,14 +696,6 @@
     <div><p class="text-[13px] font-semibold text-white">GovProposalPro</p><p class="text-xs text-mist-400">From $199/mo, or pay in full</p></div>
     <a href="__CTA_URL__" class="btn-sm px-5 py-2.5 text-sm" tabindex="-1">Get access</a>
   </div>
-
-  <!-- Demo video: the YouTube player loads only after a click (youtube-nocookie). -->
-  <dialog id="vsl" class="co" aria-label="GovProposalPro demo video">
-    <div class="co-panel co-panel-wide">
-      <div class="co-head"><p class="co-title">See GovProposalPro in action</p><button type="button" class="co-x" data-co-close aria-label="Close video"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-      <div class="vsl-frame" id="vsl-frame"></div>
-    </div>
-  </dialog>
 
   <!-- Embedded Whop checkout: the edition, then its monthly access plan, then the login email. site.js runs it. -->
   <dialog id="checkout" class="co" aria-labelledby="co-title"
