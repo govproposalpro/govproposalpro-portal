@@ -42,6 +42,31 @@ router.patch('/me/profile', requireAuth, express.json({ limit: '128kb' }), async
   }
 });
 
+// Company logo for the proposal PDF header and cover page. Small PNG or JPEG only.
+const MAX_LOGO_CHARS = 400_000;
+router.get('/me/logo', requireAuth, async (req, res, next) => {
+  try {
+    const { rows } = await db.query('SELECT logo_data FROM "Users" WHERE id = $1', [req.user.id]);
+    res.json({ logo: (rows[0] && rows[0].logo_data) || null });
+  } catch (err) { next(err); }
+});
+router.put('/me/logo', requireAuth, express.json({ limit: '600kb' }), async (req, res, next) => {
+  try {
+    const v = req.body && req.body.logo;
+    if (v === null) {
+      await db.query('UPDATE "Users" SET logo_data = NULL WHERE id = $1', [req.user.id]);
+      return res.json({ ok: true });
+    }
+    const m = typeof v === 'string' && v.length <= MAX_LOGO_CHARS && v.match(/^data:image\/(png|jpeg);base64,([A-Za-z0-9+/]+=*)$/);
+    if (!m) return res.status(400).json({ error: 'Upload a PNG or JPG logo under 250 KB.' });
+    const bytes = Buffer.from(m[2], 'base64');
+    const real = m[1] === 'png' ? bytes.subarray(1, 4).toString('latin1') === 'PNG' : bytes[0] === 0xff && bytes[1] === 0xd8;
+    if (!real) return res.status(400).json({ error: 'That file is not a valid image.' });
+    await db.query('UPDATE "Users" SET logo_data = $2 WHERE id = $1', [req.user.id, v]);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 router.post('/me/onboarding/complete', requireAuth, async (req, res, next) => {
   try {
     // The minimum every proposal needs to be about this company rather than placeholders.

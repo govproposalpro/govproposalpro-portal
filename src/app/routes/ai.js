@@ -332,7 +332,7 @@ router.get('/proposals', requireAuth, requireFeature('proposal_engine'), async (
 router.get('/proposals/:id', requireAuth, requireFeature('proposal_engine'), async (req, res, next) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, bid_id AS "bidId", title, status, error, content_md AS "contentMd", created_at AS "createdAt"
+      `SELECT id, bid_id AS "bidId", rfp_summary_id AS "rfpSummaryId", title, status, error, content_md AS "contentMd", created_at AS "createdAt"
          FROM proposals WHERE id = $1 AND user_id = $2`,
       [toId(req.params.id), req.user.id]
     );

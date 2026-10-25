@@ -72,7 +72,7 @@ router.post('/register', registerLimiter, express.json({ limit: '8kb' }), async 
 
     if (inserted.rowCount === 0) {
       return res.status(409).json({
-        error: 'An account already exists for this email. Your access will arrive on Sunday, October 18th.',
+        error: 'An account already exists for this email. Sign in at govproposalpro.com/app/login.',
         field: 'email',
       });
     }

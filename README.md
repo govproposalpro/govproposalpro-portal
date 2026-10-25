@@ -100,7 +100,11 @@ past performance). The Subcontracting Limits Checker (FAR 52.219-14) runs entire
 | `src/app/tiers.js` | Tier caps and the feature list; the server enforces it and the UI renders locks from it. |
 | `src/app/session.js` | Server-side sessions (HttpOnly `__Host-` cookie, SHA-256 at rest), purchase re-check on every request, same-origin guard. |
 | `src/app/quota.js` | Monthly proposal cap with an advisory lock so parallel clicks can't overshoot it. |
-| `src/app/ai.js` | Claude calls (model `claude-opus-5-5`, adaptive thinking, server-side refusal fallback). |
+| `src/app/ai.js` | Claude calls (model `claude-opus-5-5`, adaptive thinking, server-side refusal fallback). Small extraction jobs use `ANTHROPIC_MODEL_LIGHT` (default `claude-haiku-5-5`). |
+| `src/app/autopilot.js` | Enterprise GovCon Autopilot: finds, reads, prices and writes bids on demand, on the member's own SAM.gov and Anthropic keys. |
+| `src/app/secrets.js` | AES-256-GCM encryption for the keys and mailbox passwords members give the Autopilot. |
+| `src/app/market.js` | Comparable federal awards from USAspending.gov (free, no key) for real market pricing. |
+| `src/app/mailbox.js` | Sends quote requests from the member's own mailbox (SMTP) and reads vendor replies (IMAP). |
 | `frontend/app/` | Dashboard source. `npm run build` writes `public/app/`. |
 
 Security notes: a refund or cancellation (Whop webhook sets `revoked_at`) ends every session on the
@@ -108,12 +112,25 @@ member's next request; tier comes from the live purchase record; the CSP allows 
 scripts and styles; uploaded RFPs are sent to Claude and never stored, only the summary is.
 
 Env: `ANTHROPIC_API_KEY` (required for AI features), `APP_LAUNCH_AT` (sign-in opens at this time),
-`APP_EARLY_ACCESS_EMAILS` (team accounts allowed in early), `DECRYPTS_PER_DAY` (default 25), `DOCS_PER_DAY` (default 15), `AI_DAILY_CALL_CAP` (site-wide Claude calls per day, default 300).
+`APP_EARLY_ACCESS_EMAILS` (team accounts allowed in early), `DECRYPTS_PER_DAY` (default 25), `DOCS_PER_DAY` (default 15), `AI_DAILY_CALL_CAP` (site-wide Claude calls per day, default 300),
+`KEY_ENCRYPTION_SECRET` (encrypts members' Autopilot keys; Render generates it, never change it once members have saved keys).
+
+### GovCon Autopilot (Enterprise)
+
+The member describes their business once; the Autopilot works out NAICS codes and search words, then each time they press Run it
+checks the inbox for vendor quotes, searches SAM.gov with **their** API key, reads each solicitation and its attachments, skips
+no-go bids, checks USAspending for what similar contracts paid, finds subcontractors on SAM.gov and emails them for quotes from the
+member's own mailbox, prices every line item at their overhead and profit margin, and writes the proposal. It stops at the
+member's daily quota (1 to 5 finished bids) and never runs on a timer. All Claude calls in a run use the member's own Anthropic
+key, so they cost the platform nothing and don't count toward the monthly proposal allowance or `AI_DAILY_CALL_CAP`.
 
 ## Landing page and contract-win popups
 
 - `govproposalpro.com/` (any host that is not `access.*`) serves the landing page from `frontend/site/`; `access.govproposalpro.com/` and `/access` serve signup.
-- Buy buttons use `SITE_CTA_URL`, `WHOP_CORE_CHECKOUT_URL` and `WHOP_ENTERPRISE_CHECKOUT_URL` (https only).
+- Pricing has a Monthly / Pay in full toggle. Buy buttons open Whop's embedded checkout on the page (`frontend/site/site.js`): pay in full runs the edition plan, then its monthly access plan; monthly runs the $199 or $999 plan alone. Plan ids default to the live plans and can be overridden with `WHOP_CORE_PLAN_ID`, `WHOP_ENTERPRISE_PLAN_ID`, `WHOP_CORE_ACCESS_PLAN_ID`, `WHOP_ENTERPRISE_ACCESS_PLAN_ID`, `WHOP_CORE_MONTHLY_PLAN_ID` and `WHOP_ENTERPRISE_MONTHLY_PLAN_ID`. Each button keeps a whop.com link as the fallback, and `SITE_CHECKOUT_MODE=link` turns the embed off. Only the landing page's CSP allows Whop's script and iframe.
+- Access rules (`src/routes/whopWebhook.js`): a pay-in-full edition keeps access when its maintenance plan lapses and only a refund revokes it; a monthly plan's access ends when that membership ends (`authorized_purchasers.billing`).
+- Optional, hidden until set: `CORE_ACCESS_MONTHLY_PRICE` / `ENTERPRISE_ACCESS_MONTHLY_PRICE` (the "save" line), `BOOKING_URL` (Book a call, also in purchase emails), `SITE_VSL_YOUTUBE_ID` (Watch the demo; the player loads only on click).
+- `/earnings-disclaimer` is linked from the footer, calculator, wins wall and FAQ.
 - Win popups read `/api/public/wins` (40 random published wins, CORS open, rate limited). Manage them in Admin > Contract wins. The 500 starting wins in `db/seed/contract-wins.json` load once when the table is empty.
 - The landing page's live pill, member wins wall and agency strip read `/api/public/wins/stats` (published wins only, cached 5 minutes). Those sections stay hidden if there are no published wins.
 - The site font is Inter, self-hosted in `public/assets/fonts/` under the SIL Open Font License.

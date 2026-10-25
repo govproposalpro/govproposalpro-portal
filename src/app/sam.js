@@ -7,8 +7,10 @@
  * one with a role gets 1,000.
  */
 
-const BASE = 'https://api.sam.gov/entity-information/v4';
-const OPPORTUNITIES = 'https://api.sam.gov/opportunities/v2/search';
+// SAM_API_BASE_URL only exists so tests can point at a local stand-in.
+const ORIGIN = (process.env.SAM_API_BASE_URL || 'https://api.sam.gov').replace(/\/$/, '');
+const BASE = `${ORIGIN}/entity-information/v4`;
+const OPPORTUNITIES = `${ORIGIN}/opportunities/v2/search`;
 const UEI_RE = /^[A-Z0-9]{12}$/;
 
 const enabled = () => Boolean(process.env.SAM_API_KEY);
@@ -17,12 +19,14 @@ class SamError extends Error {
   constructor(message, userMessage) { super(message); this.userMessage = userMessage; }
 }
 
-async function get(path, params) {
-  const url = new URL(path.startsWith('https://') ? path : `${BASE}/${path}`);
-  url.searchParams.set('api_key', process.env.SAM_API_KEY);
+/** apiKey: a member's own key (Autopilot); defaults to the platform key. */
+async function get(path, params, apiKey = process.env.SAM_API_KEY) {
+  const url = new URL(/^https?:\/\//.test(path) ? path : `${BASE}/${path}`);
+  url.searchParams.set('api_key', apiKey);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const res = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(20_000) });
   if (res.status === 429) throw new SamError('SAM.gov 429', 'SAM.gov lookup limit reached for today. Try again tomorrow.');
+  if (res.status === 401 || res.status === 403) throw new SamError(`SAM.gov ${res.status}`, 'SAM.gov did not accept the API key. Check it in SAM.gov under Account Details.');
   if (res.status === 404) return {};
   if (!res.ok) throw new SamError(`SAM.gov ${path} -> ${res.status}`);
   return res.json();
@@ -95,12 +99,12 @@ const mmddyyyy = (d) => `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${Strin
  * Open solicitations posted in the last `days` days for one NAICS code (Predictive Bid Matchmaker).
  * Notice types: o solicitation, k combined synopsis/solicitation, p presolicitation, r sources sought.
  */
-async function searchOpportunities(naics, days = 30) {
+async function searchOpportunities(naics, days = 30, { apiKey, types = 'o,k,p,r' } = {}) {
   const to = new Date();
   const from = new Date(Date.now() - days * 86400000);
   const data = await get(OPPORTUNITIES, {
-    postedFrom: mmddyyyy(from), postedTo: mmddyyyy(to), ncode: naics, ptype: 'o,k,p,r', limit: '100', offset: '0',
-  });
+    postedFrom: mmddyyyy(from), postedTo: mmddyyyy(to), ncode: naics, ptype: types, limit: '100', offset: '0',
+  }, apiKey);
   return (data.opportunitiesData || []).filter((o) => o.active !== 'No').map((o) => {
     const pop = o.placeOfPerformance || {};
     const poc = (o.pointOfContact || [])[0] || {};
@@ -108,7 +112,7 @@ async function searchOpportunities(naics, days = 30) {
       noticeId: o.noticeId,
       title: o.title,
       solicitationNumber: o.solicitationNumber,
-      agency: (o.fullParentPathName || '').split('.').slice(0, 2).join(' / '),
+      agency: [...new Set((o.fullParentPathName || '').split('.').slice(0, 2))].join(' / '),
       office: (o.fullParentPathName || '').split('.').slice(-1)[0],
       type: o.type,
       postedDate: o.postedDate,
@@ -120,12 +124,14 @@ async function searchOpportunities(naics, days = 30) {
       city: (pop.city && pop.city.name) || '',
       contact: [poc.fullName, poc.email].filter(Boolean).join(', '),
       url: o.uiLink || `https://sam.gov/opp/${o.noticeId}/view`,
+      descriptionUrl: /^https:\/\//.test(o.description || '') ? o.description : '',
+      resourceLinks: (o.resourceLinks || []).filter((l) => /^https:\/\//.test(l)).slice(0, 10),
     };
   });
 }
 
 /** Active SAM.gov registrants for a NAICS code in one state (Smart Vendor Scraper). One page of 10. */
-async function searchEntities({ naics, state }) {
+async function searchEntities({ naics, state }, apiKey) {
   const data = await get('entities', {
     naicsCode: naics,
     physicalAddressProvinceOrStateCode: state,
@@ -133,7 +139,7 @@ async function searchEntities({ naics, state }) {
     includeSections: 'entityRegistration,coreData,pointsOfContact',
     page: '0',
     size: '10',
-  });
+  }, apiKey);
   return {
     total: data.totalRecords || 0,
     entities: (data.entityData || []).map((e) => {
@@ -151,9 +157,46 @@ async function searchEntities({ naics, state }) {
         website: (c.entityInformation && c.entityInformation.entityURL) || '',
         contactName: [poc.firstName, poc.lastName].filter(Boolean).join(' '),
         contactTitle: poc.title || '',
+        email: poc.email || '',
+        phone: poc.USPhone || '',
       };
     }),
   };
 }
 
-module.exports = { enabled, vet, searchOpportunities, searchEntities, SamError };
+/** The full notice text behind an opportunity's description link (needs an API key). */
+async function noticeDescription(descriptionUrl, apiKey) {
+  if (!descriptionUrl) return '';
+  const url = new URL(descriptionUrl);
+  if (!/(^|\.)sam\.gov$/.test(url.hostname) && !process.env.SAM_API_BASE_URL) return '';
+  const data = await get(url.toString(), {}, apiKey).catch(() => ({}));
+  const html = String(data.description || '');
+  return html.replace(/<br\s*\/?>|<\/p>/gi, '\n').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
+    .replace(/[ \t]+/g, ' ').replace(/\n\s*\n+/g, '\n\n').trim().slice(0, 200_000);
+}
+
+const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024;
+
+/**
+ * Downloads one solicitation attachment from SAM.gov (public files). Returns
+ * { name, bytes } or null when it is missing, too big or not a PDF or Word file.
+ */
+async function downloadAttachment(link) {
+  const url = new URL(link);
+  if (!/(^|\.)sam\.gov$/.test(url.hostname) && !process.env.SAM_API_BASE_URL) return null;
+  const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(60_000) }).catch(() => null);
+  if (!res || !res.ok) return null;
+  const len = Number(res.headers.get('content-length') || 0);
+  if (len > MAX_ATTACHMENT_BYTES) return null;
+  const bytes = Buffer.from(await res.arrayBuffer());
+  if (bytes.length > MAX_ATTACHMENT_BYTES) return null;
+  const cd = res.headers.get('content-disposition') || '';
+  const m = cd.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+  const name = decodeURIComponent((m && m[1]) || url.pathname.split('/').pop() || 'attachment').slice(0, 200);
+  const isPdf = bytes.subarray(0, 5).toString('latin1') === '%PDF-';
+  const isDocx = bytes.subarray(0, 2).toString('latin1') === 'PK' && /\.docx$/i.test(name);
+  if (!isPdf && !isDocx) return null;
+  return { name, bytes, kind: isPdf ? 'pdf' : 'docx' };
+}
+
+module.exports = { enabled, vet, searchOpportunities, searchEntities, noticeDescription, downloadAttachment, SamError };

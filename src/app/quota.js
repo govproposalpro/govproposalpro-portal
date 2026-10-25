@@ -10,7 +10,7 @@ const db = require('../db');
 const { TIERS, normalizeTier } = require('./tiers');
 
 const COUNT_SQL = `SELECT count(*)::int AS used FROM proposals
-                    WHERE user_id = $1 AND status <> 'failed'
+                    WHERE user_id = $1 AND status <> 'failed' AND NOT own_key
                       AND created_at >= date_trunc('month', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 
 function resetsAt() {

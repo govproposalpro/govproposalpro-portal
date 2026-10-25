@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GovProposalPro: win government contracts</title>
-  <meta name="description" content="GovProposalPro by Contract Bros is the Command Center for small businesses that win government contracts: decrypt solicitations, find subcontractors, price to win and write compliant proposals in minutes." />
+  <title>GovProposalPro: your government contracting assistant</title>
+  <meta name="description" content="GovProposalPro by Contract Bros is a full government contracting assistant: it finds contracts, decodes the solicitation, prices from real federal award data and writes compliant, award-ready proposals. Enterprise runs the whole bid for you." />
   <meta name="theme-color" content="#000000" />
   <link rel="icon" type="image/png" href="/assets/gpp-favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -12,7 +12,7 @@
   <link rel="preload" href="/assets/site/command-center.webp" as="image" type="image/webp" imagesrcset="/assets/site/command-center-900.webp 900w, /assets/site/command-center.webp 1600w" imagesizes="(min-width: 1200px) 1120px, 92vw" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="GovProposalPro by Contract Bros" />
-  <meta property="og:description" content="Decrypt the solicitation. Price to win. Submit a compliant proposal in minutes." />
+  <meta property="og:description" content="Find the contract. Price it from real award data. Submit a compliant, award-ready proposal. Or let the Autopilot do all of it." />
   <meta property="og:image" content="https://govproposalpro.com/assets/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/site/static/site.css?v=__VERSION__" />
@@ -30,8 +30,8 @@
         <span class="text-[15px] font-semibold tracking-tight text-white">GovProposal<span class="text-mist-400">Pro</span></span>
       </a>
       <nav class="hidden items-center gap-8 text-[13px] text-mist-300 md:flex" aria-label="Main">
+        <a href="#autopilot" class="nav-a">Autopilot</a>
         <a href="#how" class="nav-a">How it works</a>
-        <a href="#features" class="nav-a">Features</a>
         <a href="#wins" class="nav-a">Wins</a>
         <a href="#editions" class="nav-a">Pricing</a>
         <a href="#faq" class="nav-a">FAQ</a>
@@ -45,7 +45,7 @@
       </div>
     </div>
     <div id="menu" class="hidden border-t border-white/10 bg-black/95 px-4 pb-4 md:hidden">
-      <a href="#how" class="menu-a">How it works</a><a href="#features" class="menu-a">Features</a><a href="#wins" class="menu-a">Wins</a>
+      <a href="#autopilot" class="menu-a">Autopilot</a><a href="#how" class="menu-a">How it works</a><a href="#wins" class="menu-a">Wins</a>
       <a href="#editions" class="menu-a">Pricing</a><a href="#faq" class="menu-a">FAQ</a><a href="/app/login" class="menu-a">Sign in</a>
     </div>
   </header>
@@ -63,15 +63,20 @@
           <span id="live-pill-text">Real contract wins from our members</span>
           <span class="text-mist-500" aria-hidden="true">›</span>
         </a>
-        <h1 class="reveal display mt-7">Win government contracts.<br /><span class="grad-text">Skip the paperwork.</span></h1>
-        <p class="reveal lede mx-auto mt-6 max-w-2xl">Decrypt the solicitation, line up subcontractors, price to win and submit a compliant proposal in minutes. One Command Center for every step from bid to paid.</p>
+        <h1 class="reveal display mt-7">Your government contracting team.<br /><span class="grad-text">In one system.</span></h1>
+        <p class="reveal lede mx-auto mt-6 max-w-2xl">GovProposalPro surfaces public contract opportunities, decodes the solicitation, prices from real federal award data and writes compliant, award-ready proposals in the format contracting officers expect. On Enterprise, the Autopilot runs the whole bid for you.</p>
         <div class="reveal mt-9 flex flex-wrap items-center justify-center gap-3">
           <a href="__CTA_URL__" class="btn-lg btn-shine">Get access <span aria-hidden="true">→</span></a>
-          <a href="#how" class="btn-lg-ghost">See how it works <span aria-hidden="true">›</span></a>
+          <button type="button" class="btn-lg-ghost" data-vsl hidden><svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Watch the demo</button>
+          <a href="#autopilot" class="btn-lg-ghost" data-vsl-alt>See the Autopilot <span aria-hidden="true">›</span></a>
+        </div>
+        <div class="reveal chooser mx-auto mt-10 max-w-2xl" role="group" aria-label="Where are you starting?">
+          <a href="#path-new" class="choose"><span class="choose-k">Start here if</span><span class="choose-h">I'm new to government contracting</span><span class="choose-a" aria-hidden="true">›</span></a>
+          <a href="#path-pro" class="choose"><span class="choose-k">Start here if</span><span class="choose-h">I already bid on contracts</span><span class="choose-a" aria-hidden="true">›</span></a>
         </div>
         <p class="reveal mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-mist-500">
-          <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secure checkout by Whop</span>
-          <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>One-time purchase</span>
+          <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secure checkout by Whop, right on this page</span>
+          <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Start at $199/mo, or pay in full and save</span>
           <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>Login in your inbox after purchase</span>
         </p>
       </div>
@@ -90,8 +95,8 @@
           <span><span class="fc-kicker">Go/No-Go</span><span class="block font-semibold text-white">Go. You qualify.</span><span class="block text-mist-500">Set-aside, NAICS and SAM.gov match</span></span>
         </div>
         <div class="float-card fc-right" aria-hidden="true">
-          <span class="fc-icon"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-          <span><span class="fc-kicker">Compliance matrix</span><span class="block font-semibold text-white">5 of 5 requirements answered</span><span class="block text-mist-500">Proposal ready for review</span></span>
+          <span class="fc-icon"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+          <span><span class="fc-kicker">Autopilot</span><span class="block font-semibold text-white">Proposal ready for review</span><span class="block text-mist-500">Found, priced and written today</span></span>
         </div>
       </div>
     </section>
@@ -102,35 +107,111 @@
       <div class="marquee mt-6"><div class="marquee-track" id="agency-track"></div></div>
     </section>
 
-    <!-- The old way vs with GovProposalPro -->
+    <!-- Why: compliant, award-ready proposals and a full assistant -->
     <section id="why" class="section">
       <div class="mx-auto max-w-6xl">
         <div class="reveal mx-auto max-w-3xl text-center">
           <p class="eyebrow">Why GovProposalPro</p>
-          <h2 class="h2">Bidding used to take weeks.<br class="hidden sm:block" /> <span class="text-mist-500">Now it takes an afternoon.</span></h2>
+          <h2 class="h2">Proposals built to win.<br class="hidden sm:block" /> <span class="grad-text">Not just to submit.</span></h2>
+          <p class="lede mx-auto mt-5 max-w-2xl">Most bids are thrown out for compliance before anyone looks at the price. GovProposalPro answers every requirement in your solicitation, in a proposal that reads like it came from a capture team.</p>
         </div>
-        <div class="mt-14 grid gap-4 lg:grid-cols-2">
+
+        <div class="mt-14 grid gap-4 md:grid-cols-3">
+          <article class="proof glow reveal">
+            <span class="proof-n">01</span>
+            <h3 class="proof-h">Compliant by construction</h3>
+            <p class="proof-p">Every FAR clause and instruction in your solicitation and amendments is read and answered. Nothing is invented: anything it can't confirm is flagged for you.</p>
+          </article>
+          <article class="proof glow reveal">
+            <span class="proof-n">02</span>
+            <h3 class="proof-h">Built the way you're graded</h3>
+            <p class="proof-p">A compliance matrix mapped to the evaluation criteria, so the reviewer finds every answer where they expect it. Enterprise grades your draft against Section M first.</p>
+          </article>
+          <article class="proof glow reveal">
+            <span class="proof-n">03</span>
+            <h3 class="proof-h">Looks like a winner</h3>
+            <p class="proof-p">Cover page, table of contents, numbered parts and clean price tables with your logo on every page. Export a PDF or Word file that's ready to submit.</p>
+          </article>
+        </div>
+
+        <div class="mt-4 grid gap-4 lg:grid-cols-2">
           <div class="reveal compare compare-old">
-            <p class="compare-h">The old way</p>
+            <p class="compare-h">Doing it alone</p>
             <ul class="compare-list">
+              <li><b>Scrolling SAM.gov</b> for hours hoping something fits what you do.</li>
               <li><b>Reading 80 pages</b> of solicitation and amendments to find what actually matters.</li>
-              <li><b>Guessing</b> whether you even qualify for the set-aside.</li>
               <li><b>Cold-calling</b> subcontractors one by one and waiting on quotes.</li>
-              <li><b>Pricing on a napkin</b> and hoping the margin holds.</li>
+              <li><b>Pricing on a napkin</b> with no idea what the government paid last time.</li>
               <li><b>A blank page</b> and a deadline, with FAR clauses you have never seen.</li>
               <li><b>Chasing payment</b> because the invoice was not in the right format.</li>
             </ul>
           </div>
           <div class="reveal compare compare-new">
-            <p class="compare-h"><span class="grad-text">With GovProposalPro</span></p>
+            <p class="compare-h"><span class="grad-text">With your GovProposalPro assistant</span></p>
             <ul class="compare-list">
+              <li><b>Public SAM.gov opportunities surfaced for you</b>, ranked by how well they fit your business.</li>
               <li><b>A plain-English brief</b> of the whole solicitation, with dates, clauses and the contracting officer.</li>
-              <li><b>A Go/No-Go score</b> against your set-asides, NAICS codes and SAM.gov status.</li>
-              <li><b>SAM.gov registered subs</b> found by NAICS and state, with a quote request sequence ready to send.</li>
-              <li><b>A price sheet</b> with overhead and markup, so you see your profit before you bid.</li>
-              <li><b>A compliant draft</b> that answers the clauses in your solicitation and flags what you need to confirm.</li>
-              <li><b>SF-1034 vouchers</b> ready to upload, plus milestones so nothing slips after award.</li>
+              <li><b>SAM.gov registered subs</b> found by NAICS and state, with quote requests ready to send.</li>
+              <li><b>A price built on real data</b>: past federal awards, your quotes, your overhead and your margin.</li>
+              <li><b>A compliant, formatted proposal</b> that answers your solicitation, ready for your review.</li>
+              <li><b>SF-1034 vouchers</b> and milestones, so nothing slips after award.</li>
             </ul>
+          </div>
+        </div>
+        <p class="reveal mx-auto mt-10 max-w-2xl text-center text-lg leading-relaxed text-mist-300">Your proposal team, pricing analyst and bid manager, in one login. A full government contracting assistant for research, outreach, pricing, writing and invoicing, <span class="text-white">without the payroll.</span></p>
+      </div>
+    </section>
+
+    <!-- Live wins wall -->
+    <section id="wins" class="section hidden-until-data relative overflow-hidden border-y border-white/[0.06] bg-ink-900/50">
+      <div class="wins-glow" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">Member wins</p>
+          <h2 class="h2">Real contracts.<br class="hidden sm:block" /> <span class="grad-text">Won by people like you.</span></h2>
+        </div>
+        <div class="reveal mt-12 grid grid-cols-3 gap-2 sm:gap-4">
+          <div class="stat"><p class="stat-n" data-count="total" data-format="money">$0</p><p class="stat-l">in contracts won by members</p></div>
+          <div class="stat"><p class="stat-n" data-count="count">0</p><p class="stat-l">wins reported</p></div>
+          <div class="stat"><p class="stat-n" data-count="agencies">0</p><p class="stat-l">agencies and departments</p></div>
+        </div>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" id="wins-grid"></div>
+        <p class="reveal mt-6 text-center text-xs text-mist-500">Contract wins reported by Contract Bros members. Names are shortened for privacy. These are not typical results, and yours depend on what you bid and win. <a href="/earnings-disclaimer" class="underline hover:text-white">Earnings disclaimer</a>.</p>
+      </div>
+    </section>
+
+    <!-- ROI calculator -->
+    <section id="roi" class="section">
+      <div class="mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">Do the math</p>
+          <h2 class="h2">Is the bid worth it?<br class="hidden sm:block" /> <span class="text-mist-500">One contract can answer that.</span></h2>
+          <p class="lede mx-auto mt-5 max-w-2xl">Move the sliders to a contract you would bid on and see what one award at your margin is worth.</p>
+        </div>
+        <div class="reveal calc mt-12">
+          <div class="calc-inputs">
+            <div>
+              <div class="flex items-baseline justify-between"><label for="roi-value" class="calc-label">Contract value</label><output id="roi-value-out" for="roi-value" class="calc-out">$25,000</output></div>
+              <input id="roi-value" type="range" min="10000" max="2000000" step="5000" value="25000" class="range" />
+            </div>
+            <div>
+              <div class="flex items-baseline justify-between"><label for="roi-margin" class="calc-label">Your profit margin</label><output id="roi-margin-out" for="roi-margin" class="calc-out">15%</output></div>
+              <input id="roi-margin" type="range" min="5" max="40" step="1" value="15" class="range" />
+            </div>
+            <fieldset>
+              <legend class="calc-label">Edition</legend>
+              <div class="seg mt-3" id="roi-edition">
+                <label><input type="radio" name="roi-ed" value="997" checked /><span>Core · $997</span></label>
+                <label><input type="radio" name="roi-ed" value="4997" /><span>Enterprise · $4,997</span></label>
+              </div>
+            </fieldset>
+          </div>
+          <div class="calc-result">
+            <p class="text-sm font-medium text-mist-400">Profit on one contract</p>
+            <p class="calc-big" id="roi-profit">$3,750</p>
+            <p class="mt-4 text-lg text-mist-300"><span id="roi-multiple" class="font-semibold text-white">3.8×</span> the <span id="roi-ed-name">Core Edition</span> price.</p>
+            <p class="mt-4 text-sm leading-relaxed text-mist-400">This is math on a contract you'd still have to win, not a prediction. Most new contractors bid for months before a first award, and many never win one. <a href="/earnings-disclaimer" class="text-brand-blueSoft hover:text-white">Earnings disclaimer</a>.</p>
+            <a href="__CTA_URL__" class="btn-lg mt-6 w-full">Get access</a>
           </div>
         </div>
       </div>
@@ -159,7 +240,7 @@
               <span class="tour-num">04</span><span class="tour-body"><span class="tour-title">Price to win</span><span class="tour-text">Sub quotes plus overhead and markup, with fully loaded labor rates on Enterprise. See your margin before you bid.</span></span><span class="tour-bar"><i></i></span>
             </button>
             <button class="tour-tab" role="tab" aria-selected="false" aria-controls="tour-panel" data-step="4" type="button">
-              <span class="tour-num">05</span><span class="tour-body"><span class="tour-title">Write the proposal</span><span class="tour-text">A compliant draft with a compliance matrix, built from your solicitation, your profile and your price.</span></span><span class="tour-bar"><i></i></span>
+              <span class="tour-num">05</span><span class="tour-body"><span class="tour-title">Write the proposal</span><span class="tour-text">A compliant, formatted proposal with a compliance matrix, built from your solicitation, your profile and your price.</span></span><span class="tour-bar"><i></i></span>
             </button>
             <button class="tour-tab" role="tab" aria-selected="false" aria-controls="tour-panel" data-step="5" type="button">
               <span class="tour-num">06</span><span class="tour-body"><span class="tour-title">Get paid</span><span class="tour-text">SF-1034 public vouchers with SF-1035 continuation, ready for the payment system in your contract.</span></span><span class="tour-bar"><i></i></span>
@@ -180,13 +261,152 @@
       </div>
     </section>
 
-    <!-- Core features -->
-    <section id="features" class="section">
+    <!-- Two starting points: new to GovCon, or already bidding -->
+    <section id="paths" class="section border-t border-white/[0.06]">
       <div class="mx-auto max-w-6xl">
         <div class="reveal mx-auto max-w-3xl text-center">
-          <p class="eyebrow">Core Edition</p>
+          <p class="eyebrow">Wherever you're starting</p>
+          <h2 class="h2">Built for your first bid.<br class="hidden sm:block" /> <span class="grad-text">And your fiftieth.</span></h2>
+        </div>
+        <div class="mt-14 grid gap-4 lg:grid-cols-2">
+          <article id="path-new" class="mode glow reveal">
+            <p class="text-sm font-semibold text-brand-blueSoft">New to government contracting</p>
+            <h3 class="mode-h">Learn by bidding, with a guide on every screen.</h3>
+            <ul class="plan-list mt-6">
+              <li>A step-by-step SAM.gov registration checklist, so you're eligible to be awarded.</li>
+              <li>Plain-English briefs that explain what each solicitation is really asking for.</li>
+              <li>A Go/No-Go score that tells you which bids are realistic for a new business.</li>
+              <li>A FAR 52.219-14 checker that shows how much of the work you can subcontract.</li>
+              <li>Proposals that look like they came from a seasoned prime, from day one.</li>
+            </ul>
+            <p class="mt-6 text-sm leading-relaxed text-mist-400">Honest expectations: most new contractors bid for months before a first award. The goal is to make every one of those bids faster, cheaper and more competitive.</p>
+          </article>
+          <article id="path-pro" class="mode mode-ent glow reveal">
+            <p class="text-sm font-semibold"><span class="grad-text">Already bidding</span></p>
+            <h3 class="mode-h">Bid on more, and spend less time on each one.</h3>
+            <ul class="plan-list mt-6">
+              <li>The GovCon Autopilot searches, quotes, prices and writes while you run jobs.</li>
+              <li>Market price checks from real federal award data before you set a number.</li>
+              <li>Section M grading, RFI drafting and teaming agreements on Enterprise.</li>
+              <li>Fully loaded labor rates with fringe, overhead, G&amp;A and fee.</li>
+              <li>Milestones and SF-1034 invoicing after award, so you get paid on time.</li>
+            </ul>
+            <p class="mt-6 text-sm leading-relaxed text-mist-400">Already using a proposal writer? Compare the cost of one outsourced proposal with a whole year here.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Proposal format showcase -->
+    <section id="format" class="section relative overflow-hidden border-t border-white/[0.06]">
+      <div class="ent-glow" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">The finished proposal</p>
+          <h2 class="h2">Proposals that look<br class="hidden sm:block" /> <span class="grad-text">like winners.</span></h2>
+          <p class="lede mx-auto mt-5 max-w-2xl">The same structure contracting officers see from established primes, generated from your solicitation and your business. Download it as a PDF or Word file.</p>
+        </div>
+        <div class="reveal pages mt-14" id="pages">
+          <figure class="page-card"><img src="/assets/site/proposal-cover.webp" alt="Proposal cover page with the company logo, Submitted To and Offeror blocks, solicitation number and response date" width="900" height="1165" loading="lazy" /><figcaption>Cover page</figcaption></figure>
+          <figure class="page-card"><img src="/assets/site/proposal-toc.webp" alt="Table of contents with numbered parts and page numbers" width="900" height="1165" loading="lazy" /><figcaption>Table of contents</figcaption></figure>
+          <figure class="page-card"><img src="/assets/site/proposal-part.webp" alt="Part 2 Technical Proposal with numbered sections" width="900" height="1165" loading="lazy" /><figcaption>Technical approach</figcaption></figure>
+          <figure class="page-card"><img src="/assets/site/proposal-price.webp" alt="Part 3 Price Proposal with a detailed pricing table and total cost summary" width="900" height="1165" loading="lazy" /><figcaption>Price proposal</figcaption></figure>
+        </div>
+        <p class="reveal mt-5 text-center text-xs text-mist-500">Sample pages generated for a fictional company. Your proposal uses your logo, your business details and your solicitation.</p>
+        <div class="reveal mt-10 flex flex-wrap justify-center gap-2">
+          <span class="chip">Cover page with your logo</span><span class="chip">Table of contents with page numbers</span><span class="chip">Executive summary and compliance statement</span>
+          <span class="chip">Numbered technical sections</span><span class="chip">Detailed price tables</span><span class="chip">Compliance matrix</span><span class="chip">Signature block</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two editions, two ways to work -->
+    <section id="modes" class="section border-t border-white/[0.06]">
+      <div class="mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">Two ways to win</p>
+          <h2 class="h2">You drive.<br class="hidden sm:block" /> <span class="grad-text">Or it drives for you.</span></h2>
+        </div>
+        <div class="mt-14 grid gap-4 lg:grid-cols-2">
+          <article class="mode glow reveal">
+            <p class="text-sm font-semibold text-brand-blueSoft">Core Edition</p>
+            <h3 class="mode-h">You upload. It writes.</h3>
+            <p class="mode-p">You pick the solicitation. GovProposalPro does the heavy lifting from there.</p>
+            <ol class="mode-steps">
+              <li><b>Upload</b> the solicitation and amendments.</li>
+              <li><b>Read</b> the plain-English brief and your Go/No-Go score.</li>
+              <li><b>Line up</b> subs and quotes, and set your price.</li>
+              <li><b>Download</b> a compliant, formatted proposal to review and submit.</li>
+            </ol>
+          </article>
+          <article class="mode mode-ent glow reveal">
+            <p class="text-sm font-semibold"><span class="grad-text">Enterprise Edition</span></p>
+            <h3 class="mode-h">It does it all.</h3>
+            <p class="mode-p">Tell it about your business once. Press Run, and the Autopilot works the whole bid.</p>
+            <ol class="mode-steps">
+              <li><b>Searches</b> public SAM.gov solicitations that fit you.</li>
+              <li><b>Emails</b> vendors for quotes and reads their replies.</li>
+              <li><b>Prices</b> from real federal award data and your margin.</li>
+              <li><b>Writes</b> the proposal. You review it and submit.</li>
+            </ol>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- GovCon Autopilot (Enterprise) -->
+    <section id="autopilot" class="section relative overflow-hidden border-t border-white/[0.06]">
+      <div class="ap-glow" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow-ent">Enterprise · GovCon Autopilot</p>
+          <h2 class="h2">Your contracting business.<br class="hidden sm:block" /> <span class="grad-text">On autopilot.</span></h2>
+          <p class="lede mx-auto mt-5 max-w-2xl">Whether you mow lawns, haul freight or run a subcontracting shop, the Autopilot learns what you do, searches public SAM.gov notices that fit and builds the bid. You decide how many a day, and it only runs when you say go.</p>
+        </div>
+
+        <div class="reveal shot mt-14">
+          <div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span><em>GovCon Autopilot</em></div>
+          <img src="/assets/site/autopilot.webp" srcset="/assets/site/autopilot-900.webp 900w, /assets/site/autopilot.webp 1600w" sizes="(min-width: 1200px) 1120px, 92vw" alt="The GovCon Autopilot with today's run log and bids moving from found to priced to ready" width="1600" height="1000" class="block w-full" loading="lazy" />
+        </div>
+
+        <div class="mt-16 grid items-start gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+          <div class="reveal">
+            <h3 class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">One press of Run.<br /> <span class="text-mist-500">Eight jobs done.</span></h3>
+            <p class="mt-4 text-lg leading-relaxed text-mist-400">Each bid moves through the same steps a seasoned capture team would take, and you can watch every one in the live log.</p>
+          </div>
+          <ol class="loop reveal">
+            <li><span class="loop-n">1</span><div><p class="loop-h">Learns your business</p><p class="loop-p">Describe what you do, or what you want to do. It works out your NAICS codes, keywords and the contracts you should chase.</p></div></li>
+            <li><span class="loop-n">2</span><div><p class="loop-h">Searches SAM.gov</p><p class="loop-p">Searches SAM.gov with your own API key for open, biddable notices in your states with enough time left.</p></div></li>
+            <li><span class="loop-n">3</span><div><p class="loop-h">Decides Go or No-Go</p><p class="loop-p">Reads the notice and its attachments and skips the ones you can't win.</p></div></li>
+            <li><span class="loop-n">4</span><div><p class="loop-h">Finds subcontractors</p><p class="loop-p">Pulls SAM.gov registered vendors near the work, with their contact details.</p></div></li>
+            <li><span class="loop-n">5</span><div><p class="loop-h">Emails for quotes</p><p class="loop-p">Sends quote requests from your own mailbox and reads the replies when they come in.</p></div></li>
+            <li><span class="loop-n">6</span><div><p class="loop-h">Checks the market</p><p class="loop-p">Looks up what agencies actually paid for similar work in USAspending award data.</p></div></li>
+            <li><span class="loop-n">7</span><div><p class="loop-h">Prices at your margin</p><p class="loop-p">Builds the price from quotes and market data, then applies your overhead and the profit margin you set.</p></div></li>
+            <li><span class="loop-n">8</span><div><p class="loop-h">Writes the proposal</p><p class="loop-p">A compliant, formatted proposal lands in your Ready lane. You review it and submit.</p></div></li>
+          </ol>
+        </div>
+
+        <div class="mt-16 grid gap-4 md:grid-cols-3">
+          <div class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/></svg></span><h3 class="tile-h3">Runs when you say go</h3><p class="tile-p2">Set one bid a day or ten. Nothing runs until you press Run, so you stay in control of every bid.</p></div>
+          <div class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.7-8.7M17 6l2 2M15 8l2 2"/></svg></span><h3 class="tile-h3">Your keys, no caps</h3><p class="tile-p2">Autopilot runs on your own SAM.gov and Claude API keys, so there's no monthly proposal limit on it. Keys are encrypted and never shown again.</p></div>
+          <div class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><h3 class="tile-h3">You have the final say</h3><p class="tile-p2">It never submits for you. Every proposal waits for your review, and you mark it submitted or pass.</p></div>
+        </div>
+
+        <div class="reveal shot mt-4">
+          <div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span><em>A bid the Autopilot built</em></div>
+          <img src="/assets/site/autopilot-item.webp" srcset="/assets/site/autopilot-item-900.webp 900w, /assets/site/autopilot-item.webp 1600w" sizes="(min-width: 1200px) 1120px, 92vw" alt="One Autopilot bid with its market check from past federal awards, price build-up at the member's margin and the vendors it emailed for quotes" width="1600" height="1000" class="block w-full" loading="lazy" />
+        </div>
+        <p class="reveal mt-5 text-center text-sm text-mist-500">Market check, price build-up and vendor quotes for every bid, so you can see exactly how the number was reached.</p>
+      </div>
+    </section>
+
+    <!-- Core features -->
+    <section id="features" class="section border-t border-white/[0.06]">
+      <div class="mx-auto max-w-6xl">
+        <div class="reveal mx-auto max-w-3xl text-center">
+          <p class="eyebrow">In every edition</p>
           <h2 class="h2">Everything you need to bid.<br class="hidden sm:block" /> Nothing you don't.</h2>
-          <p class="lede mx-auto mt-5 max-w-2xl">Built for small businesses that act as the prime and subcontract the work, from the first solicitation to the final invoice.</p>
+          <p class="lede mx-auto mt-5 max-w-2xl">Built for small businesses that do the work or subcontract it, from the first solicitation to the final invoice.</p>
         </div>
 
         <div class="mt-16 grid gap-4 lg:grid-cols-3">
@@ -194,7 +414,7 @@
             <div class="p-8 sm:p-10">
               <p class="tile-kicker">Proposal Engine</p>
               <h3 class="tile-h">A compliant proposal, written for you.</h3>
-              <p class="tile-p">Upload the solicitation and amendments. The engine answers every FAR clause in it, builds your price table from your numbers and leaves placeholders instead of making things up.</p>
+              <p class="tile-p">Upload the solicitation and amendments. The engine answers every FAR clause in it, builds your price table from your numbers and leaves placeholders instead of making things up. Then export a formatted PDF or Word file.</p>
             </div>
             <img src="/assets/site/proposal.webp" srcset="/assets/site/proposal-900.webp 900w, /assets/site/proposal.webp 1600w" sizes="(min-width: 1024px) 740px, 92vw" alt="A generated proposal in GovProposalPro" width="1600" height="1000" class="tile-img" loading="lazy" />
           </article>
@@ -218,80 +438,25 @@
           <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></span><h3 class="tile-h3">SF-1034 Invoicing</h3><p class="tile-p2">Public vouchers with SF-1035 continuation, ready for PIEE or IPP.</p></article>
           <article class="tile glow reveal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><h3 class="tile-h3">CMMC Level 1</h3><p class="tile-p2">The 17 FAR 52.204-21 practices as a progress dashboard, with your evidence.</p></article>
         </div>
-        <p class="reveal mt-6 text-center text-sm text-mist-500">Plus a Quick-Start Capability Statement, FAR 52.219-14 subcontracting checker, SAM.gov registration checklist and deadline alerts. 10 proposals a month.</p>
+        <p class="reveal mt-6 text-center text-sm text-mist-500">Plus a Quick-Start Capability Statement, FAR 52.219-14 subcontracting checker, SAM.gov registration checklist and deadline alerts. 10 proposals a month on Core.</p>
       </div>
     </section>
 
-    <!-- Live wins wall -->
-    <section id="wins" class="section hidden-until-data relative overflow-hidden border-y border-white/[0.06] bg-ink-900/50">
-      <div class="wins-glow" aria-hidden="true"></div>
-      <div class="relative mx-auto max-w-6xl">
-        <div class="reveal mx-auto max-w-3xl text-center">
-          <p class="eyebrow">Member wins</p>
-          <h2 class="h2">Real contracts.<br class="hidden sm:block" /> <span class="grad-text">Won by people like you.</span></h2>
-        </div>
-        <div class="reveal mt-12 grid grid-cols-3 gap-2 sm:gap-4">
-          <div class="stat"><p class="stat-n" data-count="total" data-format="money">$0</p><p class="stat-l">in contracts won by members</p></div>
-          <div class="stat"><p class="stat-n" data-count="count">0</p><p class="stat-l">wins reported</p></div>
-          <div class="stat"><p class="stat-n" data-count="agencies">0</p><p class="stat-l">agencies and departments</p></div>
-        </div>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" id="wins-grid"></div>
-        <p class="reveal mt-6 text-center text-xs text-mist-500">Contract wins reported by Contract Bros members. Names are shortened for privacy. Individual results vary.</p>
-      </div>
-    </section>
-
-    <!-- ROI calculator -->
-    <section id="roi" class="section">
-      <div class="mx-auto max-w-6xl">
-        <div class="reveal mx-auto max-w-3xl text-center">
-          <p class="eyebrow">Do the math</p>
-          <h2 class="h2">One contract pays for it.</h2>
-          <p class="lede mx-auto mt-5 max-w-2xl">Move the sliders to a contract you would bid on.</p>
-        </div>
-        <div class="reveal calc mt-12">
-          <div class="calc-inputs">
-            <div>
-              <div class="flex items-baseline justify-between"><label for="roi-value" class="calc-label">Contract value</label><output id="roi-value-out" for="roi-value" class="calc-out">$100,000</output></div>
-              <input id="roi-value" type="range" min="25000" max="2000000" step="5000" value="100000" class="range" />
-            </div>
-            <div>
-              <div class="flex items-baseline justify-between"><label for="roi-margin" class="calc-label">Your profit margin</label><output id="roi-margin-out" for="roi-margin" class="calc-out">15%</output></div>
-              <input id="roi-margin" type="range" min="5" max="40" step="1" value="15" class="range" />
-            </div>
-            <fieldset>
-              <legend class="calc-label">Edition</legend>
-              <div class="seg mt-3" id="roi-edition">
-                <label><input type="radio" name="roi-ed" value="997" checked /><span>Core · $997</span></label>
-                <label><input type="radio" name="roi-ed" value="4997" /><span>Enterprise · $4,997</span></label>
-              </div>
-            </fieldset>
-          </div>
-          <div class="calc-result">
-            <p class="text-sm font-medium text-mist-400">Profit on one contract</p>
-            <p class="calc-big" id="roi-profit">$15,000</p>
-            <p class="mt-4 text-lg text-mist-300"><span id="roi-multiple" class="font-semibold text-white">15×</span> the <span id="roi-ed-name">Core Edition</span> price.</p>
-            <a href="__CTA_URL__" class="btn-lg mt-8 w-full">Get access</a>
-            <p class="mt-4 text-xs leading-relaxed text-mist-500">An illustration, not a promise. Your results depend on the contracts you bid and win. The monthly access plan is billed separately.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Enterprise -->
+    <!-- Enterprise extras -->
     <section id="enterprise" class="section relative overflow-hidden">
       <div class="ent-glow" aria-hidden="true"></div>
       <div class="relative mx-auto max-w-6xl">
         <div class="reveal mx-auto max-w-3xl text-center">
           <p class="eyebrow-ent">Enterprise Edition</p>
-          <h2 class="h2">For teams that bid <span class="grad-text">every week.</span></h2>
-          <p class="lede mx-auto mt-5 max-w-2xl">50 proposals a month and the tools that turn a small business into a repeat winner.</p>
+          <h2 class="h2">Plus the tools that make<br class="hidden sm:block" /> <span class="grad-text">repeat winners.</span></h2>
+          <p class="lede mx-auto mt-5 max-w-2xl">The Autopilot, 50 proposals a month in the Command Center, and an enterprise toolkit for every stage of the bid.</p>
         </div>
         <div class="reveal shot mt-14">
           <div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span><em>Section M Compliance Grader</em></div>
           <img src="/assets/site/section-m.webp" srcset="/assets/site/section-m-900.webp 900w, /assets/site/section-m.webp 1600w" sizes="(min-width: 1200px) 1120px, 92vw" alt="Section M Compliance Grader scoring a proposal against the evaluation criteria" width="1600" height="1000" class="block w-full" loading="lazy" />
         </div>
         <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Predictive Bid Matchmaker</h3><p class="tile-p2">Open SAM.gov opportunities for your NAICS codes, ranked by how likely you are to win.</p></article>
+          <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Predictive Bid Matchmaker</h3><p class="tile-p2">Open SAM.gov opportunities for your NAICS codes, ranked by fit for your set-asides and past work.</p></article>
           <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Section M Compliance Grader</h3><p class="tile-p2">Grades your draft against the evaluation criteria before the government does.</p></article>
           <article class="tile glow reveal"><h3 class="tile-h3 mt-0">Auto-Teaming Legal Engine</h3><p class="tile-p2">Mutual NDAs and FAR 9.6 teaming agreements, filled in from your profile and your sub.</p></article>
           <article class="tile glow reveal"><h3 class="tile-h3 mt-0">RFI Ghostwriter</h3><p class="tile-p2">Turns gaps in a solicitation into clear questions for the contracting officer.</p></article>
@@ -306,39 +471,69 @@
     <!-- Pricing -->
     <section id="editions" class="section border-t border-white/[0.06]">
       <div class="mx-auto max-w-5xl">
-        <div class="reveal text-center"><p class="eyebrow">Pricing</p><h2 class="h2">Pick your edition.</h2><p class="lede mx-auto mt-4 max-w-2xl">Own it with a one-time purchase. Both include the full proposal workflow. Enterprise adds scale and the advanced tools.</p></div>
-        <div class="reveal mt-12 grid gap-4 md:grid-cols-2">
+        <div class="reveal text-center"><p class="eyebrow">Pricing</p><h2 class="h2">Pick your edition.</h2><p class="lede mx-auto mt-4 max-w-2xl">Start monthly, or pay in full and save. Core writes the proposals you choose. Enterprise searches, prices and writes them for you.</p></div>
+        <div class="reveal mt-10 flex justify-center">
+          <div class="seg seg-billing" id="billing" role="radiogroup" aria-label="Billing">
+            <label><input type="radio" name="billing" value="monthly" checked /><span>Monthly</span></label>
+            <label><input type="radio" name="billing" value="full" /><span>Pay in full <em class="save-tag">Save</em></span></label>
+          </div>
+        </div>
+        <div class="reveal mt-8 grid gap-4 md:grid-cols-2" id="plans" data-billing="monthly">
           <div class="plan glow">
             <p class="text-sm font-semibold text-brand-blueSoft">Core Edition</p>
-            <p class="mt-3 flex items-baseline gap-2"><span class="price">$997</span><span class="text-sm text-mist-500">one-time</span></p>
-            <p class="mt-2 text-sm text-mist-400">Plus the Core monthly access plan.</p>
-            <p class="mt-6 text-xl font-semibold text-white">10 proposals<span class="text-base font-normal text-mist-500"> a month</span></p>
+            <div class="bill-monthly">
+              <p class="mt-3 flex items-baseline gap-2"><span class="price">$199</span><span class="text-sm text-mist-500">/month</span></p>
+              <p class="mt-2 text-sm text-mist-400">Billed $199 every month until you cancel. Cancel anytime in Whop. Access ends when billing stops.</p>
+            </div>
+            <div class="bill-full">
+              <p class="mt-3 flex items-baseline gap-2"><span class="price">$997</span><span class="text-sm text-mist-500">one-time</span></p>
+              <p class="mt-2 text-sm text-mist-400">Plus the Core monthly access plan<span data-maint="core"></span>. <span class="text-white" data-save="core"></span></p>
+            </div>
+            <p class="mt-6 text-xl font-semibold text-white">You upload, it writes<span class="block text-base font-normal text-mist-500">10 proposals a month</span></p>
             <ul class="plan-list">
-              <li>Proposal Engine and Bid Decryptor</li><li>Go/No-Go Indicator</li><li>Smart Vendor Scraper and 1-Click Outreach</li>
+              <li>Proposal Engine with PDF and Word export</li><li>Bid Decryptor and Go/No-Go Indicator</li><li>Smart Vendor Scraper and 1-Click Outreach</li>
               <li>Profit Pricing Matrix</li><li>FOIA Automator</li><li>Visual Bid CRM</li><li>Milestones and SF-1034/1035 invoicing</li>
               <li>Capability Statement and CMMC Level 1</li>
             </ul>
-            <a href="__CORE_URL__" class="btn-lg mt-8 w-full">Get Core</a>
-            <a href="__CORE_ACCESS_URL__" class="mt-4 text-center text-sm text-mist-400 hover:text-white">Already bought Core? Start your monthly access ›</a>
+            <div class="bill-monthly mt-8">
+              <a href="__CORE_MONTHLY_URL__" data-checkout="core-monthly" class="btn-lg w-full">Start Core for $199/mo</a>
+            </div>
+            <div class="bill-full mt-8">
+              <a href="__CORE_URL__" data-checkout="core" class="btn-lg w-full">Get Core for $997</a>
+              <a href="__CORE_ACCESS_URL__" data-checkout="core-access" class="mt-4 block text-center text-sm text-mist-400 hover:text-white">Already bought Core? Start your monthly access ›</a>
+            </div>
           </div>
           <div class="plan plan-ent glow">
-            <span class="plan-badge">Most complete</span>
+            <span class="plan-badge">Hands-off</span>
             <p class="text-sm font-semibold"><span class="grad-text">Enterprise Edition</span></p>
-            <p class="mt-3 flex items-baseline gap-2"><span class="price">$4,997</span><span class="text-sm text-mist-500">one-time</span></p>
-            <p class="mt-2 text-sm text-mist-400">Plus the Enterprise monthly access plan.</p>
-            <p class="mt-6 text-xl font-semibold text-white">50 proposals<span class="text-base font-normal text-mist-500"> a month</span></p>
+            <div class="bill-monthly">
+              <p class="mt-3 flex items-baseline gap-2"><span class="price">$999</span><span class="text-sm text-mist-500">/month</span></p>
+              <p class="mt-2 text-sm text-mist-400">Billed $999 every month until you cancel. Cancel anytime in Whop. Access ends when billing stops.</p>
+            </div>
+            <div class="bill-full">
+              <p class="mt-3 flex items-baseline gap-2"><span class="price">$4,997</span><span class="text-sm text-mist-500">one-time</span></p>
+              <p class="mt-2 text-sm text-mist-400">Plus the Enterprise monthly access plan<span data-maint="enterprise"></span>. <span class="text-white" data-save="enterprise"></span></p>
+            </div>
+            <p class="mt-6 text-xl font-semibold text-white">It does it all<span class="block text-base font-normal text-mist-500">GovCon Autopilot plus 50 proposals a month</span></p>
             <ul class="plan-list">
-              <li>Everything in Core</li><li>Predictive Bid Matchmaker</li><li>Section M Compliance Grader</li><li>NDA and Teaming Agreement engine</li>
-              <li>RFI Ghostwriter</li><li>Winning voice from your past proposals</li><li>Fringe/G&amp;A pricing engine</li>
+              <li>Everything in Core</li><li><span><b class="font-semibold text-white">GovCon Autopilot</b>: searches, quotes, prices and writes</span></li><li>Market price check from real federal awards</li>
+              <li>Predictive Bid Matchmaker</li><li>Section M Compliance Grader</li><li>NDA and Teaming Agreement engine</li>
+              <li>RFI Ghostwriter and your winning voice</li><li>Fringe/G&amp;A pricing engine</li>
               <li>Compliance Pulse, state directory and Sub-Safe vetting</li>
             </ul>
-            <a href="__ENTERPRISE_URL__" class="btn-lg-grad mt-8 w-full">Get Enterprise</a>
-            <a href="__ENTERPRISE_ACCESS_URL__" class="mt-4 text-center text-sm text-mist-400 hover:text-white">Already bought Enterprise? Start your monthly access ›</a>
+            <div class="bill-monthly mt-8">
+              <a href="__ENTERPRISE_MONTHLY_URL__" data-checkout="enterprise-monthly" class="btn-lg-grad w-full">Start Enterprise for $999/mo</a>
+            </div>
+            <div class="bill-full mt-8">
+              <a href="__ENTERPRISE_URL__" data-checkout="enterprise" class="btn-lg-grad w-full">Get Enterprise for $4,997</a>
+              <a href="__ENTERPRISE_ACCESS_URL__" data-checkout="enterprise-access" class="mt-4 block text-center text-sm text-mist-400 hover:text-white">Already bought Enterprise? Start your monthly access ›</a>
+            </div>
+            <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="mt-4 block text-center text-sm font-medium text-white hover:text-brand-blueSoft" hidden>Not sure yet? Book a free 20-minute call ›</a>
           </div>
         </div>
 
         <div class="reveal mt-4 grid gap-4 md:grid-cols-3">
-          <div class="mini"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><p class="mini-h">Secure checkout by Whop</p><p class="mini-p">Payment is handled by Whop. We never see your card number.</p></div></div>
+          <div class="mini"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><p class="mini-h">Checkout right here</p><p class="mini-p">Pay securely through Whop without leaving this page. We never see your card number.</p></div></div>
           <div class="mini"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></span><div><p class="mini-h">Your login by email</p><p class="mini-p">Right after purchase you get a link to create your login.</p></div></div>
           <div class="mini"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></span><div><p class="mini-h">Monthly access plan</p><p class="mini-p">Keeps your account active with hosting, support, updates and your monthly proposals.</p></div></div>
         </div>
@@ -350,9 +545,15 @@
             <table class="ctable">
               <thead><tr><th scope="col">Feature</th><th scope="col">Core</th><th scope="col"><span class="grad-text">Enterprise</span></th></tr></thead>
               <tbody>
+                <tr class="grp"><th scope="rowgroup" colspan="3">Hands-off bidding</th></tr>
+                <tr><th scope="row">GovCon Autopilot (finds, quotes, prices, writes)</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Learns your business and NAICS codes</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Vendor quote emails from your mailbox</th><td class="n">Not included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Market price check (USAspending awards)</th><td class="n">Not included</td><td class="y">Included</td></tr>
                 <tr class="grp"><th scope="rowgroup" colspan="3">Win work</th></tr>
-                <tr><th scope="row">Proposals a month</th><td>10</td><td>50</td></tr>
+                <tr><th scope="row">Proposals a month in the Command Center</th><td>10</td><td>50</td></tr>
                 <tr><th scope="row">AI Proposal Engine</th><td class="y">Included</td><td class="y">Included</td></tr>
+                <tr><th scope="row">Formatted proposal PDF and Word export</th><td class="y">Included</td><td class="y">Included</td></tr>
                 <tr><th scope="row">AI Bid Decryptor</th><td class="y">Included</td><td class="y">Included</td></tr>
                 <tr><th scope="row">Go/No-Go Indicator</th><td class="y">Included</td><td class="y">Included</td></tr>
                 <tr><th scope="row">Visual Bid CRM</th><td class="y">Included</td><td class="y">Included</td></tr>
@@ -392,7 +593,7 @@
         <h2 class="reveal text-center text-2xl font-semibold tracking-tight text-white sm:text-3xl">Your business data stays yours.</h2>
         <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><p class="mini-h">Private to your account</p><p class="mini-p">Your profile, documents and proposals are visible only to you.</p></div>
-          <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><p class="mini-h">Encrypted in transit</p><p class="mini-p">HTTPS everywhere, hashed passwords and secure sessions. AI keys never reach your browser.</p></div>
+          <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><p class="mini-h">Keys locked away</p><p class="mini-p">API keys and mailbox passwords are encrypted at rest and never sent back to your browser.</p></div>
           <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 3 2 5 3 6v3h8v-3c1-1 3-3 3-6a7 7 0 0 0-7-7z"/><path d="M9 22h6"/><path d="m4 4 16 16"/></svg></span><p class="mini-h">Not used to train AI</p><p class="mini-p">Your solicitations and proposals are processed to do the work, not to train AI models.</p></div>
           <div class="trust reveal"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg></span><p class="mini-h">No made-up clauses</p><p class="mini-p">FAR clauses come only from your solicitation. Anything unconfirmed is flagged for you.</p></div>
         </div>
@@ -405,7 +606,7 @@
         <img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-10 w-auto" />
         <p class="mt-8 text-2xl font-medium leading-snug tracking-tight text-white sm:text-[28px]">“Government contracts should not be reserved for companies with a proposal team.”</p>
         <div class="mt-6 space-y-4 text-lg leading-relaxed text-mist-400">
-          <p>We built GovProposalPro for the small business owner who wants to win federal work and keep running their business at the same time. It puts the way we approach every bid into one place: read the solicitation, decide if it is worth it, line up subs, price it right and submit something you are proud of.</p>
+          <p>We built GovProposalPro for the small business owner who wants to win federal work and keep running their business at the same time. It puts the way we approach every bid into one place: find the right contract, decide if it is worth it, line up subs, price it right and submit something you are proud of. With the Autopilot, it can do most of that while you're on the job.</p>
           <p>If you have a question before you buy, email us at <a href="mailto:contact@govproposalpro.com" class="text-brand-blueSoft hover:text-white">contact@govproposalpro.com</a>. A real person will answer.</p>
         </div>
         <p class="sig mt-8">Kinno &amp; Jalen</p>
@@ -418,13 +619,18 @@
       <div class="mx-auto max-w-3xl">
         <h2 class="reveal h2 text-center">Questions.</h2>
         <div class="mt-12 divide-y divide-white/[0.08] border-y border-white/[0.08]">
+          <details class="faq reveal"><summary>What is the difference between Core and Enterprise?</summary><p>On Core, you choose a solicitation and upload it, and GovProposalPro does the rest: the brief, the Go/No-Go score, subs, pricing and a formatted proposal, up to 10 a month. Enterprise adds the GovCon Autopilot, which finds the solicitations, emails vendors for quotes, checks market prices and writes the proposals for you, plus 50 Command Center proposals a month and the advanced tools.</p></details>
+          <details class="faq reveal"><summary>Does the Autopilot submit proposals for me?</summary><p>No. It finds, prices and writes the bid, then waits for you. You review every proposal, make any changes, submit it to the agency yourself and mark it submitted. Nothing goes to the government without you.</p></details>
+          <details class="faq reveal"><summary>Why does the Autopilot use my own API keys?</summary><p>So it can run as much as you want with no monthly cap. You add a free SAM.gov API key and a Claude API key from Anthropic during setup, and you pay Anthropic directly for what you use, with no markup from us. Keys are encrypted, never shown again in the app and can be replaced or removed at any time. The setup screen walks you through getting both.</p></details>
+          <details class="faq reveal"><summary>Will it email vendors without asking me?</summary><p>Only if you turn on automatic quote requests. Otherwise it lists the vendors it found and you send the requests with one click. Emails go from your own mailbox using an app password you can revoke whenever you like.</p></details>
           <details class="faq reveal"><summary>Do I need to be registered in SAM.gov?</summary><p>You need an active SAM.gov registration to be awarded a federal contract. GovProposalPro includes a step-by-step SAM.gov checklist and flags it in every Go/No-Go check.</p></details>
-          <details class="faq reveal"><summary>Where do the FAR clauses in my proposal come from?</summary><p>Only from the solicitation and amendments you upload. The engine reads them and answers the clauses they contain. Anything it cannot confirm is left as a placeholder for you to fill in.</p></details>
-          <details class="faq reveal"><summary>Can I edit what it writes?</summary><p>Yes. Every proposal, capability statement, agreement and voucher can be edited, then exported to Word or saved as a PDF.</p></details>
-          <details class="faq reveal"><summary>Is my company information private?</summary><p>Your profile, documents and proposals are visible only to your account. Passwords are hashed, sessions are secure, and AI keys never reach the browser.</p></details>
-          <details class="faq reveal"><summary>What is the difference between Core and Enterprise?</summary><p>Core gives you 10 proposals a month and the full bid-to-invoice workflow. Enterprise raises that to 50 a month and adds the Matchmaker, Section M grading, teaming agreements, RFI drafting, your winning voice and advanced pricing.</p></details>
-          <details class="faq reveal"><summary>How does pricing work?</summary><p>Core Edition is a one-time $997 purchase and Enterprise Edition is a one-time $4,997 purchase. After checkout, you set up the monthly access plan for your edition, which keeps your access active and covers hosting, support and updates. Both are handled securely through Whop.</p></details>
-          <details class="faq reveal"><summary>Is checkout secure?</summary><p>Yes. Checkout runs on Whop, which processes the payment. Your card details go to Whop, never to us.</p></details>
+          <details class="faq reveal"><summary>Where do the FAR clauses in my proposal come from?</summary><p>Only from the solicitation and amendments you upload or that the Autopilot downloads from SAM.gov. The engine reads them and answers the clauses they contain. Anything it cannot confirm is left as a placeholder for you to fill in.</p></details>
+          <details class="faq reveal"><summary>Can I edit what it writes?</summary><p>Yes. Every proposal, capability statement, agreement and voucher can be edited, then exported as a formatted PDF or Word file with your logo.</p></details>
+          <details class="faq reveal"><summary>How does pricing work?</summary><p>Pick monthly or pay in full. Monthly is $199 a month for Core or $999 a month for Enterprise, billed every month until you cancel, and access ends when billing stops. Pay in full is a one-time $997 for Core or $4,997 for Enterprise, plus the monthly access plan for your edition that covers hosting, support and updates. Both run through Whop's secure checkout on this page.</p></details>
+          <details class="faq reveal"><summary>What if I cancel?</summary><p>On a monthly plan, cancel anytime in Whop. You keep access until the end of the month you paid for, then it ends. If you paid in full, your edition stays yours. Refunds follow the policy shown at checkout.</p></details>
+          <details class="faq reveal"><summary>Do I need government contracting experience?</summary><p>No. You do need to be willing to learn and to put in the work of bidding. The app explains each solicitation in plain English, walks you through SAM.gov registration and tells you which bids are realistic for a business your size.</p></details>
+          <details class="faq reveal"><summary>How long until I win my first contract?</summary><p>Honestly, it usually takes months, and nobody can guarantee a win. Most new contractors submit many bids before a first award, and many never win one. GovProposalPro makes each bid faster and more competitive. It can't make an agency choose you. See our <a href="/earnings-disclaimer" class="text-brand-blueSoft hover:text-white">earnings disclaimer</a>.</p></details>
+          <details class="faq reveal"><summary>Can I subcontract 100% of the work?</summary><p>Usually not on a small business set-aside. Under FAR 52.219-14, the prime must keep a share of the work: for services, you can pay no more than 50% of what the government pays you to subcontractors that aren't similarly situated, and other limits apply to construction and supplies. The built-in checker shows where your bid stands before you submit.</p></details>
           <details class="faq reveal"><summary>How do I get my login?</summary><p>After you purchase, you get an email with a link to create your login. Already a member? <a href="/app/login" class="text-brand-blueSoft hover:text-white">Sign in here</a>.</p></details>
         </div>
       </div>
@@ -436,9 +642,9 @@
         <div class="aurora aurora-soft" aria-hidden="true"><span class="aurora-a"></span><span class="aurora-b"></span><span class="aurora-c"></span></div>
         <div class="grain" aria-hidden="true"></div>
         <img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="relative mx-auto h-14 w-auto" />
-        <h2 class="relative mt-7 text-4xl font-semibold tracking-[-0.035em] text-white sm:text-6xl">Your next contract<br class="hidden sm:block" /> starts here.</h2>
-        <p class="relative mx-auto mt-5 max-w-xl text-lg text-mist-300">Join the members already bidding and winning with GovProposalPro.</p>
-        <div class="relative mt-9 flex flex-wrap justify-center gap-3"><a href="__CTA_URL__" class="btn-lg btn-shine">Get access <span aria-hidden="true">→</span></a><a href="/app/login" class="btn-lg-ghost">Sign in</a></div>
+        <h2 class="relative mt-7 text-4xl font-semibold tracking-[-0.035em] text-white sm:text-6xl">Put your first bid<br class="hidden sm:block" /> in this week.</h2>
+        <p class="relative mx-auto mt-5 max-w-xl text-lg text-mist-300">Start at $199 a month, or pay in full and save. Your login arrives by email right after checkout.</p>
+        <div class="relative mt-9 flex flex-wrap justify-center gap-3"><a href="__CTA_URL__" class="btn-lg btn-shine">Get access <span aria-hidden="true">→</span></a><a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="btn-lg-ghost" hidden>Book a call ›</a><a href="/app/login" class="btn-lg-ghost">Sign in</a></div>
       </div>
     </section>
   </main>
@@ -447,12 +653,12 @@
     <div class="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
       <div>
         <a href="/" class="flex items-center gap-2.5" aria-label="GovProposalPro home"><img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-7 w-auto" /><span class="text-[15px] font-semibold tracking-tight text-white">GovProposal<span class="text-mist-400">Pro</span></span></a>
-        <p class="mt-4 max-w-xs leading-relaxed">The Command Center for small businesses that win government contracts. By Contract Bros.</p>
+        <p class="mt-4 max-w-xs leading-relaxed">The government contracting assistant for small businesses. By Contract Bros.</p>
         <p class="mt-4"><a href="mailto:contact@govproposalpro.com" class="hover:text-white">contact@govproposalpro.com</a></p>
       </div>
-      <div><p class="foot-h">Product</p><ul class="foot-list"><li><a href="#how">How it works</a></li><li><a href="#features">Core Edition</a></li><li><a href="#enterprise">Enterprise Edition</a></li><li><a href="#editions">Pricing</a></li></ul></div>
+      <div><p class="foot-h">Product</p><ul class="foot-list"><li><a href="#autopilot">GovCon Autopilot</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#editions">Pricing</a></li></ul></div>
       <div><p class="foot-h">Members</p><ul class="foot-list"><li><a href="/app/login">Sign in</a></li><li><a href="/access">Create your login</a></li><li><a href="#wins">Member wins</a></li><li><a href="#faq">FAQ</a></li></ul></div>
-      <div><p class="foot-h">Legal</p><ul class="foot-list"><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li></ul></div>
+      <div><p class="foot-h">Legal</p><ul class="foot-list"><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li><li><a href="/earnings-disclaimer">Earnings Disclaimer</a></li></ul></div>
     </div>
     <div class="mx-auto mt-12 flex max-w-6xl flex-col gap-3 border-t border-white/[0.06] pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
       <p>© <span id="year">2026</span> Contract Bros. GovProposalPro is not affiliated with or endorsed by any government agency.</p>
@@ -462,8 +668,52 @@
 
   <!-- Phones: buy button stays in reach after the hero -->
   <div id="mobile-cta" class="mobile-cta md:hidden" aria-hidden="true">
-    <div><p class="text-[13px] font-semibold text-white">GovProposalPro</p><p class="text-xs text-mist-400">From $997 one-time</p></div>
+    <div><p class="text-[13px] font-semibold text-white">GovProposalPro</p><p class="text-xs text-mist-400">From $199/mo, or pay in full</p></div>
     <a href="__CTA_URL__" class="btn-sm px-5 py-2.5 text-sm" tabindex="-1">Get access</a>
   </div>
+
+  <!-- Demo video: the YouTube player loads only after a click (youtube-nocookie). -->
+  <dialog id="vsl" class="co" aria-label="GovProposalPro demo video">
+    <div class="co-panel co-panel-wide">
+      <div class="co-head"><p class="co-title">See GovProposalPro in action</p><button type="button" class="co-x" data-co-close aria-label="Close video"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div class="vsl-frame" id="vsl-frame"></div>
+    </div>
+  </dialog>
+
+  <!-- Embedded Whop checkout: the edition, then its monthly access plan, then the login email. site.js runs it. -->
+  <dialog id="checkout" class="co" aria-labelledby="co-title"
+    data-core-plan="__CORE_PLAN__" data-enterprise-plan="__ENTERPRISE_PLAN__"
+    data-core-access-plan="__CORE_ACCESS_PLAN__" data-enterprise-access-plan="__ENTERPRISE_ACCESS_PLAN__"
+    data-core-monthly-plan="__CORE_MONTHLY_PLAN__" data-enterprise-monthly-plan="__ENTERPRISE_MONTHLY_PLAN__"
+    data-core-maint="__CORE_MAINT__" data-enterprise-maint="__ENTERPRISE_MAINT__" data-booking-url="__BOOKING_URL__" data-vsl-id="__VSL_ID__" data-mode="__CHECKOUT_MODE__">
+    <div class="co-panel">
+      <div class="co-head">
+        <div class="flex min-w-0 items-center gap-3">
+          <img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-7 w-auto flex-none" />
+          <div class="min-w-0"><p id="co-title" class="co-title">Checkout</p><p id="co-sub" class="co-sub"></p></div>
+        </div>
+        <button type="button" class="co-x" data-co-close aria-label="Close checkout"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <ol class="co-steps" aria-label="Checkout steps">
+        <li data-co-step="1"><span>1</span>Your edition</li>
+        <li data-co-step="2"><span>2</span>Monthly access</li>
+        <li data-co-step="3"><span>3</span>Your login</li>
+      </ol>
+      <div class="co-body">
+        <div id="co-mount" class="co-mount"><p class="co-loading">Loading secure checkout…</p></div>
+        <div id="co-done" class="co-done" hidden>
+          <span class="co-check" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <p class="mt-5 text-2xl font-semibold tracking-tight text-white">You're in.</p>
+          <p class="mx-auto mt-3 max-w-sm leading-relaxed text-mist-400">Check your inbox for the email from GovProposalPro with your link to create your login. It can take a minute or two, and it may land in spam or promotions.</p>
+          <a href="/access" class="btn-lg mt-8">Create your login now</a>
+          <p class="mt-5 text-sm text-mist-400" data-booking-wrap hidden>Want a hand getting started? <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="text-brand-blueSoft hover:text-white">Book your free onboarding call ›</a></p>
+        </div>
+      </div>
+      <div class="co-foot">
+        <span class="inline-flex items-center gap-1.5"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secure payment by Whop</span>
+        <a id="co-fallback" href="#" target="_blank" rel="noopener" class="hover:text-white">Trouble loading? Open on whop.com ›</a>
+      </div>
+    </div>
+  </dialog>
 </body>
 </html>

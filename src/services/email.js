@@ -3,7 +3,6 @@
 const nodemailer = require('nodemailer');
 
 const PROVIDER = (process.env.EMAIL_PROVIDER || 'smtp').toLowerCase();
-const LAUNCH_DATE = 'Sunday, October 18th';
 
 let transporter = null;
 function getTransporter() {
@@ -27,6 +26,9 @@ const LOGO_URL = process.env.EMAIL_LOGO_URL || 'https://assets.cdn.filesafe.spac
 const ACCESS_URL = process.env.ACCESS_URL || 'https://govproposalpro.com/access';
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || 'https://govproposalpro-portal.onrender.com').replace(/\/$/, '');
 const GUIDE_URL = `${PUBLIC_BASE_URL}/assets/GovProposalPro_Access_Instructions.pdf`;
+const LOGIN_URL = process.env.APP_LOGIN_URL || 'https://govproposalpro.com/app/login';
+// Optional: the free onboarding call calendar (GoHighLevel). Left out of emails when not set.
+const BOOKING_URL = /^https:\/\/[^\s"'<>]+$/.test((process.env.BOOKING_URL || '').trim()) ? process.env.BOOKING_URL.trim() : '';
 const SIGNATURE_TEXT = ['Kinno & Jalen', 'The ContractBros'];
 
 const editionName = (tier) => (tier === 'enterprise' ? 'Enterprise Edition' : tier === 'core' ? 'Core Edition' : 'GovProposalPro');
@@ -88,7 +90,8 @@ function buildPurchaseEmail({ tier, firstName = '' }) {
     '2. Create your keys: use the same email you used to purchase on Whop and create a secure password.',
     '3. Tailor your command center: tell us about your business and experience level. A member of our team will reach out to confirm your access.',
     '',
-    `Deployment date: ${LAUNCH_DATE}. You will receive an automated email granting full access to the live software, and you will log in with the email and password you create today.`,
+    `As soon as your login is created, sign in to your Command Center: ${LOGIN_URL}`,
+    BOOKING_URL ? `\nBook your free onboarding call and we'll walk through your first bid together: ${BOOKING_URL}` : '',
     '',
     `Setup guide (PDF): ${GUIDE_URL}`,
     'You can also find everything inside Whop under "GovProposalPro Access".',
@@ -107,7 +110,8 @@ function buildPurchaseEmail({ tier, firstName = '' }) {
         ${stepRow(2, 'Create your keys.', 'Use the <strong style="color:#FFFFFF;">same email you used to purchase on Whop</strong> and create a secure password.')}
         ${stepRow(3, 'Tailor your command center.', 'Tell us about your business and experience level. A member of our team will reach out to confirm your access.')}
       </table>
-      <p style="${P}"><strong style="color:#FFFFFF;">Deployment date: ${LAUNCH_DATE}.</strong> You'll receive an automated email granting full access to the live software, and you'll log in with the email and password you create today.</p>
+      <p style="${P}">As soon as your login is created, <a href="${LOGIN_URL}" style="color:#7FA2FF;">sign in to your Command Center</a> and start your first bid.</p>
+      ${BOOKING_URL ? `<p style="${P}">&#128197; <a href="${BOOKING_URL}" style="color:#7FA2FF;">Book your free onboarding call</a> and we'll walk through your first bid together.</p>` : ''}
       ${tier === 'enterprise' ? `<p style="${P}">As an Enterprise member, your VIP Onboarding Concierge will reach out separately to collect your business details for your Done-For-You SAM.gov registration.</p>` : ''}
       <p style="${P}">&#128196; <a href="${GUIDE_URL}" style="color:#7FA2FF;">Download your setup guide (PDF)</a>. You can also find everything inside Whop under <strong style="color:#FFFFFF;">GovProposalPro Access</strong>.</p>`,
   });
@@ -126,8 +130,8 @@ function buildWelcomeEmail({ email, tier, firstName = '' }) {
     `Your ${edition} login has been created for ${email}.`,
     'A member of the GovProposalPro team will reach out shortly to confirm your access and walk through your setup.',
     '',
-    `Full access to the GovProposalPro command center will be delivered to this inbox on ${LAUNCH_DATE}.`,
-    'You will sign in with the exact email and password you just created.',
+    `Your Command Center is ready. Sign in now with the email and password you just created: ${LOGIN_URL}`,
+    BOOKING_URL ? `Book your free onboarding call: ${BOOKING_URL}` : '',
     '',
     `Access portal: ${ACCESS_URL}`,
     `Setup guide (PDF): ${GUIDE_URL}`,
@@ -141,7 +145,9 @@ function buildWelcomeEmail({ email, tier, firstName = '' }) {
     heading: escapeHtml(greeting),
     bodyHtml: `<p style="${P}">Your <strong style="color:#FFFFFF;">${edition}</strong> login has been created for <strong style="color:#FFFFFF;">${escapeHtml(email)}</strong>.</p>
       <p style="${P}">A member of the GovProposalPro team will reach out shortly to <strong style="color:#FFFFFF;">confirm your access</strong> and walk through your setup.</p>
-      <p style="${P}">Full access to the command center will be delivered to this inbox on <strong style="color:#FFFFFF;">${LAUNCH_DATE}</strong>. You'll sign in with the exact email and password you just created.</p>
+      <p style="${P}">Your Command Center is ready. Sign in now with the exact email and password you just created.</p>
+      ${button(LOGIN_URL, 'Open My Command Center &rarr;')}
+      ${BOOKING_URL ? `<p style="${P}">&#128197; <a href="${BOOKING_URL}" style="color:#7FA2FF;">Book your free onboarding call</a> and we'll walk through your first bid together.</p>` : ''}
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
         ${stepRow('&#10003;', 'Account created.', 'Your encrypted login is saved.')}
         ${stepRow('&#10003;', 'Business profile received.', 'We\'ll use it to tailor your workspace.')}
