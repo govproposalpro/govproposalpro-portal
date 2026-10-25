@@ -120,7 +120,18 @@ const dollars = (name) => {
 // SITE_CHECKOUT_MODE=link turns the on-page checkout off and sends buy buttons to whop.com instead.
 const checkoutMode = (process.env.SITE_CHECKOUT_MODE || '').trim().toLowerCase() === 'link' ? 'link' : 'embed';
 const youtubeId = /^[A-Za-z0-9_-]{11}$/.test((process.env.SITE_VSL_YOUTUBE_ID || '').trim()) ? process.env.SITE_VSL_YOUTUBE_ID.trim() : '';
+// SITE_VSL_VIDEO_URL: one full demo video hosted elsewhere (for example GoHighLevel's media library),
+// played on /watch after the opt-in in place of the clips hosted here. Defaults to the full VSL in
+// our GoHighLevel media library; set it to "off" to play the clips hosted here instead.
+const DEFAULT_VSL_VIDEO_URL = 'https://assets.cdn.filesafe.space/2c9ZJNooQ8eEnTMWsHaX/media/6ade7099c9d5b7168d7e0b8f.mp4';
+const vslVideoUrl = (() => {
+  try {
+    const u = new URL((process.env.SITE_VSL_VIDEO_URL ?? DEFAULT_VSL_VIDEO_URL).trim());
+    return u.protocol === 'https:' ? u.href : '';
+  } catch { return ''; }
+})();
 const whopLink = (plan) => `https://whop.com/checkout/${plan}`;
+const htmlText = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fillSite = (file) => fs.readFileSync(path.join(SITE_DIR, file), 'utf8')
   .replaceAll('__CTA_URL__', checkoutUrl('SITE_CTA_URL', '#editions'))
   .replaceAll('__CORE_URL__', checkoutUrl('WHOP_CORE_CHECKOUT_URL', whopLink(PLANS.core)))
@@ -139,6 +150,7 @@ const fillSite = (file) => fs.readFileSync(path.join(SITE_DIR, file), 'utf8')
   .replaceAll('__ENTERPRISE_MAINT__', dollars('ENTERPRISE_ACCESS_MONTHLY_PRICE'))
   .replaceAll('__BOOKING_URL__', checkoutUrl('BOOKING_URL', ''))
   .replaceAll('__VSL_ID__', youtubeId)
+  .replaceAll('__VSL_URL__', htmlText(vslVideoUrl))
   .replaceAll('__CHECKOUT_MODE__', checkoutMode);
 const siteHtml = fillSite('index.html');
 // The demo video page for ads: the video unlocks after a name, email and phone opt-in (routes/leads.js).
@@ -151,7 +163,7 @@ const SITE_CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://*.whop.com https://i.ytimg.com",
   "font-src 'self'",
-  "media-src 'self'",
+  `media-src 'self'${vslVideoUrl ? ` ${new URL(vslVideoUrl).origin}` : ''}`,
   "connect-src 'self' https://whop.com https://*.whop.com https://t.whop.tw",
   "worker-src 'self' blob:",
   "frame-src https://whop.com https://*.whop.com https://*.plaid.com https://www.youtube-nocookie.com",
@@ -164,7 +176,6 @@ const SITE_CSP = [
 app.use('/site/static', express.static(path.join(SITE_DIR, 'static'), { maxAge: '1h', index: false }));
 
 // Terms and Privacy. The legal name, governing state and contact email come from the environment.
-const htmlText = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const legalState = (process.env.LEGAL_STATE || '').trim() || 'Ohio';
 const supportEmail = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(process.env.SUPPORT_EMAIL || '') ? process.env.SUPPORT_EMAIL.trim() : 'contact@govproposalpro.com';
 const legalPage = (name) => fs.readFileSync(path.join(SITE_DIR, `${name}.html`), 'utf8')

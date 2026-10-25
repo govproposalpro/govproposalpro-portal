@@ -17,6 +17,27 @@
     intro: { file: '/assets/site/intro-v4', poster: '/assets/site/intro-v4-poster.webp', label: 'GovProposalPro intro' },
     demo: { file: '/assets/site/demo-v2', poster: '/assets/site/demo-poster.webp', label: 'GovProposalPro demo' },
   };
+  // Points a video element at a clip hosted here, or at a full https video URL (SITE_VSL_VIDEO_URL).
+  window.gppSetClip = function (v, clip) {
+    var c = /^https:\/\//.test(clip) ? { url: clip, label: 'GovProposalPro demo' } : (CLIPS[clip] || CLIPS.demo);
+    while (v.firstChild) v.removeChild(v.firstChild);
+    v.removeAttribute('src');
+    if (c.url) {
+      v.src = c.url;
+      v.removeAttribute('poster');
+    } else {
+      // MP4 for Safari and most browsers; WebM for browsers without H.264.
+      [['.mp4', 'video/mp4'], ['.webm', 'video/webm']].forEach(function (f) {
+        var s = document.createElement('source');
+        s.src = c.file + f[0];
+        s.type = f[1];
+        v.appendChild(s);
+      });
+      v.poster = c.poster;
+    }
+    v.setAttribute('aria-label', c.label);
+    v.load();
+  };
   // The demo player: the YouTube video when an id is set, otherwise a clip hosted here (the walkthrough by default).
   window.gppVideo = function (yt, clip) {
     var v;
@@ -27,21 +48,12 @@
       v.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
       v.allowFullscreen = true;
     } else {
-      var c = CLIPS[clip] || CLIPS.demo;
       v = document.createElement('video');
-      // MP4 for Safari and most browsers; WebM for browsers without H.264.
-      [['.mp4', 'video/mp4'], ['.webm', 'video/webm']].forEach(function (f) {
-        var s = document.createElement('source');
-        s.src = c.file + f[0];
-        s.type = f[1];
-        v.appendChild(s);
-      });
-      v.poster = c.poster;
       v.controls = true;
       v.autoplay = true;
       v.playsInline = true;
       v.preload = 'auto';
-      v.setAttribute('aria-label', c.label);
+      window.gppSetClip(v, clip);
     }
     v.className = 'vsl-iframe';
     return v;
