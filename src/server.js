@@ -121,10 +121,12 @@ const dollars = (name) => {
 const checkoutMode = (process.env.SITE_CHECKOUT_MODE || '').trim().toLowerCase() === 'link' ? 'link' : 'embed';
 const youtubeId = /^[A-Za-z0-9_-]{11}$/.test((process.env.SITE_VSL_YOUTUBE_ID || '').trim()) ? process.env.SITE_VSL_YOUTUBE_ID.trim() : '';
 // SITE_VSL_VIDEO_URL: one full demo video hosted elsewhere (for example GoHighLevel's media library),
-// played on /watch after the opt-in in place of the clips hosted here.
+// played on /watch after the opt-in in place of the clips hosted here. Defaults to the full VSL in
+// our GoHighLevel media library; set it to "off" to play the clips hosted here instead.
+const DEFAULT_VSL_VIDEO_URL = 'https://assets.cdn.filesafe.space/2c9ZJNooQ8eEnTMWsHaX/media/6ade7099c9d5b7168d7e0b8f.mp4';
 const vslVideoUrl = (() => {
   try {
-    const u = new URL((process.env.SITE_VSL_VIDEO_URL || '').trim());
+    const u = new URL((process.env.SITE_VSL_VIDEO_URL ?? DEFAULT_VSL_VIDEO_URL).trim());
     return u.protocol === 'https:' ? u.href : '';
   } catch { return ''; }
 })();
