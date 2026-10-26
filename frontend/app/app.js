@@ -91,6 +91,9 @@
     radar: '<circle cx="12" cy="12" r="9"/><path d="M12 12 18 6"/><circle cx="12" cy="12" r="4"/>',
     doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
     bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    pen: '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    archive: '<rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
   };
   const icon = (name, cls = 'h-5 w-5') =>
     `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name] || ICON.spark}</svg>`;
@@ -219,7 +222,7 @@
     const f = state.me.features;
     const byKey = new Map(f.map((x) => [x.key, x]));
     const link = (href, ic, label, extra = '') =>
-      `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link">${icon(ic, 'h-[18px] w-[18px] shrink-0')}<span class="flex-1 truncate">${esc(label)}</span>${extra}</a>`;
+      `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link"><span class="nav-ico">${icon(ic, 'h-[17px] w-[17px]')}</span><span class="flex-1 truncate">${esc(label)}</span>${extra}</a>`;
     const item = (x) => (x.unlocked && x.status === 'live'
       ? link(ROUTE_OF[x.key], ICON_OF[x.key], x.name)
       : link('/feature/' + x.key, x.unlocked ? ICON_OF[x.key] : 'lock', x.name,
@@ -228,7 +231,7 @@
       ${link('/', 'home', 'Command Center')}
       ${NAV_GROUPS.map(([title, keys]) => {
         const items = keys.map((k) => byKey.get(k)).filter(Boolean);
-        return items.length ? `<p class="mt-5 px-3 pb-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-mist-500">${title}</p>${items.map(item).join('')}` : '';
+        return items.length ? `<p class="mt-5 px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-mist-500">${title}</p>${items.map(item).join('')}` : '';
       }).join('')}
     `;
   }
@@ -243,11 +246,12 @@
     document.body.classList.toggle('ed-core', !ent);
     $('#root').innerHTML = `
       <div class="flex min-h-screen">
-        <aside class="no-print sticky top-0 hidden h-screen w-[17rem] shrink-0 flex-col border-r border-white/[0.07] bg-black/80 px-4 pb-4 pt-5 backdrop-blur-2xl lg:flex">
+        <aside class="no-print sticky top-0 hidden h-screen w-[17.5rem] shrink-0 p-3 lg:block">
+         <div class="card flex h-full flex-col !rounded-[30px] px-3 pb-3 pt-5">
           <a href="/app" data-link class="mb-1 flex items-center gap-2.5 px-2">${brandLockup()}</a>
           <div class="mb-4 px-2"><span class="edition-badge mt-2">${esc(me.tier.label)}</span></div>
           <nav class="flex-1 space-y-0.5 overflow-y-auto pl-1.5 pr-1">${navItems()}</nav>
-          <div class="mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
+          <div class="mt-3 rounded-[22px] border border-white/[0.07] bg-white/[0.04] p-3">
             <p class="truncate text-sm font-medium text-mist-100">${esc(me.user.businessName || me.user.fullName || me.user.email)}</p>
             <p class="truncate text-xs text-mist-500">${esc(me.user.email)}</p>
             <div class="mt-2 flex gap-2">
@@ -255,9 +259,10 @@
               <button id="logout" class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('out', 'h-4 w-4')}Sign out</button>
             </div>
           </div>
+         </div>
         </aside>
         <div class="flex min-w-0 flex-1 flex-col">
-          <header class="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.07] bg-black/80 px-4 py-3 backdrop-blur-2xl lg:hidden">
+          <header class="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.07] bg-[#04050A]/80 px-4 py-3 backdrop-blur-2xl lg:hidden">
             <a href="/app" data-link class="flex items-center gap-2">${brandLockup('h-7')}<span class="edition-badge !px-2 !py-0.5 !text-[9px]">${ent ? 'Enterprise' : 'Core'}</span></a>
             <button id="menu" class="btn-ghost !p-2" aria-label="Menu">${icon('menu')}</button>
           </header>
@@ -267,7 +272,7 @@
               <button id="logout-m" class="nav-link w-full">${icon('out')}<span>Sign out</span></button>
             </nav>
           </div>
-          <main id="view" class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-10"></main>
+          <main id="view" class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-9"></main>
         </div>
       </div>`;
     const logout = async () => {
@@ -463,29 +468,29 @@
         <span class="edition-badge">${ent ? 'Enterprise Edition' : 'Core Edition'}</span>
         <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">${ent ? 'Your <span class="accent-text">Enterprise</span> Command Center.' : 'Your <span class="accent-text">Core</span> Command Center.'}</h1>
         <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? 'Your GovCon Autopilot finds, prices and writes bids for you. Plus 50 proposals a month, predictive matching, legal teaming, compliance grading and your winning voice.' : 'Upload a solicitation and the engine writes the proposal. 10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
-        <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06]">${icon(ICON_OF[key] || 'spark', 'h-4 w-4')}${label}</a>`).join('')}</div>
+        <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06] !pl-1.5"><span class="ico-bubble ico-grad !h-7 !w-7 !rounded-full">${icon(ICON_OF[key] || 'spark', 'h-3.5 w-3.5')}</span>${label}</a>`).join('')}</div>
         ${ent ? '' : '<p class="mt-5 text-xs text-mist-500">Enterprise adds the GovCon Autopilot (it finds the bids, gets vendor quotes, prices and writes the proposals for you), the Predictive Bid Matchmaker, Section M grading, teaming agreements and 50 proposals a month.</p>'}
       </section>
       ${pageHead('Today', 'Your pipeline, deadlines and proposals at a glance.',
         '<a href="/app/decryptor" data-link class="btn-ghost">' + icon('decrypt', 'h-4 w-4') + 'Decrypt an RFP</a><a href="/app/proposals/new" data-link class="btn-primary">' + icon('proposal', 'h-4 w-4') + 'New proposal</a>')}
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div class="card p-5">
-          <p class="text-sm text-mist-400">Proposals this month</p>
+        <div class="stat stat-blue">
+          <div class="flex items-center justify-between"><p class="text-sm text-mist-400">Proposals this month</p><span class="ico-bubble ico-blue">${icon('proposal', 'h-4 w-4')}</span></div>
           <p class="mt-2 text-3xl font-bold text-white">${usage.used}<span class="text-lg font-medium text-mist-500"> / ${usage.limit}</span></p>
           <div class="meter mt-3"><span id="meter"></span></div>
           <p class="mt-2 text-xs text-mist-500">Resets ${fmtDate(usage.resetsAt)}</p>
         </div>
-        <div class="card p-5"><p class="text-sm text-mist-400">Active opportunities</p><p class="mt-2 text-3xl font-bold text-white">${active.length}</p><p class="mt-2 text-xs text-mist-500">${won} won so far</p></div>
-        <div class="card p-5"><p class="text-sm text-mist-400">Pipeline value</p><p class="mt-2 text-3xl font-bold text-white">${fmtMoney(pipeline)}</p><p class="mt-2 text-xs text-mist-500">Across open bids</p></div>
-        <div class="card p-5"><p class="text-sm text-mist-400">Due in 21 days</p><p class="mt-2 text-3xl font-bold ${due.length ? 'text-brand-redSoft' : 'text-white'}">${due.length}</p><p class="mt-2 text-xs text-mist-500">Not yet submitted</p></div>
+        <div class="stat stat-violet"><div class="flex items-center justify-between"><p class="text-sm text-mist-400">Active opportunities</p><span class="ico-bubble ico-violet">${icon('crm', 'h-4 w-4')}</span></div><p class="mt-2 text-3xl font-bold text-white">${active.length}</p><p class="mt-2 text-xs text-mist-500">${won} won so far</p></div>
+        <div class="stat stat-green"><div class="flex items-center justify-between"><p class="text-sm text-mist-400">Pipeline value</p><span class="ico-bubble ico-green">${icon('dollar', 'h-4 w-4')}</span></div><p class="mt-2 text-3xl font-bold text-white">${fmtMoney(pipeline)}</p><p class="mt-2 text-xs text-mist-500">Across open bids</p></div>
+        <div class="stat stat-red"><div class="flex items-center justify-between"><p class="text-sm text-mist-400">Due in 21 days</p><span class="ico-bubble ico-red">${icon('cal', 'h-4 w-4')}</span></div><p class="mt-2 text-3xl font-bold ${due.length ? 'text-brand-redSoft' : 'text-white'}">${due.length}</p><p class="mt-2 text-xs text-mist-500">Not yet submitted</p></div>
       </div>
 
       <div class="mt-6 grid gap-6 lg:grid-cols-5">
         <section class="card p-6 lg:col-span-3">
           <div class="mb-4 flex items-center justify-between"><h2 class="font-semibold text-white">Pipeline</h2><a href="/app/crm" data-link class="text-sm text-brand-blueSoft hover:text-white">Open Bid CRM</a></div>
           <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            ${stages.map((s) => `<a href="/app/crm" data-link class="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3 transition hover:border-brand-blueSoft/30">
-              <p class="text-xs text-mist-400">${esc(STAGE_LABEL[s])}</p><p class="mt-1 text-xl font-bold text-white">${bids.filter((b) => b.stage === s).length}</p></a>`).join('')}
+            ${stages.map((s) => `<a href="/app/crm" data-link class="tile transition duration-200 hover:-translate-y-0.5 hover:border-brand-blueSoft/30">
+              <p class="flex items-center gap-1.5 text-xs text-mist-400"><span class="h-1.5 w-1.5 rounded-full ${STAGE_DOT[s]}"></span>${esc(STAGE_LABEL[s])}</p><p class="mt-1 text-xl font-bold text-white">${bids.filter((b) => b.stage === s).length}</p></a>`).join('')}
           </div>
           <div class="mb-2 mt-6 flex items-center justify-between"><h3 class="text-sm font-semibold text-mist-300">Upcoming deadlines</h3><a href="/app/alerts" data-link class="text-xs text-brand-blueSoft hover:text-white">All alerts</a></div>
           ${alerts.length ? `<ul class="divide-y divide-white/[0.06]">${alerts.slice(0, 6).map(alertRow).join('')}</ul>`
@@ -493,7 +498,7 @@
         </section>
         <section class="card p-6 lg:col-span-2">
           <div class="mb-4 flex items-center justify-between"><h2 class="font-semibold text-white">Recent proposals</h2><a href="/app/proposals" data-link class="text-sm text-brand-blueSoft hover:text-white">View all</a></div>
-          ${proposals.length ? `<ul class="space-y-2">${proposals.slice(0, 6).map(proposalRow).join('')}</ul>`
+          ${proposals.length ? `<ul class="space-y-2">${proposals.slice(0, 6).map((p) => proposalRow(p)).join('')}</ul>`
             : '<p class="text-sm text-mist-500">Your first proposal is one click away. Decrypt an RFP, then let the engine draft it.</p>'}
         </section>
       </div>`;
@@ -504,8 +509,14 @@
     : s === 'failed' ? '<span class="pill bg-brand-red/15 text-brand-redSoft">Failed</span>'
       : '<span class="pill bg-brand-blue/20 text-brand-blueSoft"><span class="spinner !h-3 !w-3"></span>Working</span>';
 
-  const proposalRow = (p) => `<li><a href="/app/proposals/${p.id}" data-link class="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.02] px-4 py-3 transition hover:border-brand-blueSoft/30">
-    <span class="min-w-0"><span class="block truncate text-sm font-medium text-white">${esc(p.title)}</span><span class="text-xs text-mist-500">${fmtDate(p.createdAt)}</span></span>${statusPill(p.status)}</a></li>`;
+  const STYLE_LABEL = { house: 'House style', executive: 'Executive', plain: 'Section L Plain' };
+  const proposalRow = (p, actions = false) => `<li data-id="${p.id}" data-title="${esc((p.title || '').toLowerCase())}" class="row-link min-w-0 !p-0">
+    <a href="/app/proposals/${p.id}" data-link class="flex min-w-0 flex-1 items-center justify-between gap-3 py-3 pl-3 pr-2 sm:px-4">
+      <span class="flex min-w-0 items-center gap-3"><span class="ico-bubble ${p.status === 'failed' ? 'ico-red' : 'ico-blue'}">${icon('proposal', 'h-4 w-4')}</span>
+        <span class="min-w-0"><span class="block truncate text-sm font-medium text-white">${esc(p.title)}</span><span class="text-xs text-mist-500">${fmtDate(p.createdAt)}${p.style ? ` · ${STYLE_LABEL[p.style] || 'House style'}` : ''}</span></span></span>
+      <span class="${actions && p.status === 'ready' ? 'hidden sm:block' : ''}">${statusPill(p.status)}</span></a>${actions && p.status !== 'working' ? `<span class="flex shrink-0 items-center gap-1 pr-2 sm:pr-3">
+      ${p.status === 'ready' ? `<button type="button" data-pp="rename" class="btn-ghost !p-2" title="Rename" aria-label="Rename ${esc(p.title)}">${icon('pen', 'h-4 w-4')}</button>` : ''}
+      <button type="button" data-pp="archive" class="btn-ghost !p-2" title="Archive" aria-label="Archive ${esc(p.title)}">${icon('archive', 'h-4 w-4')}</button></span>` : ''}</li>`;
 
   // ------------------------------------------------------------------ Visual Bid CRM
 
@@ -823,12 +834,65 @@
   async function viewProposals(view) {
     const { proposals, usage } = await api('/proposals');
     const left = Math.max(0, usage.limit - usage.used);
+    const pct = Math.min(100, Math.round((usage.used / Math.max(1, usage.limit)) * 100));
     view.innerHTML = `
       ${pageHead('AI Proposal Engine', `${left} of ${usage.limit} proposals left this month. Resets ${fmtDate(usage.resetsAt)}.`,
         `<a href="/app/proposals/new" data-link class="btn-primary">${icon('plus', 'h-4 w-4')}New proposal</a>`)}
-      ${proposals.length ? `<ul class="grid gap-2">${proposals.map(proposalRow).join('')}</ul>`
+      ${proposals.length ? `
+        <div class="mb-5 flex flex-wrap items-center gap-3">
+          <div class="relative min-w-[220px] flex-1"><span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mist-500">${icon('search', 'h-4 w-4')}</span>
+            <input id="pp-q" type="search" class="field !pl-11" placeholder="Search your proposals" aria-label="Search your proposals" /></div>
+          <div class="card flex items-center gap-3 !rounded-full px-4 py-2.5"><span class="text-xs text-mist-400">This month</span><div class="meter !w-28"><span id="pp-meter"></span></div><span class="text-xs font-semibold text-white">${usage.used}/${usage.limit}</span></div>
+        </div>
+        <ul id="pp-list" class="grid gap-2.5">${proposals.map((p) => proposalRow(p, true)).join('')}</ul>
+        <p id="pp-none" class="hidden py-10 text-center text-sm text-mist-500">No proposals match that search.</p>`
         : emptyState('No proposals yet', 'Decrypt a solicitation or add an opportunity to your Bid CRM, then generate a compliant first draft in minutes.', '<a href="/app/proposals/new" data-link class="btn-primary">Write my first proposal</a>')}`;
     if (proposals.some((p) => p.status === 'working')) every(6000, () => render());
+    requestAnimationFrame(() => { const m = $('#pp-meter'); if (m) m.style.width = pct + '%'; });
+    const q = $('#pp-q');
+    if (!q) return;
+    q.addEventListener('input', () => {
+      const term = q.value.trim().toLowerCase();
+      let shown = 0;
+      $$('#pp-list > li').forEach((li) => { const hit = !term || li.dataset.title.includes(term); li.classList.toggle('hidden', !hit); shown += hit; });
+      $('#pp-none').classList.toggle('hidden', shown > 0);
+    });
+    $('#pp-list').addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-pp]');
+      if (!btn) return;
+      e.preventDefault();
+      const li = btn.closest('li');
+      const p = proposals.find((x) => String(x.id) === li.dataset.id);
+      if (btn.dataset.pp === 'rename') renameProposal(p, () => render());
+      else archiveProposal(p, () => render());
+    });
+  }
+
+  /** Small modal to rename a proposal. */
+  function renameProposal(p, done) {
+    const m = openModal(`<h2 class="text-lg font-semibold text-white">Rename proposal</h2>
+      <form id="rn-form" class="mt-5" novalidate><label class="label" for="rn-title">Name</label><input id="rn-title" class="field" maxlength="200" value="${esc(p.title)}" />
+        <div class="mt-6 flex justify-end gap-2"><button type="button" class="btn-ghost" data-close>Cancel</button><button class="btn-primary">Save</button></div></form>`);
+    $('#rn-title', m.el).select();
+    $('#rn-form', m.el).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/proposals/' + p.id, { method: 'PATCH', body: { title: $('#rn-title', m.el).value } });
+        m.close();
+        toast('Renamed.');
+        done();
+      } catch (err) { toast(err.message, 'error'); }
+    });
+  }
+
+  /** Archive after a confirm. Archived proposals still count toward the month they were written. */
+  function archiveProposal(p, done) {
+    const m = openModal(`<h2 class="text-lg font-semibold text-white">Archive this proposal?</h2>
+      <p class="mt-2 text-sm text-mist-400">"${esc(p.title)}" leaves your list. It still counts toward the month it was written in. Download a copy first if you may need it.</p>
+      <div class="mt-6 flex justify-end gap-2"><button type="button" class="btn-ghost" data-close>Keep it</button><button id="ar-go" class="btn-danger">Archive</button></div>`);
+    $('#ar-go', m.el).addEventListener('click', async () => {
+      try { await api('/proposals/' + p.id, { method: 'DELETE' }); m.close(); toast('Archived.'); done(); } catch (err) { toast(err.message, 'error'); }
+    });
   }
 
   const CONTRACT_TYPES = ['Firm Fixed Price', 'Time and Materials', 'Labor Hour', 'Cost Reimbursement', 'IDIQ', 'BPA', 'Purchase Order', 'Not sure'];
@@ -895,7 +959,14 @@
         </section>
 
         <section class="card p-6 sm:p-8">
-          ${step(5, 'Anything else the writer should know', '')}
+          ${step(5, 'Pick a PDF style', 'How the finished proposal looks when you save it as a PDF or Word file. You can switch styles any time from the preview.')}
+          ${stylePicker(state.me.user.proposalStyle)}
+          <label class="mt-4 flex items-start gap-3 text-sm text-mist-300"><input type="checkbox" name="legend" class="mt-1 accent-brand-blue" />
+            <span>Add the data-rights legend <span class="text-mist-500">(FAR 52.215-1(e)): a notice on the cover and every page that your pricing and methods are for evaluation only. Common on services and technical proposals.</span></span></label>
+        </section>
+
+        <section class="card p-6 sm:p-8">
+          ${step(6, 'Anything else the writer should know', '')}
           <textarea id="pf-notes" name="instructions" rows="5" class="field" maxlength="6000" placeholder="Brand or model you are offering, the subcontractor or supplier you plan to use, warranty, win themes, staffing. If you have no solicitation selected, describe the contract here."></textarea>
           <p id="pf-error" class="mt-4 hidden text-sm text-brand-redSoft" role="alert"></p>
           <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -1026,6 +1097,8 @@
           pricingItems: $$('.pf-item', form).map((tr) => Object.fromEntries($$('[data-k]', tr).map((i) => [i.dataset.k, i.value.trim()]))).filter((it) => it.description),
           pricingExtras: $$('.pf-extra', form).map((el) => Object.fromEntries($$('[data-k]', el).map((i) => [i.dataset.k, i.value.trim()]))).filter((x) => x.label && x.amount),
           attachments: await Promise.all(files.map(async (f) => ({ name: f.name, mediaType: f.type || 'application/pdf', data: await readBase64(f) }))),
+          style: (form.querySelector('input[name=style]:checked') || {}).value || 'house',
+          pdfOptions: { legend: form.elements.legend.checked },
         };
         const { id } = await api('/proposals', { method: 'POST', body: data });
         await refreshMe().catch(() => {});
@@ -1062,14 +1135,18 @@
       view.innerHTML = emptyState('This draft did not finish', esc(p.error || 'Please try again.') + ' It did not count toward your monthly limit.', '<a href="/app/proposals/new" data-link class="btn-primary">Try again</a>');
       return;
     }
+    const left = (p.contentMd.match(/\[(INSERT|CONFIRM|TBD)[^\]]*\]/g) || []).length;
     docViewer(view, {
       title: p.title,
-      sub: 'Review every [INSERT] and [CONFIRM] placeholder before you submit.',
+      sub: left ? `${left} placeholder${left === 1 ? '' : 's'} to fill in before you submit. They are highlighted in red.` : 'No placeholders left. Read it through once more, then save the PDF.',
+      extra: `<button id="pv-rename" class="btn-ghost">Rename</button><button id="pv-archive" class="btn-ghost">Archive</button>`,
       md: p.contentMd,
       save: (md) => api('/proposals/' + p.id, { method: 'PATCH', body: { contentMd: md } }),
       book: (md) => openProposalBook(p, md),
-      word: async (md) => proposalWord(await proposalContext(p), md),
+      word: async (md) => proposalWord(Object.assign(await proposalContext(p), { style: styleKey(p.style) }, bookOpts(p.pdfOptions)), md),
     });
+    $('#pv-rename').addEventListener('click', () => renameProposal(p, () => render()));
+    $('#pv-archive').addEventListener('click', () => archiveProposal(p, () => navigate('/proposals')));
   }
 
   // ------------------------------------------------------------------ profile and feature pages
@@ -1112,12 +1189,12 @@
     </li>`;
 
   /** Read-only document view with edit, copy, Word and print. Used by proposals and capability statements. */
-  function docViewer(view, { title, sub, md, save, book, word }) {
+  function docViewer(view, { title, sub, md, save, book, word, extra = '' }) {
     let content = md;
     const slug = (title || 'document').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'document';
     view.innerHTML = `
       <div class="no-print">${pageHead(esc(title), esc(sub),
-        `<button id="edit" class="btn-ghost">Edit</button><button id="copy" class="btn-ghost">Copy</button>
+        `${extra}<button id="edit" class="btn-ghost">Edit</button><button id="copy" class="btn-ghost">Copy</button>
          <button id="word" class="btn-ghost">Download Word</button><button id="print" class="btn-primary">${book ? 'Proposal PDF' : 'Print / PDF'}</button>`)}</div>
       <article class="card print-area p-6 sm:p-10"><div id="doc" class="doc">${markdown(content)}</div>
         <div id="editor" class="no-print hidden"><textarea id="md" rows="30" class="field font-mono !text-[13px] leading-relaxed">${esc(content)}</textarea>

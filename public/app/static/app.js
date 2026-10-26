@@ -91,6 +91,9 @@
     radar: '<circle cx="12" cy="12" r="9"/><path d="M12 12 18 6"/><circle cx="12" cy="12" r="4"/>',
     doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
     bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    pen: '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    archive: '<rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
   };
   const icon = (name, cls = 'h-5 w-5') =>
     `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name] || ICON.spark}</svg>`;
@@ -219,7 +222,7 @@
     const f = state.me.features;
     const byKey = new Map(f.map((x) => [x.key, x]));
     const link = (href, ic, label, extra = '') =>
-      `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link">${icon(ic, 'h-[18px] w-[18px] shrink-0')}<span class="flex-1 truncate">${esc(label)}</span>${extra}</a>`;
+      `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link"><span class="nav-ico">${icon(ic, 'h-[17px] w-[17px]')}</span><span class="flex-1 truncate">${esc(label)}</span>${extra}</a>`;
     const item = (x) => (x.unlocked && x.status === 'live'
       ? link(ROUTE_OF[x.key], ICON_OF[x.key], x.name)
       : link('/feature/' + x.key, x.unlocked ? ICON_OF[x.key] : 'lock', x.name,
@@ -228,7 +231,7 @@
       ${link('/', 'home', 'Command Center')}
       ${NAV_GROUPS.map(([title, keys]) => {
         const items = keys.map((k) => byKey.get(k)).filter(Boolean);
-        return items.length ? `<p class="mt-5 px-3 pb-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-mist-500">${title}</p>${items.map(item).join('')}` : '';
+        return items.length ? `<p class="mt-5 px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-mist-500">${title}</p>${items.map(item).join('')}` : '';
       }).join('')}
     `;
   }
@@ -243,11 +246,12 @@
     document.body.classList.toggle('ed-core', !ent);
     $('#root').innerHTML = `
       <div class="flex min-h-screen">
-        <aside class="no-print sticky top-0 hidden h-screen w-[17rem] shrink-0 flex-col border-r border-white/[0.07] bg-black/80 px-4 pb-4 pt-5 backdrop-blur-2xl lg:flex">
+        <aside class="no-print sticky top-0 hidden h-screen w-[17.5rem] shrink-0 p-3 lg:block">
+         <div class="card flex h-full flex-col !rounded-[30px] px-3 pb-3 pt-5">
           <a href="/app" data-link class="mb-1 flex items-center gap-2.5 px-2">${brandLockup()}</a>
           <div class="mb-4 px-2"><span class="edition-badge mt-2">${esc(me.tier.label)}</span></div>
           <nav class="flex-1 space-y-0.5 overflow-y-auto pl-1.5 pr-1">${navItems()}</nav>
-          <div class="mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
+          <div class="mt-3 rounded-[22px] border border-white/[0.07] bg-white/[0.04] p-3">
             <p class="truncate text-sm font-medium text-mist-100">${esc(me.user.businessName || me.user.fullName || me.user.email)}</p>
             <p class="truncate text-xs text-mist-500">${esc(me.user.email)}</p>
             <div class="mt-2 flex gap-2">
@@ -255,9 +259,10 @@
               <button id="logout" class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('out', 'h-4 w-4')}Sign out</button>
             </div>
           </div>
+         </div>
         </aside>
         <div class="flex min-w-0 flex-1 flex-col">
-          <header class="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.07] bg-black/80 px-4 py-3 backdrop-blur-2xl lg:hidden">
+          <header class="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.07] bg-[#04050A]/80 px-4 py-3 backdrop-blur-2xl lg:hidden">
             <a href="/app" data-link class="flex items-center gap-2">${brandLockup('h-7')}<span class="edition-badge !px-2 !py-0.5 !text-[9px]">${ent ? 'Enterprise' : 'Core'}</span></a>
             <button id="menu" class="btn-ghost !p-2" aria-label="Menu">${icon('menu')}</button>
           </header>
@@ -267,7 +272,7 @@
               <button id="logout-m" class="nav-link w-full">${icon('out')}<span>Sign out</span></button>
             </nav>
           </div>
-          <main id="view" class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-10"></main>
+          <main id="view" class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-9"></main>
         </div>
       </div>`;
     const logout = async () => {
@@ -463,29 +468,29 @@
         <span class="edition-badge">${ent ? 'Enterprise Edition' : 'Core Edition'}</span>
         <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">${ent ? 'Your <span class="accent-text">Enterprise</span> Command Center.' : 'Your <span class="accent-text">Core</span> Command Center.'}</h1>
         <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? 'Your GovCon Autopilot finds, prices and writes bids for you. Plus 50 proposals a month, predictive matching, legal teaming, compliance grading and your winning voice.' : 'Upload a solicitation and the engine writes the proposal. 10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
-        <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06]">${icon(ICON_OF[key] || 'spark', 'h-4 w-4')}${label}</a>`).join('')}</div>
+        <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06] !pl-1.5"><span class="ico-bubble ico-grad !h-7 !w-7 !rounded-full">${icon(ICON_OF[key] || 'spark', 'h-3.5 w-3.5')}</span>${label}</a>`).join('')}</div>
         ${ent ? '' : '<p class="mt-5 text-xs text-mist-500">Enterprise adds the GovCon Autopilot (it finds the bids, gets vendor quotes, prices and writes the proposals for you), the Predictive Bid Matchmaker, Section M grading, teaming agreements and 50 proposals a month.</p>'}
       </section>
       ${pageHead('Today', 'Your pipeline, deadlines and proposals at a glance.',
         '<a href="/app/decryptor" data-link class="btn-ghost">' + icon('decrypt', 'h-4 w-4') + 'Decrypt an RFP</a><a href="/app/proposals/new" data-link class="btn-primary">' + icon('proposal', 'h-4 w-4') + 'New proposal</a>')}
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div class="card p-5">
-          <p class="text-sm text-mist-400">Proposals this month</p>
+        <div class="stat stat-blue">
+          <div class="flex items-center justify-between"><p class="text-sm text-mist-400">Proposals this month</p><span class="ico-bubble ico-blue">${icon('proposal', 'h-4 w-4')}</span></div>
           <p class="mt-2 text-3xl font-bold text-white">${usage.used}<span class="text-lg font-medium text-mist-500"> / ${usage.limit}</span></p>
           <div class="meter mt-3"><span id="meter"></span></div>
           <p class="mt-2 text-xs text-mist-500">Resets ${fmtDate(usage.resetsAt)}</p>
         </div>
-        <div class="card p-5"><p class="text-sm text-mist-400">Active opportunities</p><p class="mt-2 text-3xl font-bold text-white">${active.length}</p><p class="mt-2 text-xs text-mist-500">${won} won so far</p></div>
-        <div class="card p-5"><p class="text-sm text-mist-400">Pipeline value</p><p class="mt-2 text-3xl font-bold text-white">${fmtMoney(pipeline)}</p><p class="mt-2 text-xs text-mist-500">Across open bids</p></div>
-        <div class="card p-5"><p class="text-sm text-mist-400">Due in 21 days</p><p class="mt-2 text-3xl font-bold ${due.length ? 'text-brand-redSoft' : 'text-white'}">${due.length}</p><p class="mt-2 text-xs text-mist-500">Not yet submitted</p></div>
+        <div class="stat stat-violet"><div class="flex items-center justify-between"><p class="text-sm text-mist-400">Active opportunities</p><span class="ico-bubble ico-violet">${icon('crm', 'h-4 w-4')}</span></div><p class="mt-2 text-3xl font-bold text-white">${active.length}</p><p class="mt-2 text-xs text-mist-500">${won} won so far</p></div>
+        <div class="stat stat-green"><div class="flex items-center justify-between"><p class="text-sm text-mist-400">Pipeline value</p><span class="ico-bubble ico-green">${icon('dollar', 'h-4 w-4')}</span></div><p class="mt-2 text-3xl font-bold text-white">${fmtMoney(pipeline)}</p><p class="mt-2 text-xs text-mist-500">Across open bids</p></div>
+        <div class="stat stat-red"><div class="flex items-center justify-between"><p class="text-sm text-mist-400">Due in 21 days</p><span class="ico-bubble ico-red">${icon('cal', 'h-4 w-4')}</span></div><p class="mt-2 text-3xl font-bold ${due.length ? 'text-brand-redSoft' : 'text-white'}">${due.length}</p><p class="mt-2 text-xs text-mist-500">Not yet submitted</p></div>
       </div>
 
       <div class="mt-6 grid gap-6 lg:grid-cols-5">
         <section class="card p-6 lg:col-span-3">
           <div class="mb-4 flex items-center justify-between"><h2 class="font-semibold text-white">Pipeline</h2><a href="/app/crm" data-link class="text-sm text-brand-blueSoft hover:text-white">Open Bid CRM</a></div>
           <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            ${stages.map((s) => `<a href="/app/crm" data-link class="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3 transition hover:border-brand-blueSoft/30">
-              <p class="text-xs text-mist-400">${esc(STAGE_LABEL[s])}</p><p class="mt-1 text-xl font-bold text-white">${bids.filter((b) => b.stage === s).length}</p></a>`).join('')}
+            ${stages.map((s) => `<a href="/app/crm" data-link class="tile transition duration-200 hover:-translate-y-0.5 hover:border-brand-blueSoft/30">
+              <p class="flex items-center gap-1.5 text-xs text-mist-400"><span class="h-1.5 w-1.5 rounded-full ${STAGE_DOT[s]}"></span>${esc(STAGE_LABEL[s])}</p><p class="mt-1 text-xl font-bold text-white">${bids.filter((b) => b.stage === s).length}</p></a>`).join('')}
           </div>
           <div class="mb-2 mt-6 flex items-center justify-between"><h3 class="text-sm font-semibold text-mist-300">Upcoming deadlines</h3><a href="/app/alerts" data-link class="text-xs text-brand-blueSoft hover:text-white">All alerts</a></div>
           ${alerts.length ? `<ul class="divide-y divide-white/[0.06]">${alerts.slice(0, 6).map(alertRow).join('')}</ul>`
@@ -493,7 +498,7 @@
         </section>
         <section class="card p-6 lg:col-span-2">
           <div class="mb-4 flex items-center justify-between"><h2 class="font-semibold text-white">Recent proposals</h2><a href="/app/proposals" data-link class="text-sm text-brand-blueSoft hover:text-white">View all</a></div>
-          ${proposals.length ? `<ul class="space-y-2">${proposals.slice(0, 6).map(proposalRow).join('')}</ul>`
+          ${proposals.length ? `<ul class="space-y-2">${proposals.slice(0, 6).map((p) => proposalRow(p)).join('')}</ul>`
             : '<p class="text-sm text-mist-500">Your first proposal is one click away. Decrypt an RFP, then let the engine draft it.</p>'}
         </section>
       </div>`;
@@ -504,8 +509,14 @@
     : s === 'failed' ? '<span class="pill bg-brand-red/15 text-brand-redSoft">Failed</span>'
       : '<span class="pill bg-brand-blue/20 text-brand-blueSoft"><span class="spinner !h-3 !w-3"></span>Working</span>';
 
-  const proposalRow = (p) => `<li><a href="/app/proposals/${p.id}" data-link class="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.02] px-4 py-3 transition hover:border-brand-blueSoft/30">
-    <span class="min-w-0"><span class="block truncate text-sm font-medium text-white">${esc(p.title)}</span><span class="text-xs text-mist-500">${fmtDate(p.createdAt)}</span></span>${statusPill(p.status)}</a></li>`;
+  const STYLE_LABEL = { house: 'House style', executive: 'Executive', plain: 'Section L Plain' };
+  const proposalRow = (p, actions = false) => `<li data-id="${p.id}" data-title="${esc((p.title || '').toLowerCase())}" class="row-link min-w-0 !p-0">
+    <a href="/app/proposals/${p.id}" data-link class="flex min-w-0 flex-1 items-center justify-between gap-3 py-3 pl-3 pr-2 sm:px-4">
+      <span class="flex min-w-0 items-center gap-3"><span class="ico-bubble ${p.status === 'failed' ? 'ico-red' : 'ico-blue'}">${icon('proposal', 'h-4 w-4')}</span>
+        <span class="min-w-0"><span class="block truncate text-sm font-medium text-white">${esc(p.title)}</span><span class="text-xs text-mist-500">${fmtDate(p.createdAt)}${p.style ? ` · ${STYLE_LABEL[p.style] || 'House style'}` : ''}</span></span></span>
+      <span class="${actions && p.status === 'ready' ? 'hidden sm:block' : ''}">${statusPill(p.status)}</span></a>${actions && p.status !== 'working' ? `<span class="flex shrink-0 items-center gap-1 pr-2 sm:pr-3">
+      ${p.status === 'ready' ? `<button type="button" data-pp="rename" class="btn-ghost !p-2" title="Rename" aria-label="Rename ${esc(p.title)}">${icon('pen', 'h-4 w-4')}</button>` : ''}
+      <button type="button" data-pp="archive" class="btn-ghost !p-2" title="Archive" aria-label="Archive ${esc(p.title)}">${icon('archive', 'h-4 w-4')}</button></span>` : ''}</li>`;
 
   // ------------------------------------------------------------------ Visual Bid CRM
 
@@ -823,12 +834,65 @@
   async function viewProposals(view) {
     const { proposals, usage } = await api('/proposals');
     const left = Math.max(0, usage.limit - usage.used);
+    const pct = Math.min(100, Math.round((usage.used / Math.max(1, usage.limit)) * 100));
     view.innerHTML = `
       ${pageHead('AI Proposal Engine', `${left} of ${usage.limit} proposals left this month. Resets ${fmtDate(usage.resetsAt)}.`,
         `<a href="/app/proposals/new" data-link class="btn-primary">${icon('plus', 'h-4 w-4')}New proposal</a>`)}
-      ${proposals.length ? `<ul class="grid gap-2">${proposals.map(proposalRow).join('')}</ul>`
+      ${proposals.length ? `
+        <div class="mb-5 flex flex-wrap items-center gap-3">
+          <div class="relative min-w-[220px] flex-1"><span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mist-500">${icon('search', 'h-4 w-4')}</span>
+            <input id="pp-q" type="search" class="field !pl-11" placeholder="Search your proposals" aria-label="Search your proposals" /></div>
+          <div class="card flex items-center gap-3 !rounded-full px-4 py-2.5"><span class="text-xs text-mist-400">This month</span><div class="meter !w-28"><span id="pp-meter"></span></div><span class="text-xs font-semibold text-white">${usage.used}/${usage.limit}</span></div>
+        </div>
+        <ul id="pp-list" class="grid gap-2.5">${proposals.map((p) => proposalRow(p, true)).join('')}</ul>
+        <p id="pp-none" class="hidden py-10 text-center text-sm text-mist-500">No proposals match that search.</p>`
         : emptyState('No proposals yet', 'Decrypt a solicitation or add an opportunity to your Bid CRM, then generate a compliant first draft in minutes.', '<a href="/app/proposals/new" data-link class="btn-primary">Write my first proposal</a>')}`;
     if (proposals.some((p) => p.status === 'working')) every(6000, () => render());
+    requestAnimationFrame(() => { const m = $('#pp-meter'); if (m) m.style.width = pct + '%'; });
+    const q = $('#pp-q');
+    if (!q) return;
+    q.addEventListener('input', () => {
+      const term = q.value.trim().toLowerCase();
+      let shown = 0;
+      $$('#pp-list > li').forEach((li) => { const hit = !term || li.dataset.title.includes(term); li.classList.toggle('hidden', !hit); shown += hit; });
+      $('#pp-none').classList.toggle('hidden', shown > 0);
+    });
+    $('#pp-list').addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-pp]');
+      if (!btn) return;
+      e.preventDefault();
+      const li = btn.closest('li');
+      const p = proposals.find((x) => String(x.id) === li.dataset.id);
+      if (btn.dataset.pp === 'rename') renameProposal(p, () => render());
+      else archiveProposal(p, () => render());
+    });
+  }
+
+  /** Small modal to rename a proposal. */
+  function renameProposal(p, done) {
+    const m = openModal(`<h2 class="text-lg font-semibold text-white">Rename proposal</h2>
+      <form id="rn-form" class="mt-5" novalidate><label class="label" for="rn-title">Name</label><input id="rn-title" class="field" maxlength="200" value="${esc(p.title)}" />
+        <div class="mt-6 flex justify-end gap-2"><button type="button" class="btn-ghost" data-close>Cancel</button><button class="btn-primary">Save</button></div></form>`);
+    $('#rn-title', m.el).select();
+    $('#rn-form', m.el).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/proposals/' + p.id, { method: 'PATCH', body: { title: $('#rn-title', m.el).value } });
+        m.close();
+        toast('Renamed.');
+        done();
+      } catch (err) { toast(err.message, 'error'); }
+    });
+  }
+
+  /** Archive after a confirm. Archived proposals still count toward the month they were written. */
+  function archiveProposal(p, done) {
+    const m = openModal(`<h2 class="text-lg font-semibold text-white">Archive this proposal?</h2>
+      <p class="mt-2 text-sm text-mist-400">"${esc(p.title)}" leaves your list. It still counts toward the month it was written in. Download a copy first if you may need it.</p>
+      <div class="mt-6 flex justify-end gap-2"><button type="button" class="btn-ghost" data-close>Keep it</button><button id="ar-go" class="btn-danger">Archive</button></div>`);
+    $('#ar-go', m.el).addEventListener('click', async () => {
+      try { await api('/proposals/' + p.id, { method: 'DELETE' }); m.close(); toast('Archived.'); done(); } catch (err) { toast(err.message, 'error'); }
+    });
   }
 
   const CONTRACT_TYPES = ['Firm Fixed Price', 'Time and Materials', 'Labor Hour', 'Cost Reimbursement', 'IDIQ', 'BPA', 'Purchase Order', 'Not sure'];
@@ -895,7 +959,14 @@
         </section>
 
         <section class="card p-6 sm:p-8">
-          ${step(5, 'Anything else the writer should know', '')}
+          ${step(5, 'Pick a PDF style', 'How the finished proposal looks when you save it as a PDF or Word file. You can switch styles any time from the preview.')}
+          ${stylePicker(state.me.user.proposalStyle)}
+          <label class="mt-4 flex items-start gap-3 text-sm text-mist-300"><input type="checkbox" name="legend" class="mt-1 accent-brand-blue" />
+            <span>Add the data-rights legend <span class="text-mist-500">(FAR 52.215-1(e)): a notice on the cover and every page that your pricing and methods are for evaluation only. Common on services and technical proposals.</span></span></label>
+        </section>
+
+        <section class="card p-6 sm:p-8">
+          ${step(6, 'Anything else the writer should know', '')}
           <textarea id="pf-notes" name="instructions" rows="5" class="field" maxlength="6000" placeholder="Brand or model you are offering, the subcontractor or supplier you plan to use, warranty, win themes, staffing. If you have no solicitation selected, describe the contract here."></textarea>
           <p id="pf-error" class="mt-4 hidden text-sm text-brand-redSoft" role="alert"></p>
           <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -1026,6 +1097,8 @@
           pricingItems: $$('.pf-item', form).map((tr) => Object.fromEntries($$('[data-k]', tr).map((i) => [i.dataset.k, i.value.trim()]))).filter((it) => it.description),
           pricingExtras: $$('.pf-extra', form).map((el) => Object.fromEntries($$('[data-k]', el).map((i) => [i.dataset.k, i.value.trim()]))).filter((x) => x.label && x.amount),
           attachments: await Promise.all(files.map(async (f) => ({ name: f.name, mediaType: f.type || 'application/pdf', data: await readBase64(f) }))),
+          style: (form.querySelector('input[name=style]:checked') || {}).value || 'house',
+          pdfOptions: { legend: form.elements.legend.checked },
         };
         const { id } = await api('/proposals', { method: 'POST', body: data });
         await refreshMe().catch(() => {});
@@ -1062,14 +1135,18 @@
       view.innerHTML = emptyState('This draft did not finish', esc(p.error || 'Please try again.') + ' It did not count toward your monthly limit.', '<a href="/app/proposals/new" data-link class="btn-primary">Try again</a>');
       return;
     }
+    const left = (p.contentMd.match(/\[(INSERT|CONFIRM|TBD)[^\]]*\]/g) || []).length;
     docViewer(view, {
       title: p.title,
-      sub: 'Review every [INSERT] and [CONFIRM] placeholder before you submit.',
+      sub: left ? `${left} placeholder${left === 1 ? '' : 's'} to fill in before you submit. They are highlighted in red.` : 'No placeholders left. Read it through once more, then save the PDF.',
+      extra: `<button id="pv-rename" class="btn-ghost">Rename</button><button id="pv-archive" class="btn-ghost">Archive</button>`,
       md: p.contentMd,
       save: (md) => api('/proposals/' + p.id, { method: 'PATCH', body: { contentMd: md } }),
       book: (md) => openProposalBook(p, md),
-      word: async (md) => proposalWord(await proposalContext(p), md),
+      word: async (md) => proposalWord(Object.assign(await proposalContext(p), { style: styleKey(p.style) }, bookOpts(p.pdfOptions)), md),
     });
+    $('#pv-rename').addEventListener('click', () => renameProposal(p, () => render()));
+    $('#pv-archive').addEventListener('click', () => archiveProposal(p, () => navigate('/proposals')));
   }
 
   // ------------------------------------------------------------------ profile and feature pages
@@ -1112,12 +1189,12 @@
     </li>`;
 
   /** Read-only document view with edit, copy, Word and print. Used by proposals and capability statements. */
-  function docViewer(view, { title, sub, md, save, book, word }) {
+  function docViewer(view, { title, sub, md, save, book, word, extra = '' }) {
     let content = md;
     const slug = (title || 'document').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'document';
     view.innerHTML = `
       <div class="no-print">${pageHead(esc(title), esc(sub),
-        `<button id="edit" class="btn-ghost">Edit</button><button id="copy" class="btn-ghost">Copy</button>
+        `${extra}<button id="edit" class="btn-ghost">Edit</button><button id="copy" class="btn-ghost">Copy</button>
          <button id="word" class="btn-ghost">Download Word</button><button id="print" class="btn-primary">${book ? 'Proposal PDF' : 'Print / PDF'}</button>`)}</div>
       <article class="card print-area p-6 sm:p-10"><div id="doc" class="doc">${markdown(content)}</div>
         <div id="editor" class="no-print hidden"><textarea id="md" rows="30" class="field font-mono !text-[13px] leading-relaxed">${esc(content)}</textarea>
@@ -2417,7 +2494,40 @@
   // "Part N:" sections that each start a new page, blue-ruled price tables and "Page N" footers.
   // Pages are laid out here at US Letter size so the preview, the PDF and the page numbers agree.
 
+  //
+  // Members pick one of three styles per proposal (proposals.style):
+  //  - house: the format above, from the VA patio umbrella win. The default.
+  //  - executive: a modern, full-color layout in the Shipley tradition: a bold cover with a
+  //    "proposal at a glance" panel, a theme-statement callout opening each part, running
+  //    headers (solicitation number and offeror) and shaded price tables. Accent color is the member's pick.
+  //  - plain: the common Section L baseline (Times New Roman 12 pt, 1-inch margins, black on white)
+  //    for solicitations with strict format rules or page limits.
+  // Any style can carry the FAR 52.215-1(e) restrictive legend: the full notice on the cover and
+  // the short notice at the foot of every sheet it covers.
+
   const BOOK_CERTS = { '8a': '8(a)', wosb: 'WOSB', sdvosb: 'SDVOSB', vosb: 'VOSB', hubzone: 'HUBZone', sdb: 'SDB' };
+
+  const PROPOSAL_STYLES = {
+    house: { name: 'House', tag: 'Default', blurb: 'Two-column cover, your logo on every page, blue-ruled tables. The format of our VA patio umbrella win.' },
+    executive: { name: 'Executive', tag: 'New', blurb: 'Bold color cover, theme statements that open each part, running headers and shaded price tables.' },
+    plain: { name: 'Section L Plain', tag: 'Strict', blurb: 'Times New Roman 12 pt, 1-inch margins, black and white. For solicitations with tight format rules or page limits.' },
+  };
+  const BOOK_ACCENTS = { navy: '#1B2F5E', crimson: '#9B1B30', teal: '#0F5E63', graphite: '#2B2F36' };
+  const styleKey = (k) => (PROPOSAL_STYLES[k] ? k : 'house');
+  const bookOpts = (o) => ({ accent: BOOK_ACCENTS[o && o.accent] ? o.accent : 'navy', legend: Boolean(o && o.legend) });
+
+  // FAR 52.215-1(e): the title-page notice, and the notice on each restricted sheet.
+  const LEGEND_TITLE = (sheets) => `This proposal includes data that shall not be disclosed outside the Government and shall not be duplicated, used, or disclosed, in whole or in part, for any purpose other than to evaluate this proposal. If, however, a contract is awarded to this offeror as a result of, or in connection with, the submission of this data, the Government shall have the right to duplicate, use, or disclose the data to the extent provided in the resulting contract. This restriction does not limit the Government's right to use information contained in this data if it is obtained from another source without restriction. The data subject to this restriction are contained in sheets ${sheets}.`;
+  const LEGEND_SHEET = 'Use or disclosure of data contained on this sheet is subject to the restriction on the title page of this proposal.';
+
+  /** Mini page drawings for the style picker (plain shapes, never a real proposal). */
+  const styleThumb = (k) => `<span class="sty-thumb sty-${k}" aria-hidden="true"><i></i><b></b><b></b><b></b><em></em></span>`;
+
+  /** Three style cards as radio buttons named `style`. */
+  const stylePicker = (selected) => `<div class="grid gap-3 sm:grid-cols-3">${Object.entries(PROPOSAL_STYLES).map(([k, st]) => `
+    <label class="sty-card"><input type="radio" name="style" value="${k}" class="sr-only" ${styleKey(selected) === k ? 'checked' : ''} />
+      <span class="sty-inner">${styleThumb(k)}<span class="mt-3 flex items-center gap-2"><span class="font-semibold text-white">${st.name}</span><span class="pill ${k === 'executive' ? 'bg-gradient-to-r from-brand-blue/40 to-brand-red/40 text-white' : 'bg-white/[0.08] text-mist-300'}">${st.tag}</span></span>
+      <span class="mt-1 block text-xs leading-relaxed text-mist-400">${st.blurb}</span></span></label>`).join('')}</div>`;
 
   /** Everything the cover and part headers need, from the solicitation summary and the profile. */
   async function proposalContext(p) {
@@ -2440,6 +2550,9 @@
       email: u.email,
       website: u.website,
       size: ['Small Business', ...certs].join(', '),
+      agency: has(sum.agency) ? sum.agency : '',
+      setAside: has(sum.set_aside) ? sum.set_aside : '',
+      ids: [u.uei && `UEI ${u.uei}`, u.cageCode && `CAGE ${u.cageCode}`].filter(Boolean).join(' · '),
       logo,
       date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     };
@@ -2465,8 +2578,13 @@
   function bookPage(ctx, cls = '') {
     const page = document.createElement('section');
     page.className = 'bp ' + cls;
-    page.innerHTML = `<header class="bp-head">${ctx.logo ? `<img class="bp-logo" alt="" src="${esc(ctx.logo)}" />` : `<span class="bp-logo-box">${esc(ctx.company)}</span>`}</header>
-      <div class="bp-body"></div><footer class="bp-foot"></footer>`;
+    const sol = esc(ctx.solNumber.replace(/^\[INSERT[^\]]*\]$/, ''));
+    const head = ctx.style === 'executive'
+      ? `<header class="bp-head bpx-head">${ctx.logo ? `<img class="bpx-logo" alt="" src="${esc(ctx.logo)}" />` : `<span class="bpx-name">${esc(ctx.company)}</span>`}<span class="bpx-run">${sol ? `Solicitation ${sol}` : esc(ctx.title)}</span></header>`
+      : ctx.style === 'plain'
+        ? `<header class="bp-head bpl-head"><span>${esc(ctx.company)}</span><span>${sol ? `Solicitation No. ${sol}` : ''}</span></header>`
+        : `<header class="bp-head">${ctx.logo ? `<img class="bp-logo" alt="" src="${esc(ctx.logo)}" />` : `<span class="bp-logo-box">${esc(ctx.company)}</span>`}</header>`;
+    page.innerHTML = `${head}<div class="bp-body"></div><footer class="bp-foot">${ctx.legend ? `<span class="bp-legend">${LEGEND_SHEET}</span>` : ''}<span class="bp-num"></span></footer>`;
     return page;
   }
 
@@ -2536,7 +2654,11 @@
 
   const tocLine = (cls, label, page) => `<p class="${cls}"><span>${label}</span><i></i><b>${page ?? ''}</b></p>`;
 
+  const legendBlock = (ctx) => (ctx.legend ? `<div class="bp-legend-box"><b>Restriction on disclosure and use of data</b><p>${LEGEND_TITLE('<span class="bp-sheets"></span>')}</p></div>` : '');
+
   function coverPage(ctx, photos) {
+    if (ctx.style === 'executive') return coverExecutive(ctx, photos);
+    if (ctx.style === 'plain') return coverPlain(ctx);
     const page = document.createElement('section');
     page.className = 'bp bp-cover';
     page.innerHTML = `
@@ -2557,22 +2679,80 @@
           <p><b>Response Date</b>: ${markdownInline(ctx.responseDue)}</p>
           <div class="bpc-photos">${photos.map((src) => `<img alt="" src="${esc(src)}" />`).join('')}</div>
         </div>
-      </div>`;
+      </div>${legendBlock(ctx)}`;
     return page;
   }
+
+  function coverExecutive(ctx, photos) {
+    const page = document.createElement('section');
+    page.className = 'bp bp-cover bpx-cover';
+    const fact = (label, value) => (value ? `<div><dt>${label}</dt><dd>${value}</dd></div>` : '');
+    page.innerHTML = `
+      <div class="bpx-band">
+        <div class="bpx-top"><span class="bpx-chip">${ctx.logo ? `<img alt="" src="${esc(ctx.logo)}" />` : esc(ctx.company)}</span><span class="bpx-kicker">Proposal</span></div>
+        <p class="bpx-eyebrow">In response to Solicitation ${markdownInline(ctx.solNumber)}</p>
+        <h1>${esc(ctx.title)}</h1>
+        ${ctx.agency ? `<p class="bpx-for">Prepared for ${esc(ctx.agency)}</p>` : ''}
+        <p class="bpx-by">Submitted by ${esc(ctx.company)} · ${esc(ctx.date)}</p>
+      </div>
+      ${photos.length ? `<div class="bpx-photos bpx-n${photos.length}">${photos.map((src) => `<img alt="" src="${esc(src)}" />`).join('')}</div>` : ''}
+      <div class="bpx-glance">
+        <h3>At a glance</h3>
+        <dl>
+          ${fact('Solicitation', markdownInline(ctx.solNumber))}
+          ${fact('Response due', markdownInline(ctx.responseDue))}
+          ${fact('Business size', esc(ctx.size))}
+          ${fact('Set-aside', esc(ctx.setAside))}
+          ${fact('Registrations', esc(ctx.ids))}
+        </dl>
+      </div>
+      <div class="bpx-parties">
+        <div><h3>Submitted to</h3><p>${ctx.submittedTo.length ? ctx.submittedTo.map(esc).join('<br>') : '<span class="ph">[INSERT: contracting officer, agency and address]</span>'}</p></div>
+        <div><h3>Offeror</h3><p>${[ctx.company, ...ctx.offeror.filter((x) => !/^(UEI|Cage):/.test(x)), ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>')}</p></div>
+      </div>
+      ${legendBlock(ctx)}
+      <div class="bpx-rule"></div>`;
+    return page;
+  }
+
+  function coverPlain(ctx) {
+    const page = document.createElement('section');
+    page.className = 'bp bp-cover bpl-cover';
+    page.innerHTML = `
+      <div class="bpl-title">
+        ${ctx.logo ? `<img alt="" src="${esc(ctx.logo)}" />` : ''}
+        <h1>${esc(ctx.title)}</h1>
+        <p>Submitted in response to Solicitation No. ${markdownInline(ctx.solNumber)}</p>
+        <p>Response date: ${markdownInline(ctx.responseDue)}</p>
+      </div>
+      <div class="bpl-parties">
+        <div><h3>Submitted to</h3><p>${ctx.submittedTo.length ? ctx.submittedTo.map(esc).join('<br>') : '<span class="ph">[INSERT: contracting officer, agency and address]</span>'}</p></div>
+        <div><h3>Submitted by</h3><p>${[ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>')}</p>
+          <p class="bpl-size"><b>Business size and type:</b> ${esc(ctx.size)}</p></div>
+      </div>
+      ${legendBlock(ctx)}`;
+    return page;
+  }
+
+  /** How a part is titled in each style: "Part 2: Technical Proposal", or a numbered section. */
+  const partTitle = (ctx, n, html) => (ctx.style === 'executive'
+    ? `<span class="bpx-no">${String(n + 1).padStart(2, '0')}</span><span>${html}</span>`
+    : ctx.style === 'plain' ? `${n + 1}. ${html}` : `Part ${n + 1}: ${html}`);
+  const tocTitle = (ctx, n, html) => (ctx.style === 'house' ? `Part ${n + 1}: ${html}` : `${n + 1}. ${html}`);
 
   const markdownInline = (s) => esc(s).replace(/\[(INSERT|TBD|CONFIRM)[^\]]*\]/g, (m) => `<span class="ph">${m}</span>`);
 
   /** Lays out the whole book into `book`. */
   function layoutBook(book, ctx, md, photos) {
     book.innerHTML = '';
+    book.className = `book bk-${ctx.style} acc-${ctx.accent}`;
     const parts = proposalParts(md);
     book.appendChild(coverPage(ctx, photos));
 
     // Table of contents first with blank page numbers, to know how many pages it takes.
     const toc = [];
     parts.forEach((part, n) => {
-      toc.push({ cls: 'bp-toc1', label: `Part ${n + 1}: ${part.html}`, part: n });
+      toc.push({ cls: 'bp-toc1', label: tocTitle(ctx, n, part.html), part: n });
       let k = 0;
       part.blocks.forEach((b) => {
         if (b.tagName !== 'H3') return;
@@ -2585,7 +2765,7 @@
     const tocBlocks = () => {
       const h = document.createElement('h2');
       h.className = 'bp-toc-title';
-      h.textContent = 'Table of Contents';
+      h.textContent = ctx.style === 'executive' ? 'Contents' : 'Table of Contents';
       return [h, ...toc.map((t) => { const d = document.createElement('div'); d.innerHTML = tocLine(t.cls, t.label, t.page); return d.firstElementChild; })];
     };
     const tocPages = flowBlocks(book, ctx, tocBlocks());
@@ -2595,11 +2775,17 @@
     parts.forEach((part, n) => {
       const head = document.createElement('h2');
       head.className = 'bp-part';
-      head.innerHTML = `Part ${n + 1}: ${part.html}`;
+      head.innerHTML = partTitle(ctx, n, part.html);
       const meta = document.createElement('div');
       meta.className = 'bp-meta';
       meta.innerHTML = `<p><b>Solicitation Number:</b> ${markdownInline(ctx.solNumber)}</p><p><b>Offeror:</b> ${esc(ctx.company)}</p><p><b>Date of Submission:</b> ${esc(ctx.date)}</p>`;
-      const blocks = n === 0 ? [head, ...part.blocks] : [head, meta, ...part.blocks];
+      // Executive: the opening paragraph of each part (after any subheading) becomes its theme statement, set in a callout.
+      if (ctx.style === 'executive') {
+        const lead = part.blocks.find((b) => !/^H[3-6]$/.test(b.tagName));
+        if (lead && lead.tagName === 'P') lead.classList.add('bpx-theme');
+      }
+      // The running header already names the solicitation and offeror outside the house style.
+      const blocks = n === 0 || ctx.style !== 'house' ? [head, ...part.blocks] : [head, meta, ...part.blocks];
       const before = pageNo;
       const pages = flowBlocks(book, ctx, blocks, (block, idx) => {
         const entry = toc.find((t) => t.node === block);
@@ -2621,16 +2807,21 @@
     tocPages.forEach((pg) => pg.remove());
     flowBlocks(holder, ctx, tocBlocks()).forEach((pg) => book.insertBefore(pg, holder));
     holder.remove();
-    [...book.querySelectorAll('.bp')].forEach((pg, i) => {
-      const foot = pg.querySelector('.bp-foot');
-      if (foot) foot.textContent = `Page ${i + 1}`;
+    const all = [...book.querySelectorAll('.bp')];
+    all.forEach((pg, i) => {
+      const num = pg.querySelector('.bp-num');
+      if (num) num.textContent = ctx.style === 'house' ? `Page ${i + 1}` : `Page ${i + 1} of ${all.length}`;
     });
-    return book.querySelectorAll('.bp').length;
+    const sheets = book.querySelector('.bp-sheets');
+    if (sheets) sheets.textContent = all.length > 1 ? `2 through ${all.length}` : '1';
+    return all.length;
   }
 
-  /** Full-screen preview of the formatted proposal, with cover photos and Print / Save as PDF. */
+  /** Full-screen preview of the formatted proposal: style, accent and legend controls, cover photos, Save as PDF. */
   async function openProposalBook(p, md) {
     const ctx = await proposalContext(p);
+    const opts = bookOpts(p.pdfOptions);
+    Object.assign(ctx, { style: styleKey(p.style), accent: opts.accent, legend: opts.legend });
     const photos = [];
     const wrap = document.createElement('div');
     wrap.id = 'book-wrap';
@@ -2638,6 +2829,11 @@
     wrap.innerHTML = `
       <div class="book-bar no-print">
         <div class="min-w-0"><p class="truncate text-sm font-semibold text-white">${esc(ctx.title)}</p><p class="text-xs text-mist-400" id="book-count"></p></div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="seg" role="radiogroup" aria-label="Proposal style">${Object.entries(PROPOSAL_STYLES).map(([k, st]) => `<button type="button" data-style="${k}" role="radio">${st.name}</button>`).join('')}</div>
+          <div id="book-accents" class="flex items-center gap-1.5" aria-label="Accent color">${Object.entries(BOOK_ACCENTS).map(([k, c]) => `<button type="button" class="book-swatch book-sw-${k}" data-accent="${k}" title="${k[0].toUpperCase() + k.slice(1)}" aria-label="${k} accent"></button>`).join('')}</div>
+          <label class="chip !py-1.5 !text-xs" title="Adds the FAR 52.215-1(e) restriction on disclosure and use of data to the cover and every page"><input id="book-legend" type="checkbox" class="accent-brand-blue" /> Data-rights legend</label>
+        </div>
         <div class="flex flex-wrap gap-2">
           <label class="btn-ghost cursor-pointer">${icon('upload', 'h-4 w-4')}Cover photos<input id="book-photos" type="file" accept="image/png,image/jpeg,image/webp" multiple class="sr-only" /></label>
           <button id="book-word" class="btn-ghost">Word</button>
@@ -2649,8 +2845,39 @@
       <div id="book" class="book"></div>`;
     document.body.appendChild(wrap);
     document.body.classList.add('book-open');
-    const draw = () => { $('#book-count').textContent = `${layoutBook($('#book'), ctx, md, photos)} pages · US Letter`; };
+    const controls = () => {
+      $$('[data-style]', wrap).forEach((b) => { const on = b.dataset.style === ctx.style; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
+      $$('[data-accent]', wrap).forEach((b) => b.classList.toggle('on', b.dataset.accent === ctx.accent));
+      $('#book-accents').classList.toggle('hidden', ctx.style !== 'executive');
+      $('#book-legend').checked = ctx.legend;
+    };
+    const draw = () => {
+      controls();
+      $('#book-count').textContent = `${layoutBook($('#book'), ctx, md, photos)} pages · US Letter · ${PROPOSAL_STYLES[ctx.style].name} style`;
+    };
     draw();
+    // Style choices are saved on the proposal (and become the member's default) a moment after the last change.
+    let saveTimer;
+    const save = () => {
+      p.style = ctx.style;
+      p.pdfOptions = { accent: ctx.accent, legend: ctx.legend };
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        api('/proposals/' + p.id, { method: 'PATCH', body: { style: ctx.style, pdfOptions: p.pdfOptions } })
+          .then(() => { if (state.me) state.me.user.proposalStyle = ctx.style; })
+          .catch((err) => toast(err.message, 'error'));
+      }, 600);
+    };
+    wrap.addEventListener('click', (e) => {
+      const st = e.target.closest('[data-style]');
+      const ac = e.target.closest('[data-accent]');
+      if (st) ctx.style = st.dataset.style;
+      else if (ac) ctx.accent = ac.dataset.accent;
+      else return;
+      draw();
+      save();
+    });
+    $('#book-legend').addEventListener('change', (e) => { ctx.legend = e.target.checked; draw(); save(); });
     const close = () => { wrap.remove(); document.body.classList.remove('book-open'); document.removeEventListener('keydown', onKey); };
     const onKey = (e) => { if (e.key === 'Escape') close(); };
     document.addEventListener('keydown', onKey);
@@ -2668,26 +2895,59 @@
     });
   }
 
-  /** The same layout as a Word document: cover table, contents, one part per page. */
+  /** The same layout as a Word document, in the proposal's style: cover, contents, one part per page. */
   function proposalWord(ctx, md) {
+    const style = styleKey(ctx.style);
+    const acc = BOOK_ACCENTS[ctx.accent] || BOOK_ACCENTS.navy;
     const parts = proposalParts(md);
     const br = '<br clear="all" style="page-break-before:always">';
-    const cover = `<table class="cover"><tr><td width="50%">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="220">` : `<p class="logo">${esc(ctx.company)}</p>`}
-        <h3>SUBMITTED TO:</h3><p>${ctx.submittedTo.map(esc).join('<br>') || '[INSERT: contracting officer, agency and address]'}</p>
-        <h3>OFFEROR:</h3><p>${[ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>')}</p>
+    const legend = ctx.legend ? `<p class="legend"><b>Restriction on disclosure and use of data.</b> ${LEGEND_TITLE('2 through the last sheet of this proposal')}</p>` : '';
+    const sheetNote = ctx.legend ? `<p class="sheet">${LEGEND_SHEET}</p>` : '';
+    const to = ctx.submittedTo.map(esc).join('<br>') || '[INSERT: contracting officer, agency and address]';
+    const by = [ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>');
+    const covers = {
+      house: `<table class="cover"><tr><td width="50%">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="220">` : `<p class="logo">${esc(ctx.company)}</p>`}
+        <h3>SUBMITTED TO:</h3><p>${to}</p><h3>OFFEROR:</h3><p>${by}</p>
         <h4>Business Size and Type</h4><p>${esc(ctx.size)}</p></td>
-      <td width="50%" align="center"><h1>${esc(ctx.title)}</h1><p><b>Solicitation Number</b>: ${esc(ctx.solNumber)}</p><p><b>Response Date</b>: ${esc(ctx.responseDue)}</p></td></tr></table>`;
-    const toc = `<h2 class="toc">Table of Contents</h2>${parts.map((pt, n) => `<p class="t1">Part ${n + 1}: ${pt.html}</p>`).join('')}`;
-    const body = parts.map((pt, n) => `<h2>Part ${n + 1}: ${pt.html}</h2>${n ? `<p><b>Solicitation Number:</b> ${esc(ctx.solNumber)}<br><b>Offeror:</b> ${esc(ctx.company)}<br><b>Date of Submission:</b> ${esc(ctx.date)}</p>` : ''}${pt.blocks.map((b) => b.outerHTML).join('')}`).join(br);
+      <td width="50%" align="center"><h1>${esc(ctx.title)}</h1><p><b>Solicitation Number</b>: ${esc(ctx.solNumber)}</p><p><b>Response Date</b>: ${esc(ctx.responseDue)}</p></td></tr></table>`,
+      executive: `<table class="band"><tr><td bgcolor="${acc}">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="160"><br>` : ''}<p class="kick"><font color="#FFFFFF">PROPOSAL · SOLICITATION ${esc(ctx.solNumber)}</font></p>
+        <h1>${esc(ctx.title)}</h1>${ctx.agency ? `<p class="for"><font color="#FFFFFF">Prepared for ${esc(ctx.agency)}</font></p>` : ''}<p class="for"><font color="#FFFFFF">Submitted by ${esc(ctx.company)} · ${esc(ctx.date)}</font></p></td></tr></table>
+        <table class="glance"><tr><th bgcolor="#EEF1F6">Solicitation</th><td>${esc(ctx.solNumber)}</td></tr><tr><th bgcolor="#EEF1F6">Response due</th><td>${esc(ctx.responseDue)}</td></tr>
+        <tr><th bgcolor="#EEF1F6">Business size</th><td>${esc(ctx.size)}</td></tr>${ctx.ids ? `<tr><th bgcolor="#EEF1F6">Registrations</th><td>${esc(ctx.ids)}</td></tr>` : ''}</table>
+        <table class="parties"><tr><td width="50%"><h3>SUBMITTED TO</h3><p>${to}</p></td><td width="50%"><h3>OFFEROR</h3><p>${by}</p></td></tr></table>`,
+      plain: `${ctx.logo ? `<p align="center"><img src="${esc(ctx.logo)}" width="180"></p>` : ''}<h1 align="center">${esc(ctx.title)}</h1>
+        <p align="center">Submitted in response to Solicitation No. ${esc(ctx.solNumber)}</p><p align="center">Response date: ${esc(ctx.responseDue)}</p>
+        <h3>Submitted to</h3><p>${to}</p><h3>Submitted by</h3><p>${by}</p><p><b>Business size and type:</b> ${esc(ctx.size)}</p>`,
+    };
+    const titleOf = (n, html) => (style === 'house' ? `Part ${n + 1}: ${html}` : `${n + 1}. ${html}`);
+    const toc = `<h2 class="toc">${style === 'executive' ? 'Contents' : 'Table of Contents'}</h2>${parts.map((pt, n) => `<p class="t1">${titleOf(n, pt.html)}</p>`).join('')}`;
+    const body = parts.map((pt, n) => {
+      const lead = pt.blocks.findIndex((b) => !/^H[3-6]$/.test(b.tagName));
+      const blocks = pt.blocks.map((b, i) => (style === 'executive' && i === lead && b.tagName === 'P' ? `<table class="themebox"><tr><td bgcolor="#EEF1F6"><p class="theme">${b.innerHTML}</p></td></tr></table>` : b.outerHTML)).join('');
+      const meta = style === 'house' && n ? `<p><b>Solicitation Number:</b> ${esc(ctx.solNumber)}<br><b>Offeror:</b> ${esc(ctx.company)}<br><b>Date of Submission:</b> ${esc(ctx.date)}</p>` : '';
+      // Word and LibreOffice honor bgcolor on header cells more reliably than CSS backgrounds.
+      const cells = style === 'executive' ? blocks.replace(/<th>/g, `<th bgcolor="${acc}">`) : blocks;
+      return `<h2>${titleOf(n, pt.html)}</h2>${meta}${cells}${sheetNote}`;
+    }).join(br);
+    const css = {
+      house: `@page{size:8.5in 11in;margin:0.8in}body{font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.3}h1{font-size:16pt;text-transform:uppercase}
+        h2{font-size:14pt;color:#1F4E79;text-decoration:underline;margin-top:6pt}h3{font-size:12pt;text-decoration:underline}h4{font-size:12pt}
+        table{border-collapse:collapse;width:100%}td,th{border:1.5pt solid #1F4E8C;padding:4pt;vertical-align:top}th{text-align:center}
+        table.cover td{border:0;border-right:1.5pt solid #1F4E8C}.logo{background:#1F3A68;color:#fff;font-size:16pt;padding:14pt}.toc{color:#000}.t1{font-weight:bold;font-size:12pt}`,
+      executive: `@page{size:8.5in 11in;margin:0.8in}body{font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;line-height:1.4;color:#1d1d1f}
+        h1{font-size:24pt;color:#fff;margin:6pt 0}h2{font-size:17pt;color:${acc};border-bottom:2pt solid ${acc};padding-bottom:3pt}h3{font-size:12pt;color:${acc}}
+        table{border-collapse:collapse;width:100%}td,th{border:0.75pt solid #C9CED6;padding:5pt;vertical-align:top}th{background:${acc};color:#fff;text-align:left}
+        table.band td{background:${acc};color:#fff;border:0;padding:22pt}.kick{font-size:9pt;letter-spacing:1pt;color:#fff}.for{color:#fff}
+        table.glance th{width:30%;background:#EEF1F6;color:${acc};border:0.75pt solid #C9CED6}table.parties td{border:0}.themebox td{border:0;border-left:4pt solid ${acc};background:#EEF1F6;padding:8pt}.theme{margin:0;font-size:11.5pt;font-weight:bold;color:${acc}}
+        .toc{color:${acc}}.t1{font-weight:bold;font-size:12pt}`,
+      plain: `@page{size:8.5in 11in;margin:1in}body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.15;color:#000}h1{font-size:16pt}h2{font-size:14pt}h3{font-size:12pt}
+        table{border-collapse:collapse;width:100%}td,th{border:1pt solid #000;padding:4pt;vertical-align:top}th{text-align:left}.t1{font-size:12pt}`,
+    }[style];
     const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(ctx.title)}</title>
-      <style>@page{size:8.5in 11in;margin:0.8in}body{font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.3}h1{font-size:16pt;text-transform:uppercase}
-      h2{font-size:14pt;color:#1F4E79;text-decoration:underline;margin-top:6pt}h3{font-size:12pt;text-decoration:underline}h4{font-size:12pt}
-      table{border-collapse:collapse;width:100%}td,th{border:1.5pt solid #1F4E8C;padding:4pt;vertical-align:top}th{text-align:center}
-      table.cover td{border:0;border-right:1.5pt solid #1F4E8C}.logo{background:#1F3A68;color:#fff;font-size:16pt;padding:14pt}
-      .toc{color:#000}.t1{font-weight:bold;font-size:12pt}.ph{background:#FFE4E8;color:#9B0020}</style></head>
-      <body>${cover}${br}${toc}${br}${body}</body></html>`;
+      <style>${css}.ph{background:#FFE4E8;color:#9B0020}.legend{border:1pt solid #000;padding:6pt;font-size:9pt}.sheet{font-size:8pt;font-style:italic;color:#444}</style></head>
+      <body>${covers[style]}${legend}${br}${toc}${br}${body}</body></html>`;
     const slug = ctx.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'proposal';
-    download(slug + '.doc', new Blob(['﻿', html], { type: 'application/msword' }));
+    download(slug + '.doc', new Blob(['\ufeff', html], { type: 'application/msword' }));
   }
 
   /** Profile card: upload, preview and remove the company logo (shrunk in the browser to stay small). */

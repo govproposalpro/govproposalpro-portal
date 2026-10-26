@@ -28,7 +28,7 @@ async function proposalUsage(userId, tier) {
  * Atomically checks the cap and inserts a 'working' proposal row. Returns the new row id, or
  * null when the member is at their limit. The advisory lock serialises one member's requests.
  */
-async function reserveProposal(userId, tier, { title, bidId, rfpSummaryId }) {
+async function reserveProposal(userId, tier, { title, bidId, rfpSummaryId, style = 'house', pdfOptions = {} }) {
   const limit = TIERS[normalizeTier(tier)].monthlyProposals;
   const client = await db.pool.connect();
   try {
@@ -40,8 +40,8 @@ async function reserveProposal(userId, tier, { title, bidId, rfpSummaryId }) {
       return null;
     }
     const inserted = await client.query(
-      `INSERT INTO proposals (user_id, bid_id, rfp_summary_id, title) VALUES ($1, $2, $3, $4) RETURNING id`,
-      [userId, bidId || null, rfpSummaryId || null, title]
+      `INSERT INTO proposals (user_id, bid_id, rfp_summary_id, title, style, pdf_options) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [userId, bidId || null, rfpSummaryId || null, title, style, JSON.stringify(pdfOptions)]
     );
     await client.query('COMMIT');
     return inserted.rows[0].id;
