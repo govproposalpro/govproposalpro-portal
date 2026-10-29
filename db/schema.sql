@@ -504,3 +504,23 @@ ALTER TABLE proposals ADD COLUMN IF NOT EXISTS pdf_options JSONB       NOT NULL 
 ALTER TABLE "Users"   ADD COLUMN IF NOT EXISTS proposal_style VARCHAR(20) NOT NULL DEFAULT 'house';
 -- Archived proposals leave the member's lists but still count toward that month's allowance.
 ALTER TABLE proposals ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+
+-- Images and documents a member adds to a proposal after it is written (never sent to the AI).
+-- role: 'cover' (cover photos, up to 3), 'figure' (images placed in the text as ![caption](file:ID)),
+-- 'appendix' (PDF, Word or image attachments laid out after the last part, in position order).
+CREATE TABLE IF NOT EXISTS proposal_files (
+  id           BIGSERIAL     PRIMARY KEY,
+  proposal_id  BIGINT        NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
+  user_id      BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  role         VARCHAR(12)   NOT NULL,
+  name         VARCHAR(160)  NOT NULL,
+  caption      VARCHAR(300),
+  media_type   VARCHAR(100)  NOT NULL,
+  bytes        INT           NOT NULL,
+  width        INT,
+  height       INT,
+  position     INT           NOT NULL DEFAULT 0,
+  data         BYTEA         NOT NULL,
+  created_at   TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS proposal_files_proposal_idx ON proposal_files (proposal_id, role, position);
