@@ -15,6 +15,7 @@ const { corsForSignup } = require('./cors');
 const authRouter = require('./app/routes/auth');
 const { router: bidsRouter } = require('./app/routes/bids');
 const { router: aiRouter, failInterruptedJobs } = require('./app/routes/ai');
+const { router: proposalFilesRouter } = require('./app/routes/proposalFiles');
 const { router: profileRouter } = require('./app/routes/profile');
 const { router: extrasRouter } = require('./app/routes/extras');
 const { router: toolsRouter } = require('./app/routes/tools');
@@ -70,7 +71,7 @@ app.use('/api', leadsRouter);
 // Dashboard API. Responses are per-member, so never cache them anywhere.
 app.use(['/api/auth', '/api/me', '/api/bids', '/api/decryptor', '/api/proposals', '/api/capability-statements',
   '/api/vetting', '/api/alerts', '/api/admin', '/api/subs', '/api/foia', '/api/pricing', '/api/milestones', '/api/invoices',
-  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs'], sameOrigin, (_req, res, next) => {
+  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs', '/api/proposal-files'], sameOrigin, (_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
@@ -78,6 +79,7 @@ app.use('/api', authRouter);
 app.use('/api', profileRouter);
 app.use('/api', bidsRouter);
 app.use('/api', aiRouter);
+app.use('/api', proposalFilesRouter);
 app.use('/api', extrasRouter);
 app.use('/api', toolsRouter);
 app.use('/api', aiJobsRouter);

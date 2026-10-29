@@ -413,3 +413,51 @@ body.book-open { overflow: hidden; }
   body.book-open .bp { box-shadow: none; break-after: page; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body.book-open .bp:last-child { break-after: auto; page-break-after: auto; }
 }
+
+/* Proposal images and attachments */
+.book-next { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; pointer-events: none; }
+.doc .pfig { margin: 1.2rem 0; text-align: center; }
+.doc .pfig img { display: inline-block; max-width: 100%; max-height: 420px; border-radius: 14px; box-shadow: 0 14px 34px -18px rgba(0,0,0,0.9); }
+.doc .pfig figcaption { margin-top: 0.45rem; font-size: 13px; font-style: italic; color: #A1A1AA; }
+.bp-body .pfig { margin: 6pt 0 10pt; text-align: center; break-inside: avoid; }
+.bp-body .pfig img { display: inline-block; max-width: 100%; max-height: 4.2in; object-fit: contain; }
+.bp-body .pfig figcaption { margin-top: 3pt; font-size: 9.5pt; font-style: italic; text-align: center; }
+.bp-att-fig { margin: 0; text-align: center; }
+.bp-att-fig img { display: inline-block; max-width: 100%; max-height: 8.3in; object-fit: contain; }
+.bp-attpdf .bp-body { display: flex; flex-direction: column; gap: 6pt; }
+.bp-attpdf .bp-body img { flex: 1; min-height: 0; width: 100%; object-fit: contain; border: 1px solid #D6DAE1; }
+.bp-att-label { margin: 0 0 4pt; font-size: 9pt; font-weight: 700; color: #1F4E79; text-align: left !important; }
+
+/* Proposal editor */
+.ed-tools { position: sticky; top: 0.5rem; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-bottom: 1rem; padding: 6px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); background: rgba(16,18,28,0.92); backdrop-filter: blur(12px); box-shadow: 0 14px 30px -18px rgba(0,0,0,0.9); }
+.ed-tools.hidden { display: none; }
+.ed-tools button { display: inline-flex; align-items: center; gap: 6px; height: 34px; min-width: 34px; padding: 0 10px; border-radius: 12px; font-size: 13px; font-weight: 600; color: #D4D4D8; transition: background .15s, color .15s; }
+.ed-tools button:hover:not(:disabled) { background: rgba(255,255,255,0.08); color: #fff; }
+.ed-tools button.on { background: rgba(10,102,255,0.22); color: #fff; }
+.ed-tools button:disabled { opacity: 0.35; cursor: not-allowed; }
+.ed-sep { width: 1px; height: 22px; margin: 0 4px; background: rgba(255,255,255,0.1); }
+.doc-editing { outline: 1px dashed rgba(77,163,255,0.35); outline-offset: 12px; border-radius: 6px; cursor: text; }
+.doc-editing:focus { outline: 2px solid rgba(77,163,255,0.6); }
+.doc-editing .pfig { outline: 1px dashed rgba(255,255,255,0.15); border-radius: 14px; padding: 6px; cursor: default; }
+
+/* Media side panel */
+.pf-thumb { aspect-ratio: 1; overflow: hidden; border-radius: 14px; border: 2px solid transparent; background: rgba(255,255,255,0.04); transition: border-color .15s, transform .15s; }
+.pf-thumb:hover { border-color: rgba(77,163,255,0.7); transform: translateY(-1px); }
+.pf-thumb img, .pf-tile img { height: 100%; width: 100%; object-fit: cover; }
+.pf-tile { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 14px; background: rgba(255,255,255,0.04); }
+.pf-tile-bar { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; gap: 2px; padding: 4px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); opacity: 0; transition: opacity .15s; }
+.pf-tile:hover .pf-tile-bar, .pf-tile:focus-within .pf-tile-bar { opacity: 1; }
+@media (hover: none) { .pf-tile-bar { opacity: 1; } }
+.pf-tile-bar button { border-radius: 8px; padding: 2px 6px; font-size: 11px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.14); }
+.pf-tile-bar button:hover { background: rgba(10,102,255,0.6); }
+.pf-tile-bar button[data-del]:hover { background: rgba(255,45,70,0.7); }
+.pf-drop { display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; border-radius: 16px; border: 2px dashed rgba(255,255,255,0.12); padding: 12px; font-size: 13px; font-weight: 600; color: #A1A1AA; transition: all .15s; }
+.pf-drop:hover, .pf-drop.on { border-color: rgba(77,163,255,0.6); background: rgba(10,102,255,0.08); color: #fff; }
+.pf-att { display: flex; align-items: center; gap: 10px; border-radius: 16px; background: rgba(255,255,255,0.04); padding: 8px 8px 8px 10px; }
+.pf-att-letter { display: inline-flex; height: 30px; width: 30px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 10px; background: linear-gradient(135deg, rgba(10,102,255,0.35), rgba(255,45,70,0.25)); font-size: 13px; font-weight: 700; color: #fff; }
+.pf-att-name { width: 100%; border-radius: 8px; background: transparent; padding: 2px 4px; font-size: 13px; font-weight: 600; color: #fff; }
+.pf-att-name:hover { background: rgba(255,255,255,0.05); }
+.pf-att-name:focus { outline: none; background: rgba(255,255,255,0.08); box-shadow: 0 0 0 2px rgba(77,163,255,0.45); }
+.pf-mini { height: 28px; width: 28px; border-radius: 9px; color: #A1A1AA; }
+.pf-mini:hover:not(:disabled) { background: rgba(255,255,255,0.08); color: #fff; }
+.pf-mini:disabled { opacity: 0.3; }

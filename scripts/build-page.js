@@ -51,6 +51,20 @@ fs.writeFileSync(
 );
 console.log(`Wrote public/app (${(appCss.length / 1024).toFixed(1)} KB CSS, ${(appJs.length / 1024).toFixed(1)} KB JS, v${version})`);
 
+// pdf.js (Mozilla, Apache-2.0) draws attached PDFs as appendix pages in the proposal PDF. Copied
+// as .js so every host serves it with a JavaScript content type; loaded only when a PDF is attached.
+const pdfjsDir = path.join(path.dirname(require.resolve('pdfjs-dist/package.json')), 'build');
+const vendorDir = path.join(root, 'public/app/static/vendor');
+fs.mkdirSync(vendorDir, { recursive: true });
+fs.copyFileSync(path.join(pdfjsDir, 'pdf.min.mjs'), path.join(vendorDir, 'pdf.min.js'));
+fs.copyFileSync(path.join(pdfjsDir, 'pdf.worker.min.mjs'), path.join(vendorDir, 'pdf.worker.min.js'));
+fs.copyFileSync(path.join(pdfjsDir, '..', 'LICENSE'), path.join(vendorDir, 'pdfjs-LICENSE.txt'));
+// docx (MIT) writes the Word download as a real .docx that Word, Google Docs and Pages all edit.
+// docx/html needs docx/math loaded before it; all three load only when a member downloads Word.
+const docxDir = path.dirname(require.resolve('docx')); // dist/; docx does not export its package.json
+for (const f of ['index', 'math', 'html']) fs.copyFileSync(path.join(docxDir, `${f}.iife.js`), path.join(vendorDir, `docx-${f}.js`));
+fs.copyFileSync(path.join(docxDir, '..', 'LICENSE'), path.join(vendorDir, 'docx-LICENSE.txt'));
+
 // Admin dashboard (shares the dashboard CSS)
 const adminStatic = path.join(root, 'public/admin/static');
 fs.mkdirSync(adminStatic, { recursive: true });

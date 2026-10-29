@@ -111,13 +111,17 @@
   function markdown(src) {
     const lines = esc(src).split(/\r?\n/);
     const out = [];
-    const isBlockStart = (l) => /^(#{1,6})\s|^\s*\||^\s*[-*+]\s+|^\s*\d+[.)]\s+|^\s*(-{3,}|\*{3,})\s*$/.test(l);
+    const isBlockStart = (l) => /^(#{1,6})\s|^\s*\||^\s*[-*+]\s+|^\s*\d+[.)]\s+|^\s*(-{3,}|\*{3,})\s*$|^!\[[^\]]*\]\(file:\d+\)\s*$/.test(l);
     let i = 0;
     while (i < lines.length) {
       const l = lines[i];
       if (!l.trim()) { i++; continue; }
       let m;
-      if ((m = l.match(/^(#{1,6})\s+(.*)$/))) {
+      if ((m = l.match(/^!\[([^\]]*)\]\(file:(\d+)\)\s*$/))) {
+        // An image the member added to the proposal (tools/16-proposal-media.js).
+        out.push(`<figure class="pfig" data-file="${m[2]}"><img src="/api/proposal-files/${m[2]}" alt="${m[1]}" />${m[1].trim() ? `<figcaption>${inline(m[1])}</figcaption>` : ''}</figure>`);
+        i++;
+      } else if ((m = l.match(/^(#{1,6})\s+(.*)$/))) {
         const n = Math.min(m[1].length, 3);
         out.push(`<h${n}>${inline(m[2])}</h${n}>`);
         i++;
@@ -948,7 +952,7 @@
         </section>
 
         <section class="card p-6 sm:p-8">
-          ${step(4, 'Photos and supporting files', 'Supplier quotes, product spec sheets, price lists, photos of the product or job site, authorization letters, certifications. Phone photos work. Up to 8 files, 25 MB total.')}
+          ${step(4, 'Photos and supporting files', 'Supplier quotes, product spec sheets, price lists, photos of the product or job site, authorization letters, certifications. Phone photos work. Up to 8 files, 25 MB total. Photos are also saved to the proposal so you can place them in the text afterwards.')}
           <label id="pf-drop" for="pf-files" class="flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-mist-300/20 bg-ink-900/50 px-6 py-8 text-center transition hover:border-brand-blueSoft/50">
             <span class="mb-2 rounded-2xl bg-gradient-to-br from-brand-blue/30 to-brand-red/20 p-3 text-white">${icon('upload', 'h-6 w-6')}</span>
             <span class="font-semibold text-white">Drop files here or click to add</span>
@@ -1101,6 +1105,8 @@
           pdfOptions: { legend: form.elements.legend.checked },
         };
         const { id } = await api('/proposals', { method: 'POST', body: data });
+        // Photos also stay on the proposal, ready to place in the text once it is written.
+        await Promise.all(files.filter((f) => PF_IMAGES.includes(f.type)).map((f) => uploadProposalFile(id, f, 'figure').catch(() => null)));
         await refreshMe().catch(() => {});
         navigate('/proposals/' + id);
       } catch (err) {
@@ -1135,18 +1141,7 @@
       view.innerHTML = emptyState('This draft did not finish', esc(p.error || 'Please try again.') + ' It did not count toward your monthly limit.', '<a href="/app/proposals/new" data-link class="btn-primary">Try again</a>');
       return;
     }
-    const left = (p.contentMd.match(/\[(INSERT|CONFIRM|TBD)[^\]]*\]/g) || []).length;
-    docViewer(view, {
-      title: p.title,
-      sub: left ? `${left} placeholder${left === 1 ? '' : 's'} to fill in before you submit. They are highlighted in red.` : 'No placeholders left. Read it through once more, then save the PDF.',
-      extra: `<button id="pv-rename" class="btn-ghost">Rename</button><button id="pv-archive" class="btn-ghost">Archive</button>`,
-      md: p.contentMd,
-      save: (md) => api('/proposals/' + p.id, { method: 'PATCH', body: { contentMd: md } }),
-      book: (md) => openProposalBook(p, md),
-      word: async (md) => proposalWord(Object.assign(await proposalContext(p), { style: styleKey(p.style) }, bookOpts(p.pdfOptions)), md),
-    });
-    $('#pv-rename').addEventListener('click', () => renameProposal(p, () => render()));
-    $('#pv-archive').addEventListener('click', () => archiveProposal(p, () => navigate('/proposals')));
+    await proposalWorkspace(view, p);
   }
 
   // ------------------------------------------------------------------ profile and feature pages

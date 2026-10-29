@@ -43,10 +43,12 @@
 
   /** Everything the cover and part headers need, from the solicitation summary and the profile. */
   async function proposalContext(p) {
-    const [sum, logo] = await Promise.all([
+    const [sum, logo, files] = await Promise.all([
       p.rfpSummaryId ? api('/decryptor/' + p.rfpSummaryId).then((r) => r.summary.summary || {}).catch(() => ({})) : {},
       api('/me/logo').then((r) => r.logo).catch(() => null),
+      api(`/proposals/${p.id}/files`).then((r) => r.files).catch(() => []),
     ]);
+    const byRole = (role) => files.filter((f) => f.role === role).sort((a, b) => a.position - b.position || a.id - b.id);
     const u = state.me.user;
     const has = (v) => v && !/^not stated$/i.test(String(v).trim());
     const co = sum.contracting_officer || {};
@@ -66,6 +68,8 @@
       setAside: has(sum.set_aside) ? sum.set_aside : '',
       ids: [u.uei && `UEI ${u.uei}`, u.cageCode && `CAGE ${u.cageCode}`].filter(Boolean).join(' · '),
       logo,
+      covers: byRole('cover').map((f) => fileUrl(f.id)),
+      attachments: byRole('appendix'),
       date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     };
   }
@@ -254,11 +258,35 @@
 
   const markdownInline = (s) => esc(s).replace(/\[(INSERT|TBD|CONFIRM)[^\]]*\]/g, (m) => `<span class="ph">${m}</span>`);
 
-  /** Lays out the whole book into `book`. */
-  function layoutBook(book, ctx, md, photos) {
+  /**
+   * Loads what each attachment needs for layout (PDF pages drawn by pdf.js, Word text, photo sizes)
+   * into ctx.atts. Cached, so changing style or accent doesn't redo it.
+   */
+  async function prepareAttachments(ctx) {
+    ctx.atts = await Promise.all(ctx.attachments.map(async (f, i) => {
+      const a = { letter: String.fromCharCode(65 + i), title: f.caption || f.name.replace(/\.[a-z0-9]+$/i, ''), file: f };
+      try {
+        if (f.mediaType === 'application/pdf') Object.assign(a, { kind: 'pdf' }, await pdfPages(f.id));
+        else if (f.mediaType === PF_DOCX) Object.assign(a, { kind: 'doc', html: await docxHtml(f.id) });
+        else Object.assign(a, { kind: 'image', src: fileUrl(f.id) });
+      } catch {
+        Object.assign(a, { kind: 'missing' });
+      }
+      return a;
+    }));
+    return ctx.atts;
+  }
+
+  /** Lays out the whole book into `book`. Returns the page count. */
+  async function layoutBook(book, ctx, md, photos) {
+    const parts = proposalParts(md);
+    const atts = ctx.atts || [];
+    // Images must know their size before pages are measured.
+    const imgs = [...parts.flatMap((pt) => pt.blocks.flatMap((b) => [...b.querySelectorAll('img'), ...(b.tagName === 'IMG' ? [b] : [])]))];
+    const attImgs = atts.filter((a) => a.kind === 'image').map((a) => { const i = new Image(); i.src = a.src; return i; });
+    await Promise.all([...imgs, ...attImgs].map((i) => i.decode().catch(() => {})));
     book.innerHTML = '';
     book.className = `book bk-${ctx.style} acc-${ctx.accent}`;
-    const parts = proposalParts(md);
     book.appendChild(coverPage(ctx, photos));
 
     // Table of contents first with blank page numbers, to know how many pages it takes.
@@ -274,6 +302,10 @@
         toc.push({ cls: 'bp-toc2', label: b.innerHTML, node: b });
       });
     });
+    if (atts.length) {
+      toc.push({ cls: 'bp-toc1', label: 'Attachments', att: -1 });
+      atts.forEach((a, i) => toc.push({ cls: 'bp-toc2', label: `Attachment ${a.letter}: ${esc(a.title)}`, att: i }));
+    }
     const tocBlocks = () => {
       const h = document.createElement('h2');
       h.className = 'bp-toc-title';
@@ -307,6 +339,38 @@
       pageNo = before + pages.length;
     });
 
+    // Attachments, each starting a new page: a photo on its own page, a Word file's text, or each PDF page.
+    atts.forEach((a, i) => {
+      const head = document.createElement('h2');
+      head.className = 'bp-part bp-att-head';
+      head.innerHTML = ctx.style === 'executive' ? `<span class="bpx-no">${a.letter}</span><span>${esc(a.title)}</span>` : `Attachment ${a.letter}: ${esc(a.title)}`;
+      let pages;
+      if (a.kind === 'pdf' && a.pages.length) {
+        pages = a.pages.map((pg, k) => {
+          const page = bookPage(ctx, 'bp-attpdf');
+          const body = page.querySelector('.bp-body');
+          body.innerHTML = `<p class="bp-att-label">Attachment ${a.letter}: ${esc(a.title)} · page ${k + 1} of ${a.more || a.pages.length}</p><img alt="" src="${pg.src}" />`;
+          book.appendChild(page);
+          return page;
+        });
+        if (a.more) {
+          const note = document.createElement('p');
+          note.className = 'bp-att-label';
+          note.textContent = `Pages 41 to ${a.more} are not shown. Submit the full file alongside this proposal.`;
+          pages[pages.length - 1].querySelector('.bp-body').appendChild(note);
+        }
+      } else {
+        const holder = document.createElement('div');
+        if (a.kind === 'doc') holder.innerHTML = a.html;
+        else if (a.kind === 'image') holder.innerHTML = `<figure class="bp-att-fig"><img alt="" src="${esc(a.src)}" /></figure>`;
+        else holder.innerHTML = `<p class="ph">[This attachment could not be shown. Submit ${esc(a.file.name)} alongside this proposal.]</p>`;
+        pages = flowBlocks(book, ctx, [head, ...holder.children]);
+      }
+      toc.find((t) => t.att === i).page = pageNo + 1;
+      if (i === 0) toc.find((t) => t.att === -1).page = pageNo + 1;
+      pageNo += pages.length;
+    });
+
     // Tables: bold the subtotal and total rows, as on a real price schedule.
     book.querySelectorAll('.bp-body table tr').forEach((tr) => {
       const first = tr.cells[0] && tr.cells[0].textContent.trim();
@@ -334,7 +398,6 @@
     const ctx = await proposalContext(p);
     const opts = bookOpts(p.pdfOptions);
     Object.assign(ctx, { style: styleKey(p.style), accent: opts.accent, legend: opts.legend });
-    const photos = [];
     const wrap = document.createElement('div');
     wrap.id = 'book-wrap';
     wrap.className = 'book-wrap';
@@ -347,7 +410,7 @@
           <label class="chip !py-1.5 !text-xs" title="Adds the FAR 52.215-1(e) restriction on disclosure and use of data to the cover and every page"><input id="book-legend" type="checkbox" class="accent-brand-blue" /> Data-rights legend</label>
         </div>
         <div class="flex flex-wrap gap-2">
-          <label class="btn-ghost cursor-pointer">${icon('upload', 'h-4 w-4')}Cover photos<input id="book-photos" type="file" accept="image/png,image/jpeg,image/webp" multiple class="sr-only" /></label>
+          <label class="btn-ghost cursor-pointer" title="Up to 3, saved with this proposal">${icon('upload', 'h-4 w-4')}Cover photos<input id="book-photos" type="file" accept="image/png,image/jpeg,image/webp" multiple class="sr-only" /></label>
           <button id="book-word" class="btn-ghost">Word</button>
           <button id="book-print" class="btn-primary">Save as PDF</button>
           <button id="book-close" class="btn-ghost" aria-label="Close">&times;</button>
@@ -363,11 +426,27 @@
       $('#book-accents').classList.toggle('hidden', ctx.style !== 'executive');
       $('#book-legend').checked = ctx.legend;
     };
-    const draw = () => {
+    // Each draw lays out off screen and swaps in when done, so quick clicks never mix two layouts.
+    let drawing = 0;
+    const draw = async () => {
       controls();
-      $('#book-count').textContent = `${layoutBook($('#book'), ctx, md, photos)} pages · US Letter · ${PROPOSAL_STYLES[ctx.style].name} style`;
+      const mine = ++drawing;
+      const next = document.createElement('div');
+      next.className = 'book book-next';
+      $('#book').after(next);
+      try {
+        const n = await layoutBook(next, ctx, md, ctx.covers);
+        if (mine !== drawing) { next.remove(); return; }
+        $('#book').remove();
+        next.id = 'book';
+        next.classList.remove('book-next');
+        $('#book-count').textContent = `${n} pages · US Letter · ${PROPOSAL_STYLES[ctx.style].name} style`;
+      } catch (err) { next.remove(); toast(err.message, 'error'); }
     };
-    draw();
+    $('#book').insertAdjacentHTML('afterbegin', '<p class="book-tip">Laying out your pages...</p>');
+    if (ctx.attachments.length) $('#book-count').textContent = 'Preparing attachments...';
+    await prepareAttachments(ctx);
+    await draw();
     // Style choices are saved on the proposal (and become the member's default) a moment after the last change.
     let saveTimer;
     const save = () => {
@@ -390,76 +469,144 @@
       save();
     });
     $('#book-legend').addEventListener('change', (e) => { ctx.legend = e.target.checked; draw(); save(); });
-    const close = () => { wrap.remove(); document.body.classList.remove('book-open'); document.removeEventListener('keydown', onKey); };
+    const close = () => {
+      wrap.remove();
+      document.body.classList.remove('book-open');
+      document.removeEventListener('keydown', onKey);
+      // Cover photos added here show up in the proposal's side panel.
+      if (/^\/proposals\/\d+$/.test(routePath())) render();
+    };
     const onKey = (e) => { if (e.key === 'Escape') close(); };
     document.addEventListener('keydown', onKey);
     $('#book-close').addEventListener('click', close);
     $('#book-print').addEventListener('click', () => window.print());
-    $('#book-word').addEventListener('click', () => proposalWord(ctx, md));
+    $('#book-word').addEventListener('click', () => proposalWord(ctx, md).catch((err) => toast(err.message, 'error')));
     $('#book-photos').addEventListener('change', async (e) => {
-      const files = [...e.target.files].slice(0, 3);
-      photos.length = 0;
-      for (const f of files) {
-        if (f.size > 6 * 1024 * 1024) { toast(`${f.name} is over 6 MB.`, 'error'); continue; }
-        photos.push(await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(f); }));
+      for (const f of [...e.target.files]) {
+        if (ctx.covers.length >= 3) { toast('The cover holds up to 3 photos. Remove one on the proposal page.', 'error'); break; }
+        try { ctx.covers.push(fileUrl((await uploadProposalFile(p.id, f, 'cover')).id)); } catch (err) { toast(err.message, 'error'); }
       }
+      e.target.value = '';
       draw();
     });
   }
 
-  /** The same layout as a Word document, in the proposal's style: cover, contents, one part per page. */
-  function proposalWord(ctx, md) {
+  // ---- Word: a real .docx (docx and docx/html, loaded on first use) that Word, Google Docs and Pages edit
+
+  let docxLib = null;
+  function loadDocx() {
+    const script = (src) => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('The Word maker could not load. Check your connection and try again.')); document.head.appendChild(el); });
+    if (!docxLib) {
+      docxLib = ['index', 'math', 'html'].reduce((chain, f) => chain.then(() => script(`/app/static/vendor/docx-${f}.js`)), Promise.resolve())
+        .then(() => ({ D: window.docx, H: window.docxHtml }))
+        .catch((err) => { docxLib = null; throw err; });
+    }
+    return docxLib;
+  }
+
+  /** The proposal as an editable Word file in its style: cover, contents, one part per page, then attachments. */
+  async function proposalWord(ctx, md) {
+    toast('Building your Word file...');
+    const [{ D, H }] = await Promise.all([loadDocx(), ctx.atts ? null : prepareAttachments(ctx)]);
     const style = styleKey(ctx.style);
     const acc = BOOK_ACCENTS[ctx.accent] || BOOK_ACCENTS.navy;
     const parts = proposalParts(md);
-    const br = '<br clear="all" style="page-break-before:always">';
-    const legend = ctx.legend ? `<p class="legend"><b>Restriction on disclosure and use of data.</b> ${LEGEND_TITLE('2 through the last sheet of this proposal')}</p>` : '';
-    const sheetNote = ctx.legend ? `<p class="sheet">${LEGEND_SHEET}</p>` : '';
-    const to = ctx.submittedTo.map(esc).join('<br>') || '[INSERT: contracting officer, agency and address]';
-    const by = [ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>');
+    const e = esc;
+    const brk = 'style="page-break-before:always"';
+    const to = ctx.submittedTo.map(e).join('<br>') || '[INSERT: contracting officer, agency and address]';
+    const by = [ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(e).join('<br>');
+    const logo = (w) => (ctx.logo ? `<img src="${e(ctx.logo)}" width="${w}" alt="${e(ctx.company)} logo">` : '');
+    const photos = ctx.covers.map((src) => `<img src="${e(src)}" width="300" alt="">`).join(' ');
     const covers = {
-      house: `<table class="cover"><tr><td width="50%">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="220">` : `<p class="logo">${esc(ctx.company)}</p>`}
-        <h3>SUBMITTED TO:</h3><p>${to}</p><h3>OFFEROR:</h3><p>${by}</p>
-        <h4>Business Size and Type</h4><p>${esc(ctx.size)}</p></td>
-      <td width="50%" align="center"><h1>${esc(ctx.title)}</h1><p><b>Solicitation Number</b>: ${esc(ctx.solNumber)}</p><p><b>Response Date</b>: ${esc(ctx.responseDue)}</p></td></tr></table>`,
-      executive: `<table class="band"><tr><td bgcolor="${acc}">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="160"><br>` : ''}<p class="kick"><font color="#FFFFFF">PROPOSAL · SOLICITATION ${esc(ctx.solNumber)}</font></p>
-        <h1>${esc(ctx.title)}</h1>${ctx.agency ? `<p class="for"><font color="#FFFFFF">Prepared for ${esc(ctx.agency)}</font></p>` : ''}<p class="for"><font color="#FFFFFF">Submitted by ${esc(ctx.company)} · ${esc(ctx.date)}</font></p></td></tr></table>
-        <table class="glance"><tr><th bgcolor="#EEF1F6">Solicitation</th><td>${esc(ctx.solNumber)}</td></tr><tr><th bgcolor="#EEF1F6">Response due</th><td>${esc(ctx.responseDue)}</td></tr>
-        <tr><th bgcolor="#EEF1F6">Business size</th><td>${esc(ctx.size)}</td></tr>${ctx.ids ? `<tr><th bgcolor="#EEF1F6">Registrations</th><td>${esc(ctx.ids)}</td></tr>` : ''}</table>
-        <table class="parties"><tr><td width="50%"><h3>SUBMITTED TO</h3><p>${to}</p></td><td width="50%"><h3>OFFEROR</h3><p>${by}</p></td></tr></table>`,
-      plain: `${ctx.logo ? `<p align="center"><img src="${esc(ctx.logo)}" width="180"></p>` : ''}<h1 align="center">${esc(ctx.title)}</h1>
-        <p align="center">Submitted in response to Solicitation No. ${esc(ctx.solNumber)}</p><p align="center">Response date: ${esc(ctx.responseDue)}</p>
-        <h3>Submitted to</h3><p>${to}</p><h3>Submitted by</h3><p>${by}</p><p><b>Business size and type:</b> ${esc(ctx.size)}</p>`,
+      house: `<table style="width:100%;border-collapse:collapse"><tr>
+          <td style="width:50%;vertical-align:top;border-right:1.5pt solid #4A6FA5;padding-right:10pt">${logo(220) || `<p style="background:#1F3A68;color:#ffffff;font-size:16pt;padding:14pt">${e(ctx.company)}</p>`}
+            <p><b><u>SUBMITTED TO:</u></b><br>${to}</p><p><b><u>OFFEROR:</u></b><br>${by}</p><p><b>Business Size and Type</b><br>${e(ctx.size)}</p></td>
+          <td style="width:50%;vertical-align:top;text-align:center;padding-left:10pt"><p style="font-size:15pt;font-weight:bold;text-transform:uppercase">${e(ctx.title)}</p>
+            <p><b>Solicitation Number</b>: ${e(ctx.solNumber)}</p><p><b>Response Date</b>: ${e(ctx.responseDue)}</p><p>${photos}</p></td></tr></table>`,
+      executive: `<table style="width:100%;border-collapse:collapse"><tr><td style="background:${acc};padding:24pt;color:#ffffff">${ctx.logo ? `<p>${logo(160)}</p>` : `<p style="color:#ffffff;font-weight:bold">${e(ctx.company)}</p>`}
+          <p style="color:#ffffff;font-size:9pt;letter-spacing:1pt">PROPOSAL · SOLICITATION ${e(ctx.solNumber)}</p>
+          <p style="color:#ffffff;font-size:26pt;font-weight:bold">${e(ctx.title)}</p>
+          ${ctx.agency ? `<p style="color:#ffffff">Prepared for ${e(ctx.agency)}</p>` : ''}<p style="color:#ffffff;font-size:9pt">Submitted by ${e(ctx.company)} · ${e(ctx.date)}</p></td></tr></table>
+        ${photos ? `<p>${photos}</p>` : ''}
+        <table style="width:100%;border-collapse:collapse;margin-top:12pt">
+          <tr><td style="background:#EEF1F6;color:${acc};font-weight:bold;width:30%;padding:5pt">Solicitation</td><td style="padding:5pt">${e(ctx.solNumber)}</td></tr>
+          <tr><td style="background:#EEF1F6;color:${acc};font-weight:bold;padding:5pt">Response due</td><td style="padding:5pt">${e(ctx.responseDue)}</td></tr>
+          <tr><td style="background:#EEF1F6;color:${acc};font-weight:bold;padding:5pt">Business size</td><td style="padding:5pt">${e(ctx.size)}</td></tr>
+          ${ctx.ids ? `<tr><td style="background:#EEF1F6;color:${acc};font-weight:bold;padding:5pt">Registrations</td><td style="padding:5pt">${e(ctx.ids)}</td></tr>` : ''}</table>
+        <table style="width:100%;border-collapse:collapse;margin-top:12pt"><tr>
+          <td style="width:50%;vertical-align:top"><p style="color:${acc};font-weight:bold;font-size:9pt">SUBMITTED TO</p><p>${to}</p></td>
+          <td style="width:50%;vertical-align:top"><p style="color:${acc};font-weight:bold;font-size:9pt">OFFEROR</p><p>${by}</p></td></tr></table>`,
+      plain: `${ctx.logo ? `<p style="text-align:center">${logo(180)}</p>` : ''}<p style="text-align:center;font-size:16pt;font-weight:bold;margin-top:60pt">${e(ctx.title)}</p>
+        <p style="text-align:center">Submitted in response to Solicitation No. ${e(ctx.solNumber)}</p><p style="text-align:center">Response date: ${e(ctx.responseDue)}</p>${photos ? `<p style="text-align:center">${photos}</p>` : ''}
+        <p style="margin-top:40pt"><b>Submitted to</b><br>${to}</p><p><b>Submitted by</b><br>${by}</p><p><b>Business size and type:</b> ${e(ctx.size)}</p>`,
     };
+    const legend = ctx.legend ? `<p style="border:1pt solid #000000;padding:6pt;font-size:8pt"><b>RESTRICTION ON DISCLOSURE AND USE OF DATA.</b> ${LEGEND_TITLE('2 through the last sheet of this proposal')}</p>` : '';
     const titleOf = (n, html) => (style === 'house' ? `Part ${n + 1}: ${html}` : `${n + 1}. ${html}`);
-    const toc = `<h2 class="toc">${style === 'executive' ? 'Contents' : 'Table of Contents'}</h2>${parts.map((pt, n) => `<p class="t1">${titleOf(n, pt.html)}</p>`).join('')}`;
+    const atts = ctx.atts || [];
+    const toc = `<p style="page-break-before:always;font-size:16pt;font-weight:bold">${style === 'executive' ? 'Contents' : 'Table of Contents'}</p>
+      ${parts.map((pt, n) => `<p style="font-weight:bold">${titleOf(n, pt.html)}</p>`).join('')}
+      ${atts.length ? `<p style="font-weight:bold">Attachments</p>${atts.map((a) => `<p style="margin-left:14pt">Attachment ${a.letter}: ${e(a.title)}</p>`).join('')}` : ''}`;
+    const theme = `background:#EEF1F6;border-left:4pt solid ${acc};padding:8pt;color:${acc};font-weight:bold;font-size:11.5pt`;
     const body = parts.map((pt, n) => {
       const lead = pt.blocks.findIndex((b) => !/^H[3-6]$/.test(b.tagName));
-      const blocks = pt.blocks.map((b, i) => (style === 'executive' && i === lead && b.tagName === 'P' ? `<table class="themebox"><tr><td bgcolor="#EEF1F6"><p class="theme">${b.innerHTML}</p></td></tr></table>` : b.outerHTML)).join('');
-      const meta = style === 'house' && n ? `<p><b>Solicitation Number:</b> ${esc(ctx.solNumber)}<br><b>Offeror:</b> ${esc(ctx.company)}<br><b>Date of Submission:</b> ${esc(ctx.date)}</p>` : '';
-      // Word and LibreOffice honor bgcolor on header cells more reliably than CSS backgrounds.
-      const cells = style === 'executive' ? blocks.replace(/<th>/g, `<th bgcolor="${acc}">`) : blocks;
-      return `<h2>${titleOf(n, pt.html)}</h2>${meta}${cells}${sheetNote}`;
-    }).join(br);
+      const blocks = pt.blocks.map((b, i) => {
+        if (style === 'executive' && i === lead && b.tagName === 'P') return `<p style="${theme}">${b.innerHTML}</p>`;
+        // Captions go in the image's alt text too, so a re-imported Word file keeps them.
+        if (b.tagName === 'FIGURE') { const img = b.querySelector('img'); const cap = b.querySelector('figcaption'); return `<p style="text-align:center"><img src="${e(img.getAttribute('src'))}" alt="${e(cap ? cap.textContent : '')}"></p>${cap ? `<p style="text-align:center;font-style:italic;font-size:9pt">${cap.innerHTML}</p>` : ''}`; }
+        return b.outerHTML;
+      }).join('');
+      const meta = style === 'house' && n ? `<p><b>Solicitation Number:</b> ${e(ctx.solNumber)}<br><b>Offeror:</b> ${e(ctx.company)}<br><b>Date of Submission:</b> ${e(ctx.date)}</p>` : '';
+      return `<h2 ${brk}>${titleOf(n, pt.html)}</h2>${meta}${blocks}`;
+    }).join('');
+    const attHtml = atts.map((a, i) => {
+      const head = `<h2 ${brk}>${i === 0 ? 'Attachments<br>' : ''}Attachment ${a.letter}: ${e(a.title)}</h2>`;
+      if (a.kind === 'pdf') return head + a.pages.map((pg, k) => `${k ? `<p ${brk}></p>` : ''}<p style="text-align:center"><img src="${pg.src}" alt="${e(a.title)} page ${k + 1}"></p>`).join('');
+      if (a.kind === 'doc') return head + a.html;
+      if (a.kind === 'image') return `${head}<p style="text-align:center"><img src="${e(a.src)}" alt="${e(a.title)}"></p>`;
+      return `${head}<p>[Submit ${e(a.file.name)} alongside this proposal.]</p>`;
+    }).join('');
     const css = {
-      house: `@page{size:8.5in 11in;margin:0.8in}body{font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.3}h1{font-size:16pt;text-transform:uppercase}
-        h2{font-size:14pt;color:#1F4E79;text-decoration:underline;margin-top:6pt}h3{font-size:12pt;text-decoration:underline}h4{font-size:12pt}
-        table{border-collapse:collapse;width:100%}td,th{border:1.5pt solid #1F4E8C;padding:4pt;vertical-align:top}th{text-align:center}
-        table.cover td{border:0;border-right:1.5pt solid #1F4E8C}.logo{background:#1F3A68;color:#fff;font-size:16pt;padding:14pt}.toc{color:#000}.t1{font-weight:bold;font-size:12pt}`,
-      executive: `@page{size:8.5in 11in;margin:0.8in}body{font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;line-height:1.4;color:#1d1d1f}
-        h1{font-size:24pt;color:#fff;margin:6pt 0}h2{font-size:17pt;color:${acc};border-bottom:2pt solid ${acc};padding-bottom:3pt}h3{font-size:12pt;color:${acc}}
-        table{border-collapse:collapse;width:100%}td,th{border:0.75pt solid #C9CED6;padding:5pt;vertical-align:top}th{background:${acc};color:#fff;text-align:left}
-        table.band td{background:${acc};color:#fff;border:0;padding:22pt}.kick{font-size:9pt;letter-spacing:1pt;color:#fff}.for{color:#fff}
-        table.glance th{width:30%;background:#EEF1F6;color:${acc};border:0.75pt solid #C9CED6}table.parties td{border:0}.themebox td{border:0;border-left:4pt solid ${acc};background:#EEF1F6;padding:8pt}.theme{margin:0;font-size:11.5pt;font-weight:bold;color:${acc}}
-        .toc{color:${acc}}.t1{font-weight:bold;font-size:12pt}`,
-      plain: `@page{size:8.5in 11in;margin:1in}body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.15;color:#000}h1{font-size:16pt}h2{font-size:14pt}h3{font-size:12pt}
-        table{border-collapse:collapse;width:100%}td,th{border:1pt solid #000;padding:4pt;vertical-align:top}th{text-align:left}.t1{font-size:12pt}`,
-    }[style];
-    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(ctx.title)}</title>
-      <style>${css}.ph{background:#FFE4E8;color:#9B0020}.legend{border:1pt solid #000;padding:6pt;font-size:9pt}.sheet{font-size:8pt;font-style:italic;color:#444}</style></head>
-      <body>${covers[style]}${legend}${br}${toc}${br}${body}</body></html>`;
+      house: `body{font-family:'Times New Roman';font-size:11pt}h2{font-size:14pt;color:#1F4E79;text-decoration:underline}h3{font-size:12pt;text-decoration:underline}h4{font-size:12pt}
+        table{border-collapse:collapse;width:100%}td,th{border:1.5pt solid #1F4E8C;padding:4pt;vertical-align:top}th{text-align:center;font-weight:bold}`,
+      executive: `body{font-family:Arial;font-size:10.5pt;color:#1d1d1f}h2{font-size:17pt;color:${acc}}h3{font-size:12pt;color:${acc}}
+        table{border-collapse:collapse;width:100%}td,th{border:0.75pt solid #C9CED6;padding:5pt;vertical-align:top}th{background:${acc};color:#ffffff;text-align:left;font-weight:bold}`,
+      plain: `body{font-family:'Times New Roman';font-size:12pt;color:#000000}h2{font-size:14pt}h3{font-size:12pt}h4{font-size:12pt;font-style:italic}
+        table{border-collapse:collapse;width:100%}td,th{border:1pt solid #000000;padding:4pt;vertical-align:top}th{text-align:left;background:#F2F2F2;font-weight:bold}`,
+    }[style] + '.ph{background:#FFE4E8;color:#9B0020}';
+    // Every image the HTML points at, fetched once (figures and cover photos are proposal files).
+    const html = covers[style] + legend + toc + body + attHtml;
+    const srcs = [...new Set([...html.matchAll(/src="(\/api\/proposal-files\/\d+)"/g)].map((m) => m[1]))];
+    const images = Object.fromEntries(await Promise.all(srcs.map(async (src) => [src, new Uint8Array(await (await fetch(src, { credentials: 'same-origin' })).arrayBuffer())])));
+    const margin = style === 'plain' ? 1440 : 1152; // twips: 1 inch, 0.8 inch
+    const children = H.htmlToContent(html, { stylesheet: css, images: (src) => images[src], maxImageWidth: style === 'plain' ? 624 : 662 });
+    const font = style === 'executive' ? 'Arial' : 'Times New Roman';
+    const small = (text) => new D.Paragraph({ children: [new D.TextRun({ text, size: 15, italics: true, color: '555555' })] });
+    const pageNo = new D.Paragraph({ alignment: D.AlignmentType.RIGHT, children: [new D.TextRun({ children: ['Page ', D.PageNumber.CURRENT, ...(style === 'house' ? [] : [' of ', D.PageNumber.TOTAL_PAGES])], size: style === 'house' ? 24 : 18 })] });
+    const head = style === 'house'
+      ? (ctx.logo ? H.htmlToContent(logo(200), {}) : [new D.Paragraph({ children: [new D.TextRun({ text: ctx.company, bold: true, color: '1F3A68', size: 26 })] })])
+      : [new D.Paragraph({ children: [new D.TextRun({ text: `${ctx.company}    ·    Solicitation ${ctx.solNumber}`, size: 16, color: style === 'executive' ? acc.slice(1) : '333333' })] })];
+    const doc = new D.Document({
+      creator: ctx.company,
+      title: ctx.title,
+      styles: {
+        default: {
+          document: { run: { font, size: style === 'plain' ? 24 : style === 'executive' ? 21 : 22 } },
+          heading2: { run: { font, size: style === 'executive' ? 34 : 28, bold: true, color: style === 'plain' ? '000000' : style === 'executive' ? acc.slice(1) : '1F4E79', underline: style === 'house' ? {} : undefined }, paragraph: { spacing: { after: 160 } } },
+          heading3: { run: { font, size: 24, bold: true, color: style === 'executive' ? acc.slice(1) : '000000' }, paragraph: { spacing: { before: 200, after: 80 } } },
+        },
+      },
+      sections: [{
+        properties: { titlePage: true, page: { margin: { top: margin, bottom: margin, left: margin, right: margin } } },
+        headers: { default: new D.Header({ children: head }), first: new D.Header({ children: [] }) },
+        footers: {
+          default: new D.Footer({ children: [...(ctx.legend ? [small(LEGEND_SHEET)] : []), pageNo] }),
+          first: new D.Footer({ children: [] }),
+        },
+        children,
+      }],
+    });
     const slug = ctx.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'proposal';
-    download(slug + '.doc', new Blob(['\ufeff', html], { type: 'application/msword' }));
+    download(slug + '.docx', await D.Packer.toBlob(doc));
   }
 
   /** Profile card: upload, preview and remove the company logo (shrunk in the browser to stay small). */
