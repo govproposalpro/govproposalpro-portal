@@ -41,6 +41,7 @@ function publicProfile(u) {
     onboarded: Boolean(u.onboarded_at),
     samChecklist: u.sam_checklist || {},
     emailAlerts: u.email_alerts !== false,
+    proposalStyle: u.proposal_style || 'house',
   };
 }
 

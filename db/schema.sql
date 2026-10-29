@@ -495,3 +495,12 @@ CREATE TABLE IF NOT EXISTS leads (
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS leads_created_idx ON leads (created_at DESC);
+
+-- Proposal PDF styles: the member picks one per proposal (house = the VA patio umbrella format).
+-- pdf_options holds the style's settings (accent color, FAR 52.215-1(e) data-rights legend).
+-- The member's last pick becomes their default for the next proposal.
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS style       VARCHAR(20) NOT NULL DEFAULT 'house';
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS pdf_options JSONB       NOT NULL DEFAULT '{}';
+ALTER TABLE "Users"   ADD COLUMN IF NOT EXISTS proposal_style VARCHAR(20) NOT NULL DEFAULT 'house';
+-- Archived proposals leave the member's lists but still count toward that month's allowance.
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;

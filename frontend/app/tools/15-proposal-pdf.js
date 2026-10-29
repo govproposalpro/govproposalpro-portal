@@ -6,7 +6,40 @@
   // "Part N:" sections that each start a new page, blue-ruled price tables and "Page N" footers.
   // Pages are laid out here at US Letter size so the preview, the PDF and the page numbers agree.
 
+  //
+  // Members pick one of three styles per proposal (proposals.style):
+  //  - house: the format above, from the VA patio umbrella win. The default.
+  //  - executive: a modern, full-color layout in the Shipley tradition: a bold cover with a
+  //    "proposal at a glance" panel, a theme-statement callout opening each part, running
+  //    headers (solicitation number and offeror) and shaded price tables. Accent color is the member's pick.
+  //  - plain: the common Section L baseline (Times New Roman 12 pt, 1-inch margins, black on white)
+  //    for solicitations with strict format rules or page limits.
+  // Any style can carry the FAR 52.215-1(e) restrictive legend: the full notice on the cover and
+  // the short notice at the foot of every sheet it covers.
+
   const BOOK_CERTS = { '8a': '8(a)', wosb: 'WOSB', sdvosb: 'SDVOSB', vosb: 'VOSB', hubzone: 'HUBZone', sdb: 'SDB' };
+
+  const PROPOSAL_STYLES = {
+    house: { name: 'House', tag: 'Default', blurb: 'Two-column cover, your logo on every page, blue-ruled tables. The format of our VA patio umbrella win.' },
+    executive: { name: 'Executive', tag: 'New', blurb: 'Bold color cover, theme statements that open each part, running headers and shaded price tables.' },
+    plain: { name: 'Section L Plain', tag: 'Strict', blurb: 'Times New Roman 12 pt, 1-inch margins, black and white. For solicitations with tight format rules or page limits.' },
+  };
+  const BOOK_ACCENTS = { navy: '#1B2F5E', crimson: '#9B1B30', teal: '#0F5E63', graphite: '#2B2F36' };
+  const styleKey = (k) => (PROPOSAL_STYLES[k] ? k : 'house');
+  const bookOpts = (o) => ({ accent: BOOK_ACCENTS[o && o.accent] ? o.accent : 'navy', legend: Boolean(o && o.legend) });
+
+  // FAR 52.215-1(e): the title-page notice, and the notice on each restricted sheet.
+  const LEGEND_TITLE = (sheets) => `This proposal includes data that shall not be disclosed outside the Government and shall not be duplicated, used, or disclosed, in whole or in part, for any purpose other than to evaluate this proposal. If, however, a contract is awarded to this offeror as a result of, or in connection with, the submission of this data, the Government shall have the right to duplicate, use, or disclose the data to the extent provided in the resulting contract. This restriction does not limit the Government's right to use information contained in this data if it is obtained from another source without restriction. The data subject to this restriction are contained in sheets ${sheets}.`;
+  const LEGEND_SHEET = 'Use or disclosure of data contained on this sheet is subject to the restriction on the title page of this proposal.';
+
+  /** Mini page drawings for the style picker (plain shapes, never a real proposal). */
+  const styleThumb = (k) => `<span class="sty-thumb sty-${k}" aria-hidden="true"><i></i><b></b><b></b><b></b><em></em></span>`;
+
+  /** Three style cards as radio buttons named `style`. */
+  const stylePicker = (selected) => `<div class="grid gap-3 sm:grid-cols-3">${Object.entries(PROPOSAL_STYLES).map(([k, st]) => `
+    <label class="sty-card"><input type="radio" name="style" value="${k}" class="sr-only" ${styleKey(selected) === k ? 'checked' : ''} />
+      <span class="sty-inner">${styleThumb(k)}<span class="mt-3 flex items-center gap-2"><span class="font-semibold text-white">${st.name}</span><span class="pill ${k === 'executive' ? 'bg-gradient-to-r from-brand-blue/40 to-brand-red/40 text-white' : 'bg-white/[0.08] text-mist-300'}">${st.tag}</span></span>
+      <span class="mt-1 block text-xs leading-relaxed text-mist-400">${st.blurb}</span></span></label>`).join('')}</div>`;
 
   /** Everything the cover and part headers need, from the solicitation summary and the profile. */
   async function proposalContext(p) {
@@ -29,6 +62,9 @@
       email: u.email,
       website: u.website,
       size: ['Small Business', ...certs].join(', '),
+      agency: has(sum.agency) ? sum.agency : '',
+      setAside: has(sum.set_aside) ? sum.set_aside : '',
+      ids: [u.uei && `UEI ${u.uei}`, u.cageCode && `CAGE ${u.cageCode}`].filter(Boolean).join(' · '),
       logo,
       date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     };
@@ -54,8 +90,13 @@
   function bookPage(ctx, cls = '') {
     const page = document.createElement('section');
     page.className = 'bp ' + cls;
-    page.innerHTML = `<header class="bp-head">${ctx.logo ? `<img class="bp-logo" alt="" src="${esc(ctx.logo)}" />` : `<span class="bp-logo-box">${esc(ctx.company)}</span>`}</header>
-      <div class="bp-body"></div><footer class="bp-foot"></footer>`;
+    const sol = esc(ctx.solNumber.replace(/^\[INSERT[^\]]*\]$/, ''));
+    const head = ctx.style === 'executive'
+      ? `<header class="bp-head bpx-head">${ctx.logo ? `<img class="bpx-logo" alt="" src="${esc(ctx.logo)}" />` : `<span class="bpx-name">${esc(ctx.company)}</span>`}<span class="bpx-run">${sol ? `Solicitation ${sol}` : esc(ctx.title)}</span></header>`
+      : ctx.style === 'plain'
+        ? `<header class="bp-head bpl-head"><span>${esc(ctx.company)}</span><span>${sol ? `Solicitation No. ${sol}` : ''}</span></header>`
+        : `<header class="bp-head">${ctx.logo ? `<img class="bp-logo" alt="" src="${esc(ctx.logo)}" />` : `<span class="bp-logo-box">${esc(ctx.company)}</span>`}</header>`;
+    page.innerHTML = `${head}<div class="bp-body"></div><footer class="bp-foot">${ctx.legend ? `<span class="bp-legend">${LEGEND_SHEET}</span>` : ''}<span class="bp-num"></span></footer>`;
     return page;
   }
 
@@ -125,7 +166,11 @@
 
   const tocLine = (cls, label, page) => `<p class="${cls}"><span>${label}</span><i></i><b>${page ?? ''}</b></p>`;
 
+  const legendBlock = (ctx) => (ctx.legend ? `<div class="bp-legend-box"><b>Restriction on disclosure and use of data</b><p>${LEGEND_TITLE('<span class="bp-sheets"></span>')}</p></div>` : '');
+
   function coverPage(ctx, photos) {
+    if (ctx.style === 'executive') return coverExecutive(ctx, photos);
+    if (ctx.style === 'plain') return coverPlain(ctx);
     const page = document.createElement('section');
     page.className = 'bp bp-cover';
     page.innerHTML = `
@@ -146,22 +191,80 @@
           <p><b>Response Date</b>: ${markdownInline(ctx.responseDue)}</p>
           <div class="bpc-photos">${photos.map((src) => `<img alt="" src="${esc(src)}" />`).join('')}</div>
         </div>
-      </div>`;
+      </div>${legendBlock(ctx)}`;
     return page;
   }
+
+  function coverExecutive(ctx, photos) {
+    const page = document.createElement('section');
+    page.className = 'bp bp-cover bpx-cover';
+    const fact = (label, value) => (value ? `<div><dt>${label}</dt><dd>${value}</dd></div>` : '');
+    page.innerHTML = `
+      <div class="bpx-band">
+        <div class="bpx-top"><span class="bpx-chip">${ctx.logo ? `<img alt="" src="${esc(ctx.logo)}" />` : esc(ctx.company)}</span><span class="bpx-kicker">Proposal</span></div>
+        <p class="bpx-eyebrow">In response to Solicitation ${markdownInline(ctx.solNumber)}</p>
+        <h1>${esc(ctx.title)}</h1>
+        ${ctx.agency ? `<p class="bpx-for">Prepared for ${esc(ctx.agency)}</p>` : ''}
+        <p class="bpx-by">Submitted by ${esc(ctx.company)} · ${esc(ctx.date)}</p>
+      </div>
+      ${photos.length ? `<div class="bpx-photos bpx-n${photos.length}">${photos.map((src) => `<img alt="" src="${esc(src)}" />`).join('')}</div>` : ''}
+      <div class="bpx-glance">
+        <h3>At a glance</h3>
+        <dl>
+          ${fact('Solicitation', markdownInline(ctx.solNumber))}
+          ${fact('Response due', markdownInline(ctx.responseDue))}
+          ${fact('Business size', esc(ctx.size))}
+          ${fact('Set-aside', esc(ctx.setAside))}
+          ${fact('Registrations', esc(ctx.ids))}
+        </dl>
+      </div>
+      <div class="bpx-parties">
+        <div><h3>Submitted to</h3><p>${ctx.submittedTo.length ? ctx.submittedTo.map(esc).join('<br>') : '<span class="ph">[INSERT: contracting officer, agency and address]</span>'}</p></div>
+        <div><h3>Offeror</h3><p>${[ctx.company, ...ctx.offeror.filter((x) => !/^(UEI|Cage):/.test(x)), ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>')}</p></div>
+      </div>
+      ${legendBlock(ctx)}
+      <div class="bpx-rule"></div>`;
+    return page;
+  }
+
+  function coverPlain(ctx) {
+    const page = document.createElement('section');
+    page.className = 'bp bp-cover bpl-cover';
+    page.innerHTML = `
+      <div class="bpl-title">
+        ${ctx.logo ? `<img alt="" src="${esc(ctx.logo)}" />` : ''}
+        <h1>${esc(ctx.title)}</h1>
+        <p>Submitted in response to Solicitation No. ${markdownInline(ctx.solNumber)}</p>
+        <p>Response date: ${markdownInline(ctx.responseDue)}</p>
+      </div>
+      <div class="bpl-parties">
+        <div><h3>Submitted to</h3><p>${ctx.submittedTo.length ? ctx.submittedTo.map(esc).join('<br>') : '<span class="ph">[INSERT: contracting officer, agency and address]</span>'}</p></div>
+        <div><h3>Submitted by</h3><p>${[ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>')}</p>
+          <p class="bpl-size"><b>Business size and type:</b> ${esc(ctx.size)}</p></div>
+      </div>
+      ${legendBlock(ctx)}`;
+    return page;
+  }
+
+  /** How a part is titled in each style: "Part 2: Technical Proposal", or a numbered section. */
+  const partTitle = (ctx, n, html) => (ctx.style === 'executive'
+    ? `<span class="bpx-no">${String(n + 1).padStart(2, '0')}</span><span>${html}</span>`
+    : ctx.style === 'plain' ? `${n + 1}. ${html}` : `Part ${n + 1}: ${html}`);
+  const tocTitle = (ctx, n, html) => (ctx.style === 'house' ? `Part ${n + 1}: ${html}` : `${n + 1}. ${html}`);
 
   const markdownInline = (s) => esc(s).replace(/\[(INSERT|TBD|CONFIRM)[^\]]*\]/g, (m) => `<span class="ph">${m}</span>`);
 
   /** Lays out the whole book into `book`. */
   function layoutBook(book, ctx, md, photos) {
     book.innerHTML = '';
+    book.className = `book bk-${ctx.style} acc-${ctx.accent}`;
     const parts = proposalParts(md);
     book.appendChild(coverPage(ctx, photos));
 
     // Table of contents first with blank page numbers, to know how many pages it takes.
     const toc = [];
     parts.forEach((part, n) => {
-      toc.push({ cls: 'bp-toc1', label: `Part ${n + 1}: ${part.html}`, part: n });
+      toc.push({ cls: 'bp-toc1', label: tocTitle(ctx, n, part.html), part: n });
       let k = 0;
       part.blocks.forEach((b) => {
         if (b.tagName !== 'H3') return;
@@ -174,7 +277,7 @@
     const tocBlocks = () => {
       const h = document.createElement('h2');
       h.className = 'bp-toc-title';
-      h.textContent = 'Table of Contents';
+      h.textContent = ctx.style === 'executive' ? 'Contents' : 'Table of Contents';
       return [h, ...toc.map((t) => { const d = document.createElement('div'); d.innerHTML = tocLine(t.cls, t.label, t.page); return d.firstElementChild; })];
     };
     const tocPages = flowBlocks(book, ctx, tocBlocks());
@@ -184,11 +287,17 @@
     parts.forEach((part, n) => {
       const head = document.createElement('h2');
       head.className = 'bp-part';
-      head.innerHTML = `Part ${n + 1}: ${part.html}`;
+      head.innerHTML = partTitle(ctx, n, part.html);
       const meta = document.createElement('div');
       meta.className = 'bp-meta';
       meta.innerHTML = `<p><b>Solicitation Number:</b> ${markdownInline(ctx.solNumber)}</p><p><b>Offeror:</b> ${esc(ctx.company)}</p><p><b>Date of Submission:</b> ${esc(ctx.date)}</p>`;
-      const blocks = n === 0 ? [head, ...part.blocks] : [head, meta, ...part.blocks];
+      // Executive: the opening paragraph of each part (after any subheading) becomes its theme statement, set in a callout.
+      if (ctx.style === 'executive') {
+        const lead = part.blocks.find((b) => !/^H[3-6]$/.test(b.tagName));
+        if (lead && lead.tagName === 'P') lead.classList.add('bpx-theme');
+      }
+      // The running header already names the solicitation and offeror outside the house style.
+      const blocks = n === 0 || ctx.style !== 'house' ? [head, ...part.blocks] : [head, meta, ...part.blocks];
       const before = pageNo;
       const pages = flowBlocks(book, ctx, blocks, (block, idx) => {
         const entry = toc.find((t) => t.node === block);
@@ -210,16 +319,21 @@
     tocPages.forEach((pg) => pg.remove());
     flowBlocks(holder, ctx, tocBlocks()).forEach((pg) => book.insertBefore(pg, holder));
     holder.remove();
-    [...book.querySelectorAll('.bp')].forEach((pg, i) => {
-      const foot = pg.querySelector('.bp-foot');
-      if (foot) foot.textContent = `Page ${i + 1}`;
+    const all = [...book.querySelectorAll('.bp')];
+    all.forEach((pg, i) => {
+      const num = pg.querySelector('.bp-num');
+      if (num) num.textContent = ctx.style === 'house' ? `Page ${i + 1}` : `Page ${i + 1} of ${all.length}`;
     });
-    return book.querySelectorAll('.bp').length;
+    const sheets = book.querySelector('.bp-sheets');
+    if (sheets) sheets.textContent = all.length > 1 ? `2 through ${all.length}` : '1';
+    return all.length;
   }
 
-  /** Full-screen preview of the formatted proposal, with cover photos and Print / Save as PDF. */
+  /** Full-screen preview of the formatted proposal: style, accent and legend controls, cover photos, Save as PDF. */
   async function openProposalBook(p, md) {
     const ctx = await proposalContext(p);
+    const opts = bookOpts(p.pdfOptions);
+    Object.assign(ctx, { style: styleKey(p.style), accent: opts.accent, legend: opts.legend });
     const photos = [];
     const wrap = document.createElement('div');
     wrap.id = 'book-wrap';
@@ -227,6 +341,11 @@
     wrap.innerHTML = `
       <div class="book-bar no-print">
         <div class="min-w-0"><p class="truncate text-sm font-semibold text-white">${esc(ctx.title)}</p><p class="text-xs text-mist-400" id="book-count"></p></div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="seg" role="radiogroup" aria-label="Proposal style">${Object.entries(PROPOSAL_STYLES).map(([k, st]) => `<button type="button" data-style="${k}" role="radio">${st.name}</button>`).join('')}</div>
+          <div id="book-accents" class="flex items-center gap-1.5" aria-label="Accent color">${Object.entries(BOOK_ACCENTS).map(([k, c]) => `<button type="button" class="book-swatch book-sw-${k}" data-accent="${k}" title="${k[0].toUpperCase() + k.slice(1)}" aria-label="${k} accent"></button>`).join('')}</div>
+          <label class="chip !py-1.5 !text-xs" title="Adds the FAR 52.215-1(e) restriction on disclosure and use of data to the cover and every page"><input id="book-legend" type="checkbox" class="accent-brand-blue" /> Data-rights legend</label>
+        </div>
         <div class="flex flex-wrap gap-2">
           <label class="btn-ghost cursor-pointer">${icon('upload', 'h-4 w-4')}Cover photos<input id="book-photos" type="file" accept="image/png,image/jpeg,image/webp" multiple class="sr-only" /></label>
           <button id="book-word" class="btn-ghost">Word</button>
@@ -238,8 +357,39 @@
       <div id="book" class="book"></div>`;
     document.body.appendChild(wrap);
     document.body.classList.add('book-open');
-    const draw = () => { $('#book-count').textContent = `${layoutBook($('#book'), ctx, md, photos)} pages · US Letter`; };
+    const controls = () => {
+      $$('[data-style]', wrap).forEach((b) => { const on = b.dataset.style === ctx.style; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
+      $$('[data-accent]', wrap).forEach((b) => b.classList.toggle('on', b.dataset.accent === ctx.accent));
+      $('#book-accents').classList.toggle('hidden', ctx.style !== 'executive');
+      $('#book-legend').checked = ctx.legend;
+    };
+    const draw = () => {
+      controls();
+      $('#book-count').textContent = `${layoutBook($('#book'), ctx, md, photos)} pages · US Letter · ${PROPOSAL_STYLES[ctx.style].name} style`;
+    };
     draw();
+    // Style choices are saved on the proposal (and become the member's default) a moment after the last change.
+    let saveTimer;
+    const save = () => {
+      p.style = ctx.style;
+      p.pdfOptions = { accent: ctx.accent, legend: ctx.legend };
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        api('/proposals/' + p.id, { method: 'PATCH', body: { style: ctx.style, pdfOptions: p.pdfOptions } })
+          .then(() => { if (state.me) state.me.user.proposalStyle = ctx.style; })
+          .catch((err) => toast(err.message, 'error'));
+      }, 600);
+    };
+    wrap.addEventListener('click', (e) => {
+      const st = e.target.closest('[data-style]');
+      const ac = e.target.closest('[data-accent]');
+      if (st) ctx.style = st.dataset.style;
+      else if (ac) ctx.accent = ac.dataset.accent;
+      else return;
+      draw();
+      save();
+    });
+    $('#book-legend').addEventListener('change', (e) => { ctx.legend = e.target.checked; draw(); save(); });
     const close = () => { wrap.remove(); document.body.classList.remove('book-open'); document.removeEventListener('keydown', onKey); };
     const onKey = (e) => { if (e.key === 'Escape') close(); };
     document.addEventListener('keydown', onKey);
@@ -257,26 +407,59 @@
     });
   }
 
-  /** The same layout as a Word document: cover table, contents, one part per page. */
+  /** The same layout as a Word document, in the proposal's style: cover, contents, one part per page. */
   function proposalWord(ctx, md) {
+    const style = styleKey(ctx.style);
+    const acc = BOOK_ACCENTS[ctx.accent] || BOOK_ACCENTS.navy;
     const parts = proposalParts(md);
     const br = '<br clear="all" style="page-break-before:always">';
-    const cover = `<table class="cover"><tr><td width="50%">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="220">` : `<p class="logo">${esc(ctx.company)}</p>`}
-        <h3>SUBMITTED TO:</h3><p>${ctx.submittedTo.map(esc).join('<br>') || '[INSERT: contracting officer, agency and address]'}</p>
-        <h3>OFFEROR:</h3><p>${[ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>')}</p>
+    const legend = ctx.legend ? `<p class="legend"><b>Restriction on disclosure and use of data.</b> ${LEGEND_TITLE('2 through the last sheet of this proposal')}</p>` : '';
+    const sheetNote = ctx.legend ? `<p class="sheet">${LEGEND_SHEET}</p>` : '';
+    const to = ctx.submittedTo.map(esc).join('<br>') || '[INSERT: contracting officer, agency and address]';
+    const by = [ctx.company, ...ctx.offeror, ctx.email, ctx.website].filter(Boolean).map(esc).join('<br>');
+    const covers = {
+      house: `<table class="cover"><tr><td width="50%">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="220">` : `<p class="logo">${esc(ctx.company)}</p>`}
+        <h3>SUBMITTED TO:</h3><p>${to}</p><h3>OFFEROR:</h3><p>${by}</p>
         <h4>Business Size and Type</h4><p>${esc(ctx.size)}</p></td>
-      <td width="50%" align="center"><h1>${esc(ctx.title)}</h1><p><b>Solicitation Number</b>: ${esc(ctx.solNumber)}</p><p><b>Response Date</b>: ${esc(ctx.responseDue)}</p></td></tr></table>`;
-    const toc = `<h2 class="toc">Table of Contents</h2>${parts.map((pt, n) => `<p class="t1">Part ${n + 1}: ${pt.html}</p>`).join('')}`;
-    const body = parts.map((pt, n) => `<h2>Part ${n + 1}: ${pt.html}</h2>${n ? `<p><b>Solicitation Number:</b> ${esc(ctx.solNumber)}<br><b>Offeror:</b> ${esc(ctx.company)}<br><b>Date of Submission:</b> ${esc(ctx.date)}</p>` : ''}${pt.blocks.map((b) => b.outerHTML).join('')}`).join(br);
+      <td width="50%" align="center"><h1>${esc(ctx.title)}</h1><p><b>Solicitation Number</b>: ${esc(ctx.solNumber)}</p><p><b>Response Date</b>: ${esc(ctx.responseDue)}</p></td></tr></table>`,
+      executive: `<table class="band"><tr><td bgcolor="${acc}">${ctx.logo ? `<img src="${esc(ctx.logo)}" width="160"><br>` : ''}<p class="kick"><font color="#FFFFFF">PROPOSAL · SOLICITATION ${esc(ctx.solNumber)}</font></p>
+        <h1>${esc(ctx.title)}</h1>${ctx.agency ? `<p class="for"><font color="#FFFFFF">Prepared for ${esc(ctx.agency)}</font></p>` : ''}<p class="for"><font color="#FFFFFF">Submitted by ${esc(ctx.company)} · ${esc(ctx.date)}</font></p></td></tr></table>
+        <table class="glance"><tr><th bgcolor="#EEF1F6">Solicitation</th><td>${esc(ctx.solNumber)}</td></tr><tr><th bgcolor="#EEF1F6">Response due</th><td>${esc(ctx.responseDue)}</td></tr>
+        <tr><th bgcolor="#EEF1F6">Business size</th><td>${esc(ctx.size)}</td></tr>${ctx.ids ? `<tr><th bgcolor="#EEF1F6">Registrations</th><td>${esc(ctx.ids)}</td></tr>` : ''}</table>
+        <table class="parties"><tr><td width="50%"><h3>SUBMITTED TO</h3><p>${to}</p></td><td width="50%"><h3>OFFEROR</h3><p>${by}</p></td></tr></table>`,
+      plain: `${ctx.logo ? `<p align="center"><img src="${esc(ctx.logo)}" width="180"></p>` : ''}<h1 align="center">${esc(ctx.title)}</h1>
+        <p align="center">Submitted in response to Solicitation No. ${esc(ctx.solNumber)}</p><p align="center">Response date: ${esc(ctx.responseDue)}</p>
+        <h3>Submitted to</h3><p>${to}</p><h3>Submitted by</h3><p>${by}</p><p><b>Business size and type:</b> ${esc(ctx.size)}</p>`,
+    };
+    const titleOf = (n, html) => (style === 'house' ? `Part ${n + 1}: ${html}` : `${n + 1}. ${html}`);
+    const toc = `<h2 class="toc">${style === 'executive' ? 'Contents' : 'Table of Contents'}</h2>${parts.map((pt, n) => `<p class="t1">${titleOf(n, pt.html)}</p>`).join('')}`;
+    const body = parts.map((pt, n) => {
+      const lead = pt.blocks.findIndex((b) => !/^H[3-6]$/.test(b.tagName));
+      const blocks = pt.blocks.map((b, i) => (style === 'executive' && i === lead && b.tagName === 'P' ? `<table class="themebox"><tr><td bgcolor="#EEF1F6"><p class="theme">${b.innerHTML}</p></td></tr></table>` : b.outerHTML)).join('');
+      const meta = style === 'house' && n ? `<p><b>Solicitation Number:</b> ${esc(ctx.solNumber)}<br><b>Offeror:</b> ${esc(ctx.company)}<br><b>Date of Submission:</b> ${esc(ctx.date)}</p>` : '';
+      // Word and LibreOffice honor bgcolor on header cells more reliably than CSS backgrounds.
+      const cells = style === 'executive' ? blocks.replace(/<th>/g, `<th bgcolor="${acc}">`) : blocks;
+      return `<h2>${titleOf(n, pt.html)}</h2>${meta}${cells}${sheetNote}`;
+    }).join(br);
+    const css = {
+      house: `@page{size:8.5in 11in;margin:0.8in}body{font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.3}h1{font-size:16pt;text-transform:uppercase}
+        h2{font-size:14pt;color:#1F4E79;text-decoration:underline;margin-top:6pt}h3{font-size:12pt;text-decoration:underline}h4{font-size:12pt}
+        table{border-collapse:collapse;width:100%}td,th{border:1.5pt solid #1F4E8C;padding:4pt;vertical-align:top}th{text-align:center}
+        table.cover td{border:0;border-right:1.5pt solid #1F4E8C}.logo{background:#1F3A68;color:#fff;font-size:16pt;padding:14pt}.toc{color:#000}.t1{font-weight:bold;font-size:12pt}`,
+      executive: `@page{size:8.5in 11in;margin:0.8in}body{font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;line-height:1.4;color:#1d1d1f}
+        h1{font-size:24pt;color:#fff;margin:6pt 0}h2{font-size:17pt;color:${acc};border-bottom:2pt solid ${acc};padding-bottom:3pt}h3{font-size:12pt;color:${acc}}
+        table{border-collapse:collapse;width:100%}td,th{border:0.75pt solid #C9CED6;padding:5pt;vertical-align:top}th{background:${acc};color:#fff;text-align:left}
+        table.band td{background:${acc};color:#fff;border:0;padding:22pt}.kick{font-size:9pt;letter-spacing:1pt;color:#fff}.for{color:#fff}
+        table.glance th{width:30%;background:#EEF1F6;color:${acc};border:0.75pt solid #C9CED6}table.parties td{border:0}.themebox td{border:0;border-left:4pt solid ${acc};background:#EEF1F6;padding:8pt}.theme{margin:0;font-size:11.5pt;font-weight:bold;color:${acc}}
+        .toc{color:${acc}}.t1{font-weight:bold;font-size:12pt}`,
+      plain: `@page{size:8.5in 11in;margin:1in}body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.15;color:#000}h1{font-size:16pt}h2{font-size:14pt}h3{font-size:12pt}
+        table{border-collapse:collapse;width:100%}td,th{border:1pt solid #000;padding:4pt;vertical-align:top}th{text-align:left}.t1{font-size:12pt}`,
+    }[style];
     const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(ctx.title)}</title>
-      <style>@page{size:8.5in 11in;margin:0.8in}body{font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.3}h1{font-size:16pt;text-transform:uppercase}
-      h2{font-size:14pt;color:#1F4E79;text-decoration:underline;margin-top:6pt}h3{font-size:12pt;text-decoration:underline}h4{font-size:12pt}
-      table{border-collapse:collapse;width:100%}td,th{border:1.5pt solid #1F4E8C;padding:4pt;vertical-align:top}th{text-align:center}
-      table.cover td{border:0;border-right:1.5pt solid #1F4E8C}.logo{background:#1F3A68;color:#fff;font-size:16pt;padding:14pt}
-      .toc{color:#000}.t1{font-weight:bold;font-size:12pt}.ph{background:#FFE4E8;color:#9B0020}</style></head>
-      <body>${cover}${br}${toc}${br}${body}</body></html>`;
+      <style>${css}.ph{background:#FFE4E8;color:#9B0020}.legend{border:1pt solid #000;padding:6pt;font-size:9pt}.sheet{font-size:8pt;font-style:italic;color:#444}</style></head>
+      <body>${covers[style]}${legend}${br}${toc}${br}${body}</body></html>`;
     const slug = ctx.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'proposal';
-    download(slug + '.doc', new Blob(['﻿', html], { type: 'application/msword' }));
+    download(slug + '.doc', new Blob(['\ufeff', html], { type: 'application/msword' }));
   }
 
   /** Profile card: upload, preview and remove the company logo (shrunk in the browser to stay small). */

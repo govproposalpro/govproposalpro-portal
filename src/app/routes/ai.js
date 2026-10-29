@@ -35,6 +35,16 @@ const toId = (v) => {
   const n = typeof v === 'number' ? v : Number.parseInt(v, 10);
   return Number.isSafeInteger(n) && n > 0 ? n : null;
 };
+// Proposal PDF styles (laid out in the browser by frontend/app/tools/15-proposal-pdf.js).
+const PROPOSAL_STYLES = ['house', 'executive', 'plain'];
+const ACCENTS = ['navy', 'crimson', 'teal', 'graphite'];
+
+/** Cleans the per-proposal PDF settings: accent color and the FAR 52.215-1(e) legend switch. */
+function pdfOptions(v) {
+  const o = v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+  return { accent: ACCENTS.includes(o.accent) ? o.accent : 'navy', legend: o.legend === true };
+}
+
 const safeError = (err) => (err instanceof ai.AiError ? err.message : 'Something went wrong on our side. Please try again.');
 
 // ---------------------------------------------------------------- AI Bid Decryptor
@@ -288,7 +298,8 @@ router.post(
       const title = (typeof b.title === 'string' && b.title.trim().slice(0, 200))
         || (bid && bid.title) || (summary && summary.title && `Proposal: ${summary.title}`.slice(0, 200)) || 'Government Proposal';
 
-      const id = await reserveProposal(req.user.id, req.user.tier, { title, bidId, rfpSummaryId: summaryId });
+      const style = PROPOSAL_STYLES.includes(b.style) ? b.style : (req.user.proposal_style || 'house');
+      const id = await reserveProposal(req.user.id, req.user.tier, { title, bidId, rfpSummaryId: summaryId, style, pdfOptions: pdfOptions(b.pdfOptions) });
       if (!id) {
         const usage = await proposalUsage(req.user.id, req.user.tier);
         return res.status(429).json({
@@ -298,6 +309,10 @@ router.post(
         });
       }
       res.status(202).json({ id, status: 'working' });
+      if (style !== req.user.proposal_style) {
+        db.query('UPDATE "Users" SET proposal_style = $2 WHERE id = $1', [req.user.id, style])
+          .catch((err) => console.error('[proposals] could not save the default style:', err.message));
+      }
 
       const profile = aiProfile(req.user);
       const documents = await documentContext(req.user.id);
@@ -321,8 +336,8 @@ router.post(
 router.get('/proposals', requireAuth, requireFeature('proposal_engine'), async (req, res, next) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, bid_id AS "bidId", title, status, error, created_at AS "createdAt"
-         FROM proposals WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100`,
+      `SELECT id, bid_id AS "bidId", title, status, error, style, created_at AS "createdAt"
+         FROM proposals WHERE user_id = $1 AND archived_at IS NULL ORDER BY created_at DESC LIMIT 200`,
       [req.user.id]
     );
     res.json({ proposals: rows, usage: await proposalUsage(req.user.id, req.user.tier) });
@@ -332,8 +347,9 @@ router.get('/proposals', requireAuth, requireFeature('proposal_engine'), async (
 router.get('/proposals/:id', requireAuth, requireFeature('proposal_engine'), async (req, res, next) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, bid_id AS "bidId", rfp_summary_id AS "rfpSummaryId", title, status, error, content_md AS "contentMd", created_at AS "createdAt"
-         FROM proposals WHERE id = $1 AND user_id = $2`,
+      `SELECT id, bid_id AS "bidId", rfp_summary_id AS "rfpSummaryId", title, status, error, content_md AS "contentMd",
+              style, pdf_options AS "pdfOptions", created_at AS "createdAt"
+         FROM proposals WHERE id = $1 AND user_id = $2 AND archived_at IS NULL`,
       [toId(req.params.id), req.user.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
@@ -341,16 +357,44 @@ router.get('/proposals/:id', requireAuth, requireFeature('proposal_engine'), asy
   } catch (err) { next(err); }
 });
 
-// Members edit the draft in the dashboard before exporting.
+// Members edit the draft, rename it, or change its PDF style before exporting. Each field is optional.
 router.patch('/proposals/:id', requireAuth, requireFeature('proposal_engine'), express.json({ limit: '1mb' }), async (req, res, next) => {
   try {
-    const md = req.body && req.body.contentMd;
-    if (typeof md !== 'string' || md.length > 500_000) return res.status(400).json({ error: 'Invalid proposal text.' });
+    const b = req.body || {};
+    const sets = [];
+    const vals = [toId(req.params.id), req.user.id];
+    const set = (col, v) => { vals.push(v); sets.push(`${col} = $${vals.length}`); };
+    if (b.contentMd !== undefined) {
+      if (typeof b.contentMd !== 'string' || b.contentMd.length > 500_000) return res.status(400).json({ error: 'Invalid proposal text.' });
+      set('content_md', b.contentMd);
+    }
+    if (b.title !== undefined) {
+      const title = typeof b.title === 'string' ? b.title.replace(/\s+/g, ' ').trim().slice(0, 200) : '';
+      if (!title) return res.status(400).json({ error: 'Give the proposal a name.' });
+      set('title', title);
+    }
+    if (b.style !== undefined) {
+      if (!PROPOSAL_STYLES.includes(b.style)) return res.status(400).json({ error: 'Unknown proposal style.' });
+      set('style', b.style);
+    }
+    if (b.pdfOptions !== undefined) set('pdf_options', JSON.stringify(pdfOptions(b.pdfOptions)));
+    if (!sets.length) return res.status(400).json({ error: 'Nothing to change.' });
     const { rowCount } = await db.query(
-      `UPDATE proposals SET content_md = $3 WHERE id = $1 AND user_id = $2 AND status = 'ready'`,
-      [toId(req.params.id), req.user.id, md]
-    );
+      `UPDATE proposals SET ${sets.join(', ')} WHERE id = $1 AND user_id = $2 AND status = 'ready' AND archived_at IS NULL`, vals);
     if (!rowCount) return res.status(404).json({ error: 'Not found' });
+    if (b.style !== undefined) await db.query('UPDATE "Users" SET proposal_style = $2 WHERE id = $1', [req.user.id, b.style]);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+// Archiving hides a proposal. It still counts toward the month it was written in, so the
+// allowance can't be reset by archiving.
+router.delete('/proposals/:id', requireAuth, requireFeature('proposal_engine'), async (req, res, next) => {
+  try {
+    const { rowCount } = await db.query(
+      `UPDATE proposals SET archived_at = now() WHERE id = $1 AND user_id = $2 AND status <> 'working' AND archived_at IS NULL`,
+      [toId(req.params.id), req.user.id]);
+    if (!rowCount) return res.status(404).json({ error: 'Not found, or still being written.' });
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

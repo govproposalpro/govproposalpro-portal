@@ -76,7 +76,7 @@ async function requireAuth(req, res, next) {
                   u.experience_level, u.sam_status, u.primary_goal,
                   u.uei, u.cage_code, u.sam_expires_on, u.website, u.address, u.year_founded, u.employees,
                   u.service_area, u.differentiators, u.key_personnel, u.past_performance, u.onboarded_at,
-                  u.sam_checklist, u.email_alerts, u.entity_structure, u.primary_markets, u.contact_title, u.phone, u.status, u.ghl_contact_id,
+                  u.sam_checklist, u.email_alerts, u.entity_structure, u.primary_markets, u.contact_title, u.phone, u.status, u.ghl_contact_id, u.proposal_style,
                   COALESCE(ap.tier, u.tier) AS tier, ap.id AS purchase_id, ap.revoked_at`,
       [sha256(token), IDLE_HOURS]
     );
