@@ -114,7 +114,7 @@ const youtubeId = /^[A-Za-z0-9_-]{11}$/.test((process.env.SITE_VSL_YOUTUBE_ID ||
 // SITE_VSL_VIDEO_URL: one full demo video hosted elsewhere (for example GoHighLevel's media library),
 // played on /watch after the opt-in in place of the clips hosted here. Defaults to the full VSL in
 // our GoHighLevel media library; set it to "off" to play the clips hosted here instead.
-const DEFAULT_VSL_VIDEO_URL = 'https://assets.cdn.filesafe.space/2c9ZJNooQ8eEnTMWsHaX/media/6ade7099c9d5b7168d7e0b8f.mp4';
+const DEFAULT_VSL_VIDEO_URL = 'https://files.leadconnectorhq.com/file/6af5ff5a4a2360a4d7bc47a6/57f41d34-968c-4343-a5d3-bc186e5bcd78.mp4'; // v5: $97/$297 end card
 const vslVideoUrl = (() => {
   try {
     const u = new URL((process.env.SITE_VSL_VIDEO_URL ?? DEFAULT_VSL_VIDEO_URL).trim());
@@ -149,7 +149,7 @@ const watchHtml = fillSite('watch.html');
 // <style> tags that script adds. Every other page keeps the strict policy above.
 const SITE_CSP = [
   "default-src 'self'",
-  "script-src 'self' https://js.whop.com https://t.whop.tw https://cdn.plaid.com",
+  "script-src 'self' https://cdn.whop.com https://js.whop.com https://t.whop.tw https://cdn.plaid.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://*.whop.com https://i.ytimg.com",
   "font-src 'self'",

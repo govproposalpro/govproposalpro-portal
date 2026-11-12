@@ -16,8 +16,9 @@ const planId = (name, fallback = '') => {
 
 const PLANS = {
   // Subscriptions sold on the site today.
-  coreMonthly: planId('WHOP_CORE_MONTHLY_PLAN_ID', 'plan_3fn88Y0V7nDy8'),
-  enterpriseMonthly: planId('WHOP_ENTERPRISE_MONTHLY_PLAN_ID', 'plan_dodFFyk8v95Fv'),
+  // The owner repriced the original edition plans in Whop to these subscriptions (Nov 12, 2026).
+  coreMonthly: planId('WHOP_CORE_MONTHLY_PLAN_ID', 'plan_iIafOtFCKgFtZ'), // $97/mo
+  enterpriseMonthly: planId('WHOP_ENTERPRISE_MONTHLY_PLAN_ID', 'plan_0E1DCEALxYJLU'), // $297/mo
   coreYearly: planId('WHOP_CORE_YEARLY_PLAN_ID'),
   enterpriseYearly: planId('WHOP_ENTERPRISE_YEARLY_PLAN_ID'),
   // One-time editions and their access plans (existing buyers; $4,997 is sold on calls).

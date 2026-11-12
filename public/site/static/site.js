@@ -279,18 +279,25 @@
       'core-access': [{ plan: cfg.coreAccessPlan, title: 'Core monthly access', sub: 'For members who bought Core outright' }],
       'enterprise-access': [{ plan: cfg.enterpriseAccessPlan, title: 'Enterprise monthly access', sub: 'For members who bought Enterprise outright' }],
     };
-    var flow = null, flowKey = '', finished = false, stepIdx = 0, mountSeq = 0, buyerEmail = '';
+    var flow = null, flowKey = '', finished = false, stepIdx = 0, mountSeq = 0;
     var mountEl = document.getElementById('co-mount');
     var doneEl = document.getElementById('co-done');
     var fallback = document.getElementById('co-fallback');
-    var loaderAdded = false;
-    function addLoader() {
-      if (loaderAdded) return;
-      loaderAdded = true;
-      var sc = document.createElement('script');
-      sc.src = 'https://js.whop.com/static/checkout/loader.js';
-      sc.async = true;
-      document.head.appendChild(sc);
+    // Whop Elements: Whop retired the old loader.js embed (it now answers "This checkout is no longer
+    // available"), so the checkout mounts through Elements with just the plan id. No API key needed.
+    var elementsAdded = false;
+    function withElements(cb, tries) {
+      if (typeof window.WhopElements === 'function') return cb(window.WhopElements);
+      if (!elementsAdded) {
+        elementsAdded = true;
+        var sc = document.createElement('script');
+        sc.src = 'https://cdn.whop.com/elements/amber/elements.js';
+        sc.setAttribute('data-whop-elements', '');
+        sc.async = true;
+        document.head.appendChild(sc);
+      }
+      if ((tries || 0) > 100) return cb(null); // ~15 seconds
+      setTimeout(function () { withElements(cb, (tries || 0) + 1); }, 150);
     }
     function paintSteps(final) {
       var two = flow.length > 1;
@@ -300,32 +307,63 @@
         var pos = final ? 3 : (two ? stepIdx + 1 : 1);
         li.classList.toggle('is-on', n === pos);
         li.classList.toggle('is-done', n < pos && !(n === 2 && !two));
+        if (n === 3) li.firstChild.textContent = two ? '3' : '2';
       });
       var first = co.querySelector('[data-co-step="1"]');
       if (first) first.lastChild.textContent = two ? 'Your edition' : 'Your plan';
     }
+    function loadFailed() {
+      mountEl.textContent = '';
+      var p = document.createElement('p');
+      p.className = 'co-loading';
+      p.textContent = 'The secure checkout did not load here. Use the button below to finish on whop.com.';
+      mountEl.appendChild(p);
+      fallback.textContent = 'Open the secure checkout on whop.com ›';
+    }
     function mountStep() {
       var step = flow[stepIdx];
+      var seq = ++mountSeq;
       document.getElementById('co-title').textContent = step.title;
       document.getElementById('co-sub').textContent = step.sub;
       fallback.href = 'https://whop.com/checkout/' + step.plan;
+      fallback.textContent = 'Trouble loading? Open on whop.com ›';
       fallback.hidden = false;
       doneEl.hidden = true;
       mountEl.hidden = false;
       mountEl.textContent = '';
+      var loading = document.createElement('p');
+      loading.className = 'co-loading';
+      loading.textContent = 'Loading secure checkout…';
       var holder = document.createElement('div');
-      holder.id = 'gpp-co-' + (++mountSeq);
-      holder.setAttribute('data-whop-checkout-plan-id', step.plan);
-      holder.setAttribute('data-whop-checkout-identifier', holder.id);
-      holder.setAttribute('data-whop-checkout-theme', 'dark');
-      holder.setAttribute('data-whop-checkout-skip-redirect', 'true');
-      holder.setAttribute('data-whop-checkout-on-complete', 'gppCheckoutComplete');
-      // The buyer's email from step one, or the one they gave to watch the demo (watch.js).
-      var prefill = buyerEmail || window.gppLeadEmail || '';
-      if (prefill) holder.setAttribute('data-whop-checkout-prefill-email', prefill);
+      holder.id = 'gpp-co-' + seq;
+      mountEl.appendChild(loading);
       mountEl.appendChild(holder);
       paintSteps(false);
-      addLoader();
+      try { sessionStorage.setItem('gpp_flow', flowKey); } catch (e) { /* only used for the upsell */ }
+      withElements(function (W) {
+        if (seq !== mountSeq || !flow) return; // closed or replaced while loading
+        if (!W) return loadFailed();
+        try {
+          var opts = {
+            plan: step.plan,
+            appearance: { theme: { appearance: 'dark', accentColor: 'blue' } },
+            onComplete: function (c) { if (seq === mountSeq && (!c || c.result === 'payment' || c.result === 'setup')) window.gppCheckoutComplete(); },
+          };
+          // Whop sends the tab back here after redirect-based payments (it needs https).
+          if (location.protocol === 'https:') opts.returnUrl = location.origin + location.pathname + '?checkout=done';
+          var group = W().checkout.create(opts);
+          // The email they gave to watch the demo (watch.js), so the purchase lands on the same contact.
+          var prefill = window.gppLeadEmail || '';
+          var el = group.create('checkout', {
+            buyerEmail: prefill || undefined,
+            onReady: function () { if (loading.parentNode) loading.remove(); },
+            onError: function () { if (seq === mountSeq) loadFailed(); },
+          });
+          el.mount('#' + holder.id);
+        } catch (e) {
+          loadFailed();
+        }
+      });
     }
     function showDone() {
       finished = true;
@@ -340,7 +378,7 @@
       if (up) up.hidden = flowKey !== 'core-monthly';
       paintSteps(true);
     }
-    function resetCheckout() { if (mountEl) mountEl.textContent = ''; flow = null; flowKey = ''; finished = false; }
+    function resetCheckout() { mountSeq += 1; if (mountEl) mountEl.textContent = ''; flow = null; flowKey = ''; finished = false; }
 
     // Core is offered once per visit to someone who opens the Enterprise checkout and closes it
     // without paying.
@@ -354,18 +392,20 @@
     // Whop calls this by name when a payment completes inside the embedded checkout.
     window.gppCheckoutComplete = function () {
       if (!flow) return;
-      var id = 'gpp-co-' + mountSeq;
-      var next = function () {
-        if (stepIdx + 1 < flow.length) { stepIdx += 1; mountStep(); } else showDone();
-      };
-      // Carry the buyer's email into the access plan so it lands on the same account.
-      var got = null;
-      try { if (window.wco && window.wco.getEmail) got = window.wco.getEmail(id, 2000); } catch (e) { got = null; }
-      Promise.race([Promise.resolve(got), new Promise(function (r) { setTimeout(r, 2500); })])
-        .then(function (email) { if (typeof email === 'string' && email.indexOf('@') > 0) buyerEmail = email; })
-        .catch(function () {})
-        .then(next);
+      if (stepIdx + 1 < flow.length) { stepIdx += 1; mountStep(); } else showDone();
     };
+    // Back from a redirect-based payment (Whop appends status): show the done screen.
+    (function () {
+      var q = new URLSearchParams(location.search);
+      if (!co || q.get('checkout') !== 'done') return;
+      if (q.get('status') && q.get('status') !== 'succeeded') return;
+      var key = '';
+      try { key = sessionStorage.getItem('gpp_flow') || ''; } catch (e) { /* fine */ }
+      flow = FLOWS[key] || [{}]; flowKey = key; stepIdx = 0;
+      showDone();
+      openDialog(co);
+      history.replaceState(null, '', location.pathname + location.hash);
+    })();
     document.querySelectorAll('[data-checkout]').forEach(function (a) {
       a.addEventListener('click', function (e) {
         if (!co || cfg.mode === 'link' || typeof co.showModal !== 'function' || e.metaKey || e.ctrlKey || e.shiftKey) return;

@@ -26,10 +26,32 @@
   var source = store.get(SRC_KEY);
   if (!source || (fresh.utm_source || fresh.fbclid || fresh.gclid)) { source = fresh; store.set(SRC_KEY, source); }
 
+  // The offer (buy buttons and pricing) appears once the video reaches the end card at 1:37, and
+  // stays on for this visitor after that. ?offer=1 shows it straight away (for links from emails).
+  var OFFER_AT = 97;
+  var OFFER_KEY = 'gpp_offer';
+  var offerShown = false;
+  function showOffer() {
+    if (offerShown) return;
+    offerShown = true;
+    store.set(OFFER_KEY, 1);
+    document.querySelectorAll('[data-offer]').forEach(function (n) { n.hidden = false; n.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('in'); }); n.classList.add('in'); });
+    document.querySelectorAll('[data-pre-offer]').forEach(function (n) { n.hidden = true; });
+    var bar = document.getElementById('mobile-cta');
+    if (bar) bar.classList.add('offer');
+  }
+  function watchForOffer(v) {
+    if (offerShown || !v || v.tagName !== 'VIDEO') return;
+    var check = function () { if (v.currentTime >= OFFER_AT || (v.dataset.now === 'demo')) showOffer(); };
+    v.addEventListener('timeupdate', check);
+    v.addEventListener('ended', showOffer);
+  }
+
   var lead = store.get(LEAD_KEY);
   if (lead && lead.email) window.gppLeadEmail = lead.email;
 
   document.addEventListener('DOMContentLoaded', function () {
+    if (store.get(OFFER_KEY) || params.get('offer') === '1' || params.get('checkout') === 'done') showOffer();
     var co = document.getElementById('checkout');
     var vslId = co ? co.dataset.vslId : '';
     if (!/^[A-Za-z0-9_-]{11}$/.test(vslId || '')) vslId = '';
@@ -64,6 +86,9 @@
         primed = null;
         current.replaceWith(v);
         current = v;
+        watchForOffer(v);
+        // A YouTube player can't report its time, so its viewers get the offer right away.
+        if (v.tagName !== 'VIDEO') showOffer();
         if (!vslId) v.addEventListener('ended', function () { if (current.dataset.now === 'intro') show('demo'); });
       }
       if (current.tagName !== 'VIDEO') return;
