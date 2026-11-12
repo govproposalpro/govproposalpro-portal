@@ -59,9 +59,13 @@ services:
       - key: WHOP_ENTERPRISE_ACCESS_PLAN_ID
         sync: false
       - key: WHOP_CORE_MONTHLY_PLAN_ID
-        sync: false # optional: $199/mo Core plan (default plan_3fn88Y0V7nDy8); access ends when this membership ends
+        sync: false # Core $97/mo plan id (see src/plans.js); access ends when this membership ends
       - key: WHOP_ENTERPRISE_MONTHLY_PLAN_ID
-        sync: false # optional: $999/mo Enterprise plan (default plan_dodFFyk8v95Fv)
+        sync: false # Enterprise $297/mo plan id
+      - key: WHOP_CORE_YEARLY_PLAN_ID
+        sync: false # optional: Core $970/yr plan id (offered by email)
+      - key: WHOP_ENTERPRISE_YEARLY_PLAN_ID
+        sync: false # optional: Enterprise $2,970/yr plan id (offered by email)
       - key: CORE_ACCESS_MONTHLY_PRICE
         sync: false # optional: Core maintenance $/month, shows the "save" line on pay-in-full
       - key: ENTERPRISE_ACCESS_MONTHLY_PRICE

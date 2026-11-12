@@ -202,4 +202,19 @@ async function onLead({ email, firstName, phone, page, utm = {}, clickId, referr
   return { contactId };
 }
 
-module.exports = { onRegistered, onPurchased, onLead, enabled, upsertContact, sendEmail };
+/**
+ * Runs when a Core subscriber buys Enterprise: tags the contact and gives the team a task to cancel
+ * the old Core plan in Whop, so the member is not billed for both (the site promises this).
+ */
+async function onUpgraded({ email }) {
+  const contactId = await upsertContact({ email, tags: ['gpp-upgraded-enterprise', 'gpp-cancel-core-plan', 'gpp-enterprise'] });
+  await call('POST', `/contacts/${contactId}/tasks`, {
+    title: `Cancel Core plan in Whop: ${email} upgraded to Enterprise`,
+    body: `${email} bought Enterprise ($297/mo) while on Core ($97/mo). Cancel their Core membership in Whop today so they are not billed for both. If Core renewed after the upgrade, refund that charge.`,
+    dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    completed: false,
+    ...(process.env.GHL_TASK_ASSIGNEE ? { assignedTo: process.env.GHL_TASK_ASSIGNEE } : {}),
+  });
+}
+
+module.exports = { onRegistered, onPurchased, onUpgraded, onLead, enabled, upsertContact, sendEmail };

@@ -46,6 +46,10 @@ ALTER TABLE authorized_purchasers ADD COLUMN IF NOT EXISTS access_email_sent_at 
 ALTER TABLE authorized_purchasers ADD COLUMN IF NOT EXISTS billing VARCHAR(16);
 -- Everything granted before the monthly plans, and every manual or CSV grant, is one-time access.
 UPDATE authorized_purchasers SET billing = 'one_time' WHERE billing IS NULL;
+-- The edition bought outright, kept apart from tier so a one-time Core buyer who adds an
+-- Enterprise subscription drops back to Core (not out) when that subscription ends.
+ALTER TABLE authorized_purchasers ADD COLUMN IF NOT EXISTS one_time_tier VARCHAR(20);
+UPDATE authorized_purchasers SET one_time_tier = tier WHERE billing = 'one_time' AND one_time_tier IS NULL;
 
 -- ============================================================================
 -- GovProposalPro app (dashboard). Same "Users" table, so portal logins carry over.

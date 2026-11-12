@@ -8,6 +8,7 @@ const { normalizeEmail, isValidEmail } = require('../../validation');
 const { createSession, destroySession, requireAuth } = require('../session');
 const { TIERS, normalizeTier, featuresFor } = require('../tiers');
 const { proposalUsage } = require('../quota');
+const { PLANS, whopLink } = require('../../plans');
 const { publicProfile } = require('../profile');
 const { passwordProblem } = require('../../validation');
 const tokens = require('../../tokens');
@@ -123,6 +124,8 @@ router.get('/me', requireAuth, async (req, res, next) => {
       tier: { key: tier, label: TIERS[tier].label },
       usage: { proposals: await proposalUsage(req.user.id, tier) },
       features: featuresFor(tier),
+      // Core members see an "Upgrade to Enterprise" button that opens this checkout.
+      upgrade: tier === 'enterprise' ? null : { url: whopLink(PLANS.enterpriseMonthly), price: '$297/mo' },
     });
   } catch (err) {
     next(err);

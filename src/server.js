@@ -11,6 +11,7 @@ const helmet = require('helmet');
 const registerRouter = require('./routes/register');
 const whopWebhookRouter = require('./routes/whopWebhook');
 const leadsRouter = require('./routes/leads');
+const { PLANS, whopLink } = require('./plans');
 const { corsForSignup } = require('./cors');
 const authRouter = require('./app/routes/auth');
 const { router: bidsRouter } = require('./app/routes/bids');
@@ -101,18 +102,6 @@ const checkoutUrl = (name, fallback) => {
   const v = (process.env[name] || '').trim();
   return /^https:\/\/[^\s"'<>]+$/.test(v) ? v : fallback;
 };
-const planId = (name, fallback) => {
-  const v = (process.env[name] || '').trim();
-  return /^plan_[A-Za-z0-9]{4,40}$/.test(v) ? v : fallback;
-};
-const PLANS = {
-  core: planId('WHOP_CORE_PLAN_ID', 'plan_iIafOtFCKgFtZ'),
-  enterprise: planId('WHOP_ENTERPRISE_PLAN_ID', 'plan_0E1DCEALxYJLU'),
-  coreAccess: planId('WHOP_CORE_ACCESS_PLAN_ID', 'plan_YG4iM72R2silB'),
-  enterpriseAccess: planId('WHOP_ENTERPRISE_ACCESS_PLAN_ID', 'plan_Ksl5OvuMVFAhT'),
-  coreMonthly: planId('WHOP_CORE_MONTHLY_PLAN_ID', 'plan_3fn88Y0V7nDy8'),
-  enterpriseMonthly: planId('WHOP_ENTERPRISE_MONTHLY_PLAN_ID', 'plan_dodFFyk8v95Fv'),
-};
 // Optional extras, each hidden on the page until set: the monthly access plan prices (for the
 // "save" line on pay-in-full), the free call calendar and the demo video (a YouTube id).
 const dollars = (name) => {
@@ -132,7 +121,6 @@ const vslVideoUrl = (() => {
     return u.protocol === 'https:' ? u.href : '';
   } catch { return ''; }
 })();
-const whopLink = (plan) => `https://whop.com/checkout/${plan}`;
 const htmlText = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fillSite = (file) => fs.readFileSync(path.join(SITE_DIR, file), 'utf8')
   .replaceAll('__CTA_URL__', checkoutUrl('SITE_CTA_URL', '#editions'))

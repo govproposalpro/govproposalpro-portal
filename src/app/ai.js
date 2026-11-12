@@ -17,10 +17,21 @@ const LIGHT_MODEL = process.env.ANTHROPIC_MODEL_LIGHT || 'claude-haiku-5-5';
 // recommended fallback model inside the same call.
 const FALLBACK = { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
 
-// Site-wide circuit breaker on Claude calls per UTC day, on top of the per-member caps,
-// so a bug or abuse can never run up the bill.
-const DAILY_CALL_CAP = Math.max(1, Number.parseInt(process.env.AI_DAILY_CALL_CAP || '300', 10));
-const usage = { day: '', calls: 0 };
+// Two circuit breakers on Claude calls billed to the platform key, per UTC day, on top of the
+// per-feature caps. The per-member one stops a single account from running up the bill without
+// shutting the AI off for everyone else; the site-wide one is the last stop against a bug.
+// Raise AI_DAILY_CALL_CAP as membership grows (roughly 10 calls per active member a day).
+const intEnv = (name, fallback) => Math.max(1, Number.parseInt(process.env[name] || String(fallback), 10) || fallback);
+const DAILY_CALL_CAP = intEnv('AI_DAILY_CALL_CAP', 1500);
+const MEMBER_DAILY_CALL_CAP = intEnv('AI_MEMBER_DAILY_CALL_CAP', 60);
+const usage = { day: '', calls: 0, byMember: new Map() };
+
+// The signed-in member a request runs for (set by requireAuth), so their calls can be counted.
+const memberScope = new AsyncLocalStorage();
+/** Runs fn with every platform-billed Claude call inside it counted against this member. */
+function forMember(userId, fn) {
+  return memberScope.run(userId, fn);
+}
 
 // Autopilot work runs on the member's own Anthropic key (see withMemberKey). Those calls cost
 // the platform nothing, so they skip the site-wide cap; the Autopilot has its own daily quota.
@@ -44,10 +55,19 @@ function anthropic() {
   }
   if (!process.env.ANTHROPIC_API_KEY) throw new AiError('AI features are not configured yet. Please contact support.');
   const day = new Date().toISOString().slice(0, 10);
-  if (usage.day !== day) Object.assign(usage, { day, calls: 0 });
+  if (usage.day !== day) Object.assign(usage, { day, calls: 0, byMember: new Map() });
   if (usage.calls >= DAILY_CALL_CAP) {
     console.error(`[ai] daily call cap of ${DAILY_CALL_CAP} reached`);
     throw new AiError('AI features are busy right now. Please try again tomorrow or contact support.');
+  }
+  const member = memberScope.getStore();
+  if (member != null) {
+    const used = usage.byMember.get(member) || 0;
+    if (used >= MEMBER_DAILY_CALL_CAP) {
+      console.warn(`[ai] member ${member} reached the daily call cap of ${MEMBER_DAILY_CALL_CAP}`);
+      throw new AiError("You've reached today's AI limit for your account. It resets at midnight UTC.");
+    }
+    usage.byMember.set(member, used + 1);
   }
   usage.calls += 1;
   if (!client) client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 3, timeout: 15 * 60 * 1000 });
@@ -669,7 +689,7 @@ async function parseQuoteReply({ text }) {
 }
 
 module.exports = {
-  enabled, decryptRfp, writeProposal, readCompanyDocument, writeCapabilityStatement, capabilityMarkdown, CAPABILITY_SCHEMA,
+  enabled, forMember, decryptRfp, writeProposal, readCompanyDocument, writeCapabilityStatement, capabilityMarkdown, CAPABILITY_SCHEMA,
   gradeSectionM, writeRfi, writeCaseStudy, AiError,
   withMemberKey, checkKey, learnBusiness, estimatePricing, parseQuoteReply,
 };

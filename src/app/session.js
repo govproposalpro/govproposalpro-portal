@@ -9,6 +9,7 @@
 const crypto = require('crypto');
 const db = require('../db');
 const { normalizeTier, hasFeature } = require('./tiers');
+const { forMember } = require('./ai');
 
 const SECURE = process.env.NODE_ENV === 'production';
 // __Host- cookies must be Secure, path=/ and host-only: they cannot be set or overwritten by a subdomain.
@@ -97,7 +98,8 @@ async function requireAuth(req, res, next) {
     }
     user.tier = normalizeTier(user.tier);
     req.user = user;
-    return next();
+    // Claude calls made for this request count toward the member's own daily AI limit.
+    return forMember(user.id, next);
   } catch (err) {
     return next(err);
   }
