@@ -595,3 +595,14 @@ CREATE INDEX IF NOT EXISTS bid_amendments_user_idx ON bid_amendments (user_id, c
 ALTER TABLE sub_contacts ADD COLUMN IF NOT EXISTS watch           JSONB;
 ALTER TABLE sub_contacts ADD COLUMN IF NOT EXISTS coi_expires     DATE;
 ALTER TABLE sub_contacts ADD COLUMN IF NOT EXISTS license_expires DATE;
+
+-- GovCon Coach chat history (Nov 2026). The member's own questions and the coach's answers.
+CREATE TABLE IF NOT EXISTS coach_messages (
+  id          BIGSERIAL     PRIMARY KEY,
+  user_id     BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  role        VARCHAR(10)   NOT NULL,                     -- user | assistant
+  content     TEXT          NOT NULL,
+  bid_id      BIGINT        REFERENCES bids(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS coach_messages_user_idx ON coach_messages (user_id, created_at DESC);

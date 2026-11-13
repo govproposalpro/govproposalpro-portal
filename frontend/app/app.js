@@ -178,6 +178,7 @@
     first_win: '/first-win', recompete_radar: '/recompete',
     competition_xray: '/x-ray', sources_sought: '/sources-sought', submission_preflight: '/preflight',
     easy_wins: '/easy-wins', amendment_watch: '/amendments', teaming_finder: '/partners', compliance_watchdog: '/watchdog',
+    govcon_coach: '/coach', cash_flow: '/cashflow',
     autopilot: '/autopilot',
     proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
     vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
@@ -190,6 +191,7 @@
     first_win: 'route', recompete_radar: 'history',
     competition_xray: 'search', sources_sought: 'pen', submission_preflight: 'check',
     easy_wins: 'target', amendment_watch: 'bell', teaming_finder: 'handshake', compliance_watchdog: 'shield',
+    govcon_coach: 'spark', cash_flow: 'dollar',
     autopilot: 'bolt',
     proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
     vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
@@ -199,12 +201,12 @@
     state_directory: 'map', deadline_alerts: 'bell',
   };
   const NAV_GROUPS = [
-    ['Start here', ['first_win', 'easy_wins']],
+    ['Start here', ['first_win', 'easy_wins', 'govcon_coach']],
     ['Autopilot', ['autopilot']],
     ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker', 'recompete_radar', 'competition_xray', 'sources_sought', 'amendment_watch']],
     ['Subs and pricing', ['vendor_scraper', 'outreach', 'pricing_matrix', 'foia', 'teaming_legal', 'teaming_finder', 'sub_vetting']],
     ['Review and submit', ['section_m', 'rfi_ghostwriter', 'submission_preflight']],
-    ['After award', ['milestones', 'invoicing']],
+    ['After award', ['milestones', 'invoicing', 'cash_flow']],
     ['Company and compliance', ['capability_statement', 'past_performance', 'winning_voice', 'cmmc_checklist', 'compliance_pulse',
       'subcontracting_check', 'sam_checklist', 'compliance_watchdog', 'state_directory', 'deadline_alerts']],
   ];
@@ -218,6 +220,8 @@
     amendment_watch: 'Checks every bid in your CRM on SAM.gov daily. When an amendment posts, you get an email with what changed, like a moved deadline or new attachments, so you never miss one.',
     teaming_finder: 'Find SAM.gov-registered partners and subs by NAICS, state and 8(a), HUBZone, SDVOSB or WOSB status, see their past federal awards and save them in one click.',
     compliance_watchdog: 'Your SAM.gov registration, API key and every subcontractor re-checked weekly against SAM.gov and the exclusions list, plus insurance and licence expiry reminders.',
+    govcon_coach: 'A 24/7 coach for any government contracting question, from "what is a CLIN?" to "can I sub this out?", that knows your profile, your pipeline and your decrypted bids.',
+    cash_flow: 'Tells you which portal to bill in (WAWF, IPP or the agency\'s own), checks invoices before you submit, predicts when the government pays and shows the cash gap before your subs are due.',
     autopilot: 'Your hands-off government contracting assistant. It learns your business, finds matching solicitations on SAM.gov, reads them, emails vendors for quotes, checks what the government really paid, prices every line at your margin and writes the proposal, as many bids a day as you set.',
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
     invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
@@ -359,6 +363,9 @@
       else if (path === '/recompete') await viewRecompete(view);
       else if (path === '/x-ray') await viewXray(view);
       else if (path === '/easy-wins') await viewEasyWins(view);
+      else if (path === '/coach') await viewCoach(view);
+      else if (path === '/cashflow') await viewCashflow(view);
+      else if (path === '/import') await viewImport(view);
       else if (path === '/amendments') await viewAmendments(view);
       else if (path === '/partners') await viewPartners(view);
       else if (path === '/watchdog') await viewWatchdog(view);

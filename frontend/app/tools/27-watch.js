@@ -12,7 +12,8 @@
   }
 
   async function viewEasyWins(view) {
-    const head = pageHead('Easy Wins Feed', 'Small, fast work you can actually win first: quick RFQs, set-asides you qualify for and work in your state. Plus the offices that buy what you sell.');
+    const head = pageHead('Easy Wins Feed', 'Small, fast work you can actually win first: quick RFQs, set-asides you qualify for and work in your state. Plus the offices that buy what you sell.',
+      '<a href="/app/import" data-link class="btn-ghost">Get the SAM.gov button</a>');
     view.innerHTML = `${head}<div class="card flex items-center justify-center gap-3 p-10 text-mist-400"><span class="spinner"></span>Ranking open notices by how easy they are to win</div>`;
     const feed = await api('/easy-wins').catch((err) => ({ error: err.message }));
     let list;
