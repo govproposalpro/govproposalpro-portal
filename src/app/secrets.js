@@ -74,4 +74,21 @@ function checkAccessKey(email, given) {
   });
 }
 
-module.exports = { encrypt, decrypt, hint, accessKey, checkAccessKey };
+/**
+ * Private calendar feed links (/api/calendar/<id>-<key>.ics). Calendar apps fetch without a
+ * cookie, so the link itself is the secret: an HMAC of the member id and a nonce the member can
+ * reset, which turns every old link off.
+ */
+function calendarKey(userId, nonce) {
+  const key = keyFor(currentSource());
+  if (!key) return '';
+  return crypto.createHmac('sha256', key).update(`gpp-calendar:${userId}:${nonce}`).digest('base64url').slice(0, 32);
+}
+
+function checkCalendarKey(userId, nonce, given) {
+  if (typeof given !== 'string' || !/^[A-Za-z0-9_-]{32}$/.test(given)) return false;
+  const expected = calendarKey(userId, nonce);
+  return Boolean(expected) && crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(given));
+}
+
+module.exports = { encrypt, decrypt, hint, accessKey, checkAccessKey, calendarKey, checkCalendarKey };

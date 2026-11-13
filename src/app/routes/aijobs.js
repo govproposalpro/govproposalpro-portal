@@ -13,6 +13,8 @@ const ai = require('../ai');
 const { requireAuth } = require('../session');
 const { hasFeature } = require('../tiers');
 const { aiProfile } = require('../profile');
+const sam = require('../sam');
+const samkey = require('../samkey');
 
 const router = express.Router();
 
@@ -20,6 +22,7 @@ const KINDS = {
   section_m: { feature: 'section_m', perDay: 15, label: 'grades' },
   rfi: { feature: 'rfi_ghostwriter', perDay: 15, label: 'RFI drafts' },
   case_study: { feature: 'past_performance', perDay: 20, label: 'case studies' },
+  sources_sought: { feature: 'sources_sought', perDay: 10, label: 'sources sought responses' },
 };
 
 const toId = (v) => {
@@ -94,6 +97,29 @@ async function prepare(req) {
     return {
       title: `Grade: ${p.title}`.slice(0, 200), refId: id, input: { proposalId: id, rfpSummaryId: sid || null },
       run: () => ai.gradeSectionM({ proposalMd: p.content_md || '', summary }),
+    };
+  }
+  if (req.kind === 'sources_sought') {
+    // The notice comes from the member's feed (SAM.gov) or is pasted in by hand.
+    const n = b.notice && typeof b.notice === 'object' ? b.notice : {};
+    const notice = {
+      noticeId: clean(n.noticeId, 64), title: clean(n.title, 300), agency: clean(n.agency, 200), office: clean(n.office, 200),
+      solicitationNumber: clean(n.solicitationNumber, 100), type: clean(n.type, 60), naics: clean(n.naics, 20),
+      setAside: clean(n.setAside, 100), responseDeadline: clean(n.responseDeadline, 60), contact: clean(n.contact, 300),
+      url: /^https:\/\/(?:[a-z0-9-]+\.)*sam\.gov\//i.test(n.url || '') ? clean(n.url, 300) : '',
+    };
+    const pasted = clean(b.text, 60000);
+    if (!notice.title && pasted.length < 80) return { status: 400, error: 'Pick a notice from the list, or paste the notice text.' };
+    const descriptionUrl = typeof n.descriptionUrl === 'string' && /^https:\/\/api\.sam\.gov\//.test(n.descriptionUrl) ? n.descriptionUrl : '';
+    return {
+      title: `Response: ${notice.title || pasted.slice(0, 80)}`.slice(0, 200), refId: null, input: { notice },
+      run: async () => {
+        let text = pasted;
+        if (!text && descriptionUrl) {
+          text = await samkey.withKey(user.id, (key) => sam.noticeDescription(descriptionUrl, key)).catch(() => '');
+        }
+        return ai.writeSourcesSought({ notice, text, profile: aiProfile(user) });
+      },
     };
   }
   if (req.kind === 'rfi') {

@@ -207,7 +207,7 @@
 
     view.innerHTML = `
       <div class="no-print">${pageHead(esc(p.title), `<span id="pw-sub">${esc(sub())}</span>`,
-        `<button id="pv-rename" class="btn-ghost">Rename</button><button id="pv-archive" class="btn-ghost">Archive</button>
+        `<button id="pv-rename" class="btn-ghost">Rename</button><button id="pv-archive" class="btn-ghost">Archive</button>${hasTool('submission_preflight') ? `<a href="/app/preflight/${p.id}" data-link class="btn-ghost">${icon('check', 'h-4 w-4')}Preflight</a>` : ''}
          <button id="word" class="btn-ghost">${icon('doc', 'h-4 w-4')}Word</button><button id="print" class="btn-primary">${icon('proposal', 'h-4 w-4')}Proposal PDF</button>`)}</div>
       <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr),340px]">
         <article class="card min-w-0 overflow-hidden">

@@ -238,4 +238,12 @@ async function onPaymentFailed({ email, recoveryUrl, reason }) {
   await sendEmail(contactId, buildPaymentFailedEmail({ recoveryUrl, reason }));
 }
 
-module.exports = { onRegistered, onPurchased, onUpgraded, onLead, onPaymentFailed, tagContact, enabled, upsertContact, sendEmail };
+/** One text message to a member (deadline reminders). GHL bills per message. */
+async function sendSms({ email, phone, message }) {
+  const upsert = await call('POST', '/contacts/upsert', { locationId: process.env.GHL_LOCATION_ID, email, phone });
+  const contactId = upsert.contact?.id;
+  if (!contactId) throw new Error('GHL upsert returned no contact id');
+  await call('POST', '/conversations/messages', { type: 'SMS', contactId, message: String(message).slice(0, 320) }, '2021-04-15');
+}
+
+module.exports = { sendSms, onRegistered, onPurchased, onUpgraded, onLead, onPaymentFailed, tagContact, enabled, upsertContact, sendEmail };

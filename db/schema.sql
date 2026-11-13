@@ -563,3 +563,10 @@ CREATE TABLE IF NOT EXISTS ai_spend (
 -- Activation milestones (key -> date first reached), each sent to GoHighLevel once as a tag so
 -- follow-up emails can go only to members who have not got started.
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS activation JSONB NOT NULL DEFAULT '{}';
+
+-- Bid tools (Nov 2026): Submission Preflight manual ticks (check key -> date), the private
+-- calendar feed link (an HMAC of the member id and this nonce; resetting it turns old links off)
+-- and opt-in text reminders.
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS preflight JSONB NOT NULL DEFAULT '{}';
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS calendar_nonce VARCHAR(20);
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS sms_alerts BOOLEAN NOT NULL DEFAULT false;

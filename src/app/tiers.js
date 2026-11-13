@@ -23,6 +23,8 @@ const FEATURES = [
   { key: 'bid_matchmaker', name: 'Predictive Bid Matchmaker', tiers: ENT, status: 'live' },
   // Core sees the first few results as a preview (recompete_full below unlocks the whole list).
   { key: 'recompete_radar', name: 'Recompete Radar', tiers: BOTH, status: 'live' },
+  { key: 'competition_xray', name: 'Competition X-Ray', tiers: BOTH, status: 'live' },
+  { key: 'sources_sought', name: 'Sources-Sought Responder', tiers: BOTH, status: 'live' },
   { key: 'vendor_scraper', name: 'Smart Vendor Scraper', tiers: BOTH, status: 'live' },
   { key: 'outreach', name: '1-Click Outreach Sequences', tiers: BOTH, status: 'live' },
   { key: 'foia', name: 'FOIA Automator', tiers: BOTH, status: 'live' },
@@ -30,6 +32,7 @@ const FEATURES = [
   { key: 'teaming_legal', name: 'Auto-Teaming Legal Engine', tiers: ENT, status: 'live' },
   { key: 'section_m', name: 'Section M Compliance Grader', tiers: ENT, status: 'live' },
   { key: 'rfi_ghostwriter', name: 'RFI Ghostwriter', tiers: ENT, status: 'live' },
+  { key: 'submission_preflight', name: 'Submission Preflight', tiers: BOTH, status: 'live' },
   { key: 'milestones', name: 'Post-Award Milestone Tracker', tiers: BOTH, status: 'live' },
   { key: 'invoicing', name: 'Simplified Invoicing Engine', tiers: BOTH, status: 'live' },
   { key: 'capability_statement', name: 'Capability Statement Generator', tiers: BOTH, status: 'live' },
