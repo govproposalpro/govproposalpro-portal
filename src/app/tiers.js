@@ -14,12 +14,15 @@ const TIERS = {
 const BOTH = ['core', 'enterprise'];
 const ENT = ['enterprise'];
 const FEATURES = [
+  { key: 'first_win', name: 'First Win Path', tiers: BOTH, status: 'live' },
   { key: 'autopilot', name: 'GovCon Autopilot', tiers: ENT, status: 'live' },
   { key: 'proposal_engine', name: 'AI Proposal Engine', tiers: BOTH, status: 'live' },
   { key: 'bid_decryptor', name: 'AI Bid Decryptor', tiers: BOTH, status: 'live' },
   { key: 'go_no_go', name: 'Go/No-Go Indicator', tiers: BOTH, status: 'live' },
   { key: 'bid_crm', name: 'Visual Bid CRM', tiers: BOTH, status: 'live' },
   { key: 'bid_matchmaker', name: 'Predictive Bid Matchmaker', tiers: ENT, status: 'live' },
+  // Core sees the first few results as a preview (recompete_full below unlocks the whole list).
+  { key: 'recompete_radar', name: 'Recompete Radar', tiers: BOTH, status: 'live' },
   { key: 'vendor_scraper', name: 'Smart Vendor Scraper', tiers: BOTH, status: 'live' },
   { key: 'outreach', name: '1-Click Outreach Sequences', tiers: BOTH, status: 'live' },
   { key: 'foia', name: 'FOIA Automator', tiers: BOTH, status: 'live' },
@@ -42,7 +45,7 @@ const FEATURES = [
 ];
 
 // Shared tools that do more on Enterprise (checked inside the feature, not by the nav).
-const ENTERPRISE_EXTRAS = ['places_vendors', 'pricing_fringe_ga'];
+const ENTERPRISE_EXTRAS = ['places_vendors', 'pricing_fringe_ga', 'recompete_full'];
 
 function normalizeTier(tier) {
   return tier === 'enterprise' ? 'enterprise' : 'core';

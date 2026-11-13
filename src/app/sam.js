@@ -93,6 +93,26 @@ async function vet(query) {
   return { verdict, by: byUei ? 'uei' : 'name', entities, exclusions, totalEntities: entityRes.totalRecords || entities.length, checkedAt: new Date().toISOString() };
 }
 
+/**
+ * The member's own registration by UEI (First Win Path): status, CAGE code and expiration.
+ * @returns {Promise<{found: boolean, active: boolean, status?: string, cage?: string, expires?: string, name?: string, checkedAt: string}>}
+ */
+async function registration(uei) {
+  const res = await get('entities', { ueiSAM: uei, includeSections: 'entityRegistration' });
+  const r = ((res.entityData || [])[0] || {}).entityRegistration;
+  const checkedAt = new Date().toISOString();
+  if (!r) return { found: false, active: false, checkedAt };
+  return {
+    found: true,
+    active: /^active/i.test(r.registrationStatus || ''),
+    status: r.registrationStatus || '',
+    cage: r.cageCode || '',
+    expires: r.registrationExpirationDate || '',
+    name: r.legalBusinessName || '',
+    checkedAt,
+  };
+}
+
 const mmddyyyy = (d) => `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}/${d.getUTCFullYear()}`;
 
 /**
@@ -199,4 +219,4 @@ async function downloadAttachment(link) {
   return { name, bytes, kind: isPdf ? 'pdf' : 'docx' };
 }
 
-module.exports = { enabled, vet, searchOpportunities, searchEntities, noticeDescription, downloadAttachment, SamError };
+module.exports = { enabled, vet, registration, searchOpportunities, searchEntities, noticeDescription, downloadAttachment, SamError };
