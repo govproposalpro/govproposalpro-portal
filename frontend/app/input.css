@@ -461,3 +461,13 @@ body.book-open { overflow: hidden; }
 .pf-mini { height: 28px; width: 28px; border-radius: 9px; color: #A1A1AA; }
 .pf-mini:hover:not(:disabled) { background: rgba(255,255,255,0.08); color: #fff; }
 .pf-mini:disabled { opacity: 0.3; }
+
+/* iPhone app (mobile/): the page runs edge to edge, so keep content clear of the status bar,
+   the notch and the home indicator. Only applies inside the app (05-native.js sets the class). */
+.gpp-native body { -webkit-touch-callout: none; overscroll-behavior-y: none; }
+.gpp-native header.sticky { padding-top: calc(0.75rem + env(safe-area-inset-top)); }
+.gpp-native #mobile-nav { top: calc(3.5rem + env(safe-area-inset-top)); padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+.gpp-native #view { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+.gpp-native #toast { bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+.gpp-native #root > main { padding-top: calc(3rem + env(safe-area-inset-top)); padding-bottom: calc(3rem + env(safe-area-inset-bottom)); }
+.gpp-native body > .fixed.inset-0 { padding-top: calc(1rem + env(safe-area-inset-top)); padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }

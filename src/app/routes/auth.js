@@ -25,6 +25,8 @@ const currentTokenHash = (req) => {
 };
 
 const router = express.Router();
+// The GovProposalPro iPhone app (mobile/) adds this to its user agent.
+const isIosApp = (req) => /GovProposalProApp\//.test(req.get('user-agent') || '');
 
 const REQUIRE_PURCHASE = process.env.REQUIRE_PURCHASE !== 'false';
 const MAX_FAILED = 8;
@@ -139,7 +141,8 @@ router.get('/me', requireAuth, async (req, res, next) => {
       // The member's own SAM.gov API key (status only, never the key): drives the renewal banner.
       samKey: await samkey.status(req.user.id),
       // Core members see an "Upgrade to Enterprise" button that opens this checkout.
-      upgrade: tier === 'enterprise' ? null : { url: whopLink(PLANS.enterpriseMonthly), price: '$297/mo' },
+      // Never inside the iPhone app: Apple does not allow links to outside purchases there.
+      upgrade: tier === 'enterprise' || isIosApp(req) ? null : { url: whopLink(PLANS.enterpriseMonthly), price: '$297/mo' },
       // Signed in with a team login: the UI hides owner-only settings.
       seat: req.user.seat ? { email: req.user.seat.email, name: req.user.seat.name || '' } : null,
     });

@@ -26,6 +26,7 @@ const { router: growthRouter } = require('./app/routes/growth');
 const { router: bidToolsRouter } = require('./app/routes/bidtools');
 const { router: watchRouter } = require('./app/routes/watch');
 const { router: assistRouter } = require('./app/routes/assist');
+const { router: devicesRouter } = require('./app/routes/devices');
 const { router: teamRouter } = require('./app/routes/team');
 const { runAmendmentWatch, runWatchdog } = require('./app/watch');
 const { failInterruptedRuns } = require('./app/autopilot');
@@ -79,7 +80,7 @@ app.use('/api', leadsRouter);
 // Dashboard API. Responses are per-member, so never cache them anywhere.
 app.use(['/api/auth', '/api/me', '/api/bids', '/api/decryptor', '/api/proposals', '/api/capability-statements',
   '/api/vetting', '/api/alerts', '/api/admin', '/api/subs', '/api/foia', '/api/pricing', '/api/milestones', '/api/invoices',
-  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs', '/api/proposal-files', '/api/first-win', '/api/recompete', '/api/xray', '/api/sources-sought', '/api/calendar', '/api/amendments', '/api/easy-wins', '/api/partners', '/api/watchdog', '/api/coach', '/api/cashflow', '/api/sam-notice', '/api/team'], sameOrigin, (_req, res, next) => {
+  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs', '/api/proposal-files', '/api/first-win', '/api/recompete', '/api/xray', '/api/sources-sought', '/api/calendar', '/api/amendments', '/api/easy-wins', '/api/partners', '/api/watchdog', '/api/coach', '/api/cashflow', '/api/sam-notice', '/api/team', '/api/devices'], sameOrigin, (_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
@@ -97,6 +98,7 @@ app.use('/api', bidToolsRouter);
 app.use('/api', watchRouter);
 app.use('/api', assistRouter);
 app.use('/api', teamRouter);
+app.use('/api', devicesRouter);
 app.use('/api', adminAuthRouter);
 app.use('/api', adminManageRouter);
 

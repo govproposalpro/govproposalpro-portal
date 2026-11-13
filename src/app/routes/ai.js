@@ -11,6 +11,7 @@ const rateLimit = require('express-rate-limit');
 const { markActivated } = require('../activation');
 const db = require('../../db');
 const ai = require('../ai');
+const apns = require('../../services/apns');
 const { requireAuth, requireFeature } = require('../session');
 const { reserveProposal, proposalUsage } = require('../quota');
 const { aiProfile } = require('../profile');
@@ -120,7 +121,8 @@ router.post(
       ai.decryptRfp({ files, text: pasted, profile: req.user.onboarded_at ? aiProfile(req.user) : null })
         .then((summary) => db.query(
           `UPDATE rfp_summaries SET status = 'ready', summary = $2, completed_at = now() WHERE id = $1`, [id, summary])
-          .then(() => markActivated(req.user.id, 'first_decrypt')))
+          .then(() => markActivated(req.user.id, 'first_decrypt'))
+          .then(() => apns.notifyUser(req.user.id, { title: 'Solicitation decrypted', body: fileName, path: `/app/decryptor/${id}` })))
         .catch((err) => {
           console.error(`[decryptor] ${id} failed:`, err.message);
           return db.query(`UPDATE rfp_summaries SET status = 'failed', error = $2, completed_at = now() WHERE id = $1`, [id, safeError(err)]);
@@ -325,7 +327,8 @@ router.post(
       ai.writeProposal({ bid, summary, profile, documents, instructions, title, voice, ...details })
         .then((md) => db.query(
           `UPDATE proposals SET status = 'ready', content_md = $2, completed_at = now() WHERE id = $1`, [id, md])
-          .then(() => markActivated(req.user.id, 'first_proposal')))
+          .then(() => markActivated(req.user.id, 'first_proposal'))
+          .then(() => apns.notifyUser(req.user.id, { title: 'Your proposal is ready', body: title, path: `/app/proposals/${id}` })))
         .catch((err) => {
           console.error(`[proposals] ${id} failed:`, err.message);
           return db.query(`UPDATE proposals SET status = 'failed', error = $2, completed_at = now() WHERE id = $1`, [id, safeError(err)]);

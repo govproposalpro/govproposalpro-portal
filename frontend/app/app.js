@@ -305,6 +305,7 @@
         </div>
       </div>`;
     const logout = async () => {
+      await nativeForgetDevice();
       await api('/auth/logout', { method: 'POST' }).catch(() => {});
       state.me = null;
       state.shellReady = false;
@@ -314,6 +315,7 @@
     $('#logout-m').addEventListener('click', logout);
     $('#menu').addEventListener('click', () => $('#mobile-nav').classList.toggle('hidden'));
     state.shellReady = true;
+    nativeEnablePush();
   }
 
   function markActive(path) {
@@ -466,7 +468,9 @@
             </div>
             <p id="login-error" class="mt-4 hidden rounded-2xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm text-brand-redSoft" role="alert"></p>
             <button class="btn-primary mt-6 w-full !py-3.5 !text-base" type="submit">Sign in</button>
-            <p class="mt-5 text-center text-sm text-mist-400">No account yet? <a class="font-semibold text-brand-blueSoft hover:text-white" href="/access">Secure your access</a></p>
+            ${NATIVE
+              ? '<p class="mt-5 text-center text-sm text-mist-400">Sign in with the account you created when you joined GovProposalPro.</p>'
+              : '<p class="mt-5 text-center text-sm text-mist-400">No account yet? <a class="font-semibold text-brand-blueSoft hover:text-white" href="/access">Secure your access</a></p>'}
           </form>
         </div>
       </main>`;
@@ -516,7 +520,7 @@
         <h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">${ent ? 'Your <span class="accent-text">Enterprise</span> Command Center.' : 'Your <span class="accent-text">Core</span> Command Center.'}</h1>
         <p class="mt-2 max-w-2xl text-mist-400">${first ? `Welcome back, ${esc(first)}. ` : ''}${ent ? 'Your GovCon Autopilot finds, prices and writes bids for you. Plus 50 proposals a month, predictive matching, legal teaming, compliance grading and your winning voice.' : 'Upload a solicitation and the engine writes the proposal. 10 proposals a month and every tool to find, price, win and invoice federal contracts.'}</p>
         <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06] !pl-1.5"><span class="ico-bubble ico-grad !h-7 !w-7 !rounded-full">${icon(ICON_OF[key] || 'spark', 'h-3.5 w-3.5')}</span>${label}</a>`).join('')}</div>
-        ${ent ? '' : `<div class="mt-6 flex flex-wrap items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4"><p class="min-w-0 flex-1 text-sm text-mist-400">Enterprise adds the GovCon Autopilot (it finds the bids, gets vendor quotes, prices and writes the proposals for you), the Predictive Bid Matchmaker, Section M grading, teaming agreements and 50 proposals a month.</p>${upgradeButton()}</div>`}
+        ${ent || NATIVE ? '' : `<div class="mt-6 flex flex-wrap items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4"><p class="min-w-0 flex-1 text-sm text-mist-400">Enterprise adds the GovCon Autopilot (it finds the bids, gets vendor quotes, prices and writes the proposals for you), the Predictive Bid Matchmaker, Section M grading, teaming agreements and 50 proposals a month.</p>${upgradeButton()}</div>`}
       </section>
       ${firstWinCard(fw)}
       ${pageHead('Today', 'Your pipeline, deadlines and proposals at a glance.',
@@ -1169,6 +1173,10 @@
   }
 
   function download(name, blob) {
+    if (NATIVE) {
+      nativeSave(name, blob).catch((err) => toast(err.message || 'Could not save the file.', 'error'));
+      return;
+    }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = name;
@@ -1218,6 +1226,7 @@
   // ------------------------------------------------------------------ upgrade to Enterprise (Core members)
 
   function upgradeButton() {
+    if (NATIVE) return ''; // Apple does not allow links to outside purchases in the iPhone app.
     const up = state.me && state.me.upgrade;
     if (!up || !/^https:\/\/whop\.com\//.test(up.url)) return '';
     return `<a href="${esc(up.url)}" target="_blank" rel="noopener" class="btn-primary">${icon('spark', 'h-4 w-4')}Upgrade to Enterprise · ${esc(up.price)}</a>`;
@@ -1225,6 +1234,7 @@
 
   function upgradeCta() {
     const btn = upgradeButton();
+    if (NATIVE) return '';
     if (!btn) return '<p class="mt-3 text-sm text-mist-500">Email contact@govproposalpro.com to upgrade.</p>';
     return `<div class="mt-7">${btn}</div>
       <p class="mx-auto mt-4 max-w-md text-xs leading-relaxed text-mist-500">Check out with the same email you use here and Enterprise switches on within a minute. We cancel your Core plan for you, so you're never billed for both.</p>`;

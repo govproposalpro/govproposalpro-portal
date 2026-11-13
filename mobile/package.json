@@ -1,0 +1,23 @@
+{
+  "name": "govproposalpro-ios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GovProposalPro iPhone app: a Capacitor shell around the live Command Center at govproposalpro.com/app.",
+  "scripts": {
+    "sync": "cap sync ios",
+    "icons": "python3 scripts/make-icons.py"
+  },
+  "dependencies": {
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/push-notifications": "^8.1.3",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2"
+  }
+}
