@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>GovProposalPro</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      background: #04050A; color: #E8ECF5;
+      font: 16px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      background-image:
+        radial-gradient(600px 380px at 10% -10%, rgba(10,102,255,0.22), transparent 62%),
+        radial-gradient(520px 360px at 100% 0%, rgba(255,45,70,0.14), transparent 60%);
+    }
+    .card {
+      width: 100%; max-width: 360px; text-align: center; padding: 36px 28px;
+      border-radius: 28px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+      box-shadow: 0 30px 80px -30px rgba(10,102,255,0.45);
+    }
+    img { width: 64px; height: auto; }
+    h1 { margin: 18px 0 6px; font-size: 22px; letter-spacing: -0.02em; }
+    p { margin: 0; color: #9AA3B8; font-size: 15px; }
+    button {
+      margin-top: 26px; width: 100%; border: 0; border-radius: 999px; padding: 14px 20px;
+      font: 600 16px/1 inherit; font-family: inherit; color: #fff; cursor: pointer;
+      background: linear-gradient(135deg, #2E7DFF 0%, #0A66FF 55%, #0051E0 100%);
+      box-shadow: 0 12px 30px -10px rgba(10,102,255,0.7);
+    }
+    button:active { transform: scale(0.98); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="mark.png" alt="" />
+    <h1>You're offline</h1>
+    <p>GovProposalPro needs an internet connection. Check your Wi-Fi or cellular data and try again.</p>
+    <button id="retry" type="button">Try again</button>
+  </div>
+  <script>
+    var go = function () { location.href = 'https://govproposalpro.com/app'; };
+    document.getElementById('retry').addEventListener('click', go);
+    window.addEventListener('online', go);
+  </script>
+</body>
+</html>

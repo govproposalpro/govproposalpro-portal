@@ -9,6 +9,7 @@
 
 const db = require('../db');
 const mailer = require('../services/mailer');
+const apns = require('../services/apns');
 const ghl = require('../services/ghl');
 const { buildAlertEmail } = require('../services/email');
 const { baseUrl } = require('../tokens');
@@ -85,8 +86,15 @@ async function upcomingAlerts(userId, days) {
   return out.sort((a, b) => a.daysLeft - b.daysLeft);
 }
 
+/** The push notification for one member's batch of fresh reminders. */
+function pushFor(fresh, keyOnly) {
+  if (keyOnly) return { title: 'Your SAM.gov API key needs attention', body: `${fresh[0].when}. Tap to update it.`, path: '/app/sam-key' };
+  if (fresh.length === 1) return { title: fresh[0].title, body: `${fresh[0].when} (${fresh[0].detail})`, path: '/app/alerts' };
+  return { title: `${fresh.length} deadlines coming up`, body: fresh.map((i) => i.title).slice(0, 3).join(' · '), path: '/app/alerts' };
+}
+
 async function runAlertJob() {
-  if (!mailer.canSend()) return;
+  if (!mailer.canSend() && !apns.enabled()) return;
   const client = await db.pool.connect();
   try {
     const lock = await client.query('SELECT pg_try_advisory_lock(7340002) AS ok');
@@ -158,13 +166,21 @@ async function runAlertJob() {
           items: fresh,
           href: `${baseUrl()}/app`,
         });
-        try {
-          await mailer.send({ to: user.email, contactId: user.ghl_contact_id || undefined, ...msg });
+        let delivered = false;
+        if (mailer.canSend()) {
+          try {
+            await mailer.send({ to: user.email, contactId: user.ghl_contact_id || undefined, ...msg });
+            delivered = true;
+          } catch (err) {
+            console.error(`[alerts] email to user ${userId} failed:`, err.message);
+          }
+        }
+        // The same reminder as a push notification on any iPhone the member signed in on.
+        if (await apns.notifyUser(userId, pushFor(fresh, keyOnly))) delivered = true;
+        if (delivered) {
           for (const i of fresh) {
             await client.query('INSERT INTO alert_log (user_id, alert_key) VALUES ($1, $2) ON CONFLICT DO NOTHING', [userId, i.key]);
           }
-        } catch (err) {
-          console.error(`[alerts] email to user ${userId} failed:`, err.message);
         }
         // Opt-in text for proposal deadlines 3 days and 1 day out (GHL bills per text).
         const texts = fresh.filter((i) => /^bid:\d+:due:(1|3)$/.test(i.key));

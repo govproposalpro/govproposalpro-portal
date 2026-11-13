@@ -6,7 +6,7 @@
  *  - Dashboard: public/app/index.html plus public/app/static/{app.css,app.js}, cache-busted by content hash.
  *  - Admin: public/admin/index.html plus public/admin/static/admin.js (uses the dashboard CSS).
  *  - Landing page: public/site/index.html and the demo video page public/site/watch.html, plus
- *    public/site/static/{site.css,site.js,wins.js,watch.js}.
+ *    public/site/static/{site.css,site.js,wins.js,watch.js,plans.css,plans.js}.
  */
 
 const { execFileSync } = require('child_process');
@@ -82,7 +82,10 @@ const siteJs = fs.readFileSync(path.join(root, 'frontend/site/site.js'), 'utf8')
 const winsJs = fs.readFileSync(path.join(root, 'frontend/site/wins.js'), 'utf8');
 const watchJs = fs.readFileSync(path.join(root, 'frontend/site/watch.js'), 'utf8');
 const pixelJs = fs.readFileSync(path.join(root, 'frontend/site/pixel.js'), 'utf8');
-const siteVersion = crypto.createHash('sha256').update(siteCss).update(siteJs).update(winsJs).update(watchJs).digest('hex').slice(0, 12);
+// The "See pricing" sheet: plain CSS and JS, kept apart from the Tailwind build.
+const plansJs = fs.readFileSync(path.join(root, 'frontend/site/plans.js'), 'utf8');
+const plansCss = fs.readFileSync(path.join(root, 'frontend/site/plans.css'), 'utf8');
+const siteVersion = crypto.createHash('sha256').update(siteCss).update(siteJs).update(winsJs).update(watchJs).update(plansJs).update(plansCss).digest('hex').slice(0, 12);
 const siteStatic = path.join(root, 'public/site/static');
 fs.mkdirSync(siteStatic, { recursive: true });
 fs.writeFileSync(path.join(siteStatic, 'site.css'), siteCss);
@@ -90,6 +93,8 @@ fs.writeFileSync(path.join(siteStatic, 'site.js'), siteJs);
 fs.writeFileSync(path.join(siteStatic, 'wins.js'), winsJs);
 fs.writeFileSync(path.join(siteStatic, 'watch.js'), watchJs);
 fs.writeFileSync(path.join(siteStatic, 'pixel.js'), pixelJs);
+fs.writeFileSync(path.join(siteStatic, 'plans.js'), plansJs);
+fs.writeFileSync(path.join(siteStatic, 'plans.css'), plansCss);
 fs.writeFileSync(
   path.join(root, 'public/site/index.html'),
   fs.readFileSync(path.join(root, 'frontend/site/index.html'), 'utf8').replaceAll('__VERSION__', siteVersion)

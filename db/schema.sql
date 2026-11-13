@@ -612,3 +612,16 @@ CREATE INDEX IF NOT EXISTS coach_messages_user_idx ON coach_messages (user_id, c
 -- owner-only. Deleting the owner deletes their seats.
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS team_owner_id BIGINT REFERENCES "Users"(id) ON DELETE CASCADE;
 CREATE INDEX IF NOT EXISTS users_team_owner_idx ON "Users" (team_owner_id) WHERE team_owner_id IS NOT NULL;
+
+-- iPhone app (Nov 2026): one row per phone a member signed in on, for push notifications
+-- (src/services/apns.js). The token is Apple's device token, not a secret; it is removed on sign
+-- out and when Apple says the app was deleted.
+CREATE TABLE IF NOT EXISTS push_devices (
+  id            BIGSERIAL     PRIMARY KEY,
+  user_id       BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  token         VARCHAR(200)  NOT NULL UNIQUE,
+  platform      VARCHAR(10)   NOT NULL DEFAULT 'ios',
+  created_at    TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  last_seen_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS push_devices_user_idx ON push_devices (user_id);
