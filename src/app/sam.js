@@ -178,6 +178,15 @@ async function noticesForSolicitation(solnum, apiKey) {
     .sort((a, b) => String(a.postedDate).localeCompare(String(b.postedDate)));
 }
 
+/** One notice by its id (the 32-character id in a sam.gov/opp/<id>/view link), or null. */
+async function noticeById(noticeId, apiKey) {
+  const to = new Date();
+  const from = new Date(Date.now() - 364 * 86400000);
+  const data = await get(OPPORTUNITIES, { postedFrom: mmddyyyy(from), postedTo: mmddyyyy(to), noticeid: noticeId, limit: '1', offset: '0' }, apiKey);
+  const o = (data.opportunitiesData || [])[0];
+  return o ? shapeNotice(o) : null;
+}
+
 /** Active SAM.gov registrants for a NAICS code in one state (Smart Vendor Scraper). One page of 10. */
 async function searchEntities({ naics, state, businessType, sbaType, page = 0 }, apiKey) {
   const params = {
@@ -250,4 +259,4 @@ async function downloadAttachment(link) {
   return { name, bytes, kind: isPdf ? 'pdf' : 'docx' };
 }
 
-module.exports = { enabled, vet, registration, checkKey, isKeyRejected, searchOpportunities, noticesForSolicitation, searchEntities, noticeDescription, downloadAttachment, SamError };
+module.exports = { enabled, vet, registration, checkKey, isKeyRejected, searchOpportunities, noticesForSolicitation, noticeById, searchEntities, noticeDescription, downloadAttachment, SamError };

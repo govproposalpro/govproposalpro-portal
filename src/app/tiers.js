@@ -27,6 +27,7 @@ const FEATURES = [
   { key: 'sources_sought', name: 'Sources-Sought Responder', tiers: BOTH, status: 'live' },
   { key: 'easy_wins', name: 'Easy Wins Feed', tiers: BOTH, status: 'live' },
   { key: 'amendment_watch', name: 'Amendment Watch', tiers: BOTH, status: 'live' },
+  { key: 'govcon_coach', name: 'GovCon Coach', tiers: BOTH, status: 'live' },
   { key: 'vendor_scraper', name: 'Smart Vendor Scraper', tiers: BOTH, status: 'live' },
   { key: 'outreach', name: '1-Click Outreach Sequences', tiers: BOTH, status: 'live' },
   { key: 'foia', name: 'FOIA Automator', tiers: BOTH, status: 'live' },
@@ -47,6 +48,7 @@ const FEATURES = [
   { key: 'sub_vetting', name: 'Sub-Safe SAM.gov Vetting', tiers: ENT, status: 'live' },
   { key: 'teaming_finder', name: 'Teaming Partner Finder', tiers: ENT, status: 'live' },
   { key: 'compliance_watchdog', name: 'Compliance Watchdog', tiers: ENT, status: 'live' },
+  { key: 'cash_flow', name: 'Cash-Flow Autopilot', tiers: ENT, status: 'live' },
   { key: 'state_directory', name: 'Per-State Directory', tiers: ENT, status: 'live' },
   { key: 'deadline_alerts', name: 'Deadline Alerts', tiers: BOTH, status: 'live' },
 ];

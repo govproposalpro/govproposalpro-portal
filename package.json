@@ -14,7 +14,8 @@
     "db:migrate": "node scripts/migrate.js",
     "import:whop": "node scripts/import-whop-csv.js",
     "admin:seed": "node scripts/seed-admins.js",
-    "admin:link": "node scripts/seed-admins.js --link"
+    "admin:link": "node scripts/seed-admins.js --link",
+    "build:extension": "mkdir -p public/assets/extension && rm -f public/assets/extension/govproposalpro-sam-extension.zip && cd extension && zip -q -X -r ../public/assets/extension/govproposalpro-sam-extension.zip manifest.json content.js content.css icons"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.134.0",
