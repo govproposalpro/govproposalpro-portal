@@ -56,10 +56,12 @@ const META_PIXEL_ID = (() => {
   return /^\d{6,20}$/.test(v) ? v : '2544535072700216';
 })();
 
-// Microsoft Clarity project id (free heatmaps and session replays on the sales pages). Off when unset.
+// Microsoft Clarity project id (free heatmaps and session replays on the sales pages).
+// Env CLARITY_ID overrides it; 'off' turns Clarity off.
 const CLARITY_ID = (() => {
   const v = (process.env.CLARITY_ID || '').trim().toLowerCase();
-  return /^[a-z0-9]{6,20}$/.test(v) ? v : '';
+  if (v === 'off') return '';
+  return /^[a-z0-9]{6,20}$/.test(v) ? v : 'zd4xv6iu61';
 })();
 
 module.exports = { PLANS, SUBSCRIPTION_TIERS, whopLink, BOOKING_URL, BOOKING_EMBED_ID, META_PIXEL_ID, CLARITY_ID };
