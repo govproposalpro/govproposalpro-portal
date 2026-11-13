@@ -157,6 +157,7 @@
   .plan { @apply relative flex flex-col overflow-hidden rounded-[28px] border border-white/10 bg-ink-800 p-8 sm:p-10; }
   .plan-ent { border-color: transparent; background: linear-gradient(#141416, #141416) padding-box, linear-gradient(135deg, #0A66FF, #5B3BFF, #FF2D46) border-box;
     box-shadow: 0 40px 120px -50px rgba(91,59,255,0.7); }
+  .plan-start { border-color: transparent; background: linear-gradient(#141416, #141416) padding-box, linear-gradient(135deg, #4DA3FF, #0A66FF) border-box; }
   .plan-badge { @apply absolute right-6 top-6 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white; }
   .price { @apply text-6xl font-semibold tabular-nums text-white; letter-spacing: -0.05em; }
   .plan-list { @apply relative mt-6 flex-1 space-y-3 text-[15px] text-mist-300; }

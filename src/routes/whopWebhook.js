@@ -15,6 +15,7 @@ const express = require('express');
 const db = require('../db');
 const { normalizeEmail, isValidEmail } = require('../validation');
 const ghl = require('../services/ghl');
+const { SUBSCRIPTION_TIERS } = require('../plans');
 
 const router = express.Router();
 const TOLERANCE_SECONDS = 5 * 60;
@@ -29,15 +30,8 @@ const MEMBERSHIP_END_EVENTS = new Set(['membership.went_invalid', 'membership.de
 const listFromEnv = (name) => new Set((process.env[name] || '').split(',').map((s) => s.trim()).filter(Boolean));
 const ENTERPRISE_PRODUCTS = listFromEnv('WHOP_ENTERPRISE_PRODUCT_IDS');
 const CORE_PRODUCTS = listFromEnv('WHOP_CORE_PRODUCT_IDS');
-// The monthly plans ($199 Core, $999 Enterprise) are matched by plan id; env vars override the defaults.
-const planFromEnv = (name, fallback) => {
-  const v = (process.env[name] || '').trim();
-  return /^plan_[A-Za-z0-9]{4,40}$/.test(v) ? v : fallback;
-};
-const MONTHLY_PLANS = new Map([
-  [planFromEnv('WHOP_CORE_MONTHLY_PLAN_ID', 'plan_3fn88Y0V7nDy8'), 'core'],
-  [planFromEnv('WHOP_ENTERPRISE_MONTHLY_PLAN_ID', 'plan_dodFFyk8v95Fv'), 'enterprise'],
-]);
+// Subscription plans (monthly or yearly) are matched by plan id; see src/plans.js.
+const MONTHLY_PLANS = SUBSCRIPTION_TIERS;
 
 function verifySignature(secret, headers, rawBody) {
   const id = headers['webhook-id'];
@@ -120,26 +114,43 @@ router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '25
 
   try {
     if (GRANT_EVENTS.has(type)) {
+      // A Core subscriber buying Enterprise is an upgrade: the team cancels the old Core plan.
+      const before = monthly && tier === 'enterprise'
+        ? (await db.query('SELECT tier, billing, revoked_at FROM authorized_purchasers WHERE lower(email) = $1', [email])).rows[0]
+        : null;
+      const upgraded = Boolean(before && !before.revoked_at && before.tier === 'core' && before.billing === 'monthly');
       // billing records how access was bought. A one-time purchase always wins over a monthly plan,
-      // so someone who bought outright never loses access when an old monthly plan ends.
+      // so someone who bought outright never loses access when an old monthly plan ends. An active
+      // Enterprise member is never moved down by a Core payment (someone who upgraded and is still
+      // on the old Core plan); one_time_tier remembers the edition owned outright.
       await db.query(
-        `INSERT INTO authorized_purchasers (email, tier, source, whop_ref, billing)
-         VALUES ($1, $2, 'webhook', $3, $4)
+        `INSERT INTO authorized_purchasers (email, tier, source, whop_ref, billing, one_time_tier)
+         VALUES ($1, $2::varchar, 'webhook', $3, $4::varchar, CASE WHEN $4::varchar = 'one_time' THEN $2::varchar END)
          ON CONFLICT ((lower(email))) DO UPDATE
-           SET tier = COALESCE(EXCLUDED.tier, authorized_purchasers.tier),
+           SET tier = CASE WHEN authorized_purchasers.revoked_at IS NULL AND authorized_purchasers.tier = 'enterprise'
+                            THEN 'enterprise' ELSE COALESCE(EXCLUDED.tier, authorized_purchasers.tier) END,
                whop_ref = COALESCE(EXCLUDED.whop_ref, authorized_purchasers.whop_ref),
                billing = CASE WHEN authorized_purchasers.billing = 'one_time' THEN 'one_time' ELSE EXCLUDED.billing END,
+               one_time_tier = CASE WHEN EXCLUDED.billing = 'one_time'
+                                    THEN CASE WHEN authorized_purchasers.one_time_tier = 'enterprise' THEN 'enterprise' ELSE EXCLUDED.tier END
+                                    ELSE authorized_purchasers.one_time_tier END,
                revoked_at = NULL`,
         [email, tier, ref, monthly ? 'monthly' : 'one_time']
       );
       sendAccessEmailOnce({ email, tier, fullName });
+      if (upgraded && ghl.enabled()) ghl.onUpgraded({ email }).catch((err) => console.error('[whop] upgrade flag failed:', err.message));
     } else if (REVOKE_EVENTS.has(type)) {
       await db.query('UPDATE authorized_purchasers SET revoked_at = now() WHERE lower(email) = $1', [email]);
     } else if (monthly && MEMBERSHIP_END_EVENTS.has(type)) {
+      // Only the plan that set the current tier ends access: a member who upgraded from Core to
+      // Enterprise and then cancels the old Core plan keeps Enterprise. Someone who also owns an
+      // edition outright drops back to that edition instead of losing access.
       await db.query(
-        `UPDATE authorized_purchasers SET revoked_at = now()
-          WHERE lower(email) = $1 AND billing = 'monthly' AND revoked_at IS NULL`,
-        [email]
+        `UPDATE authorized_purchasers
+            SET tier = CASE WHEN billing = 'one_time' THEN COALESCE(one_time_tier, tier) ELSE tier END,
+                revoked_at = CASE WHEN billing = 'one_time' THEN revoked_at ELSE now() END
+          WHERE lower(email) = $1 AND revoked_at IS NULL AND (tier IS NULL OR tier = $2::varchar)`,
+        [email, tier]
       );
     }
     return res.status(200).json({ received: true });

@@ -14,7 +14,7 @@
   // Videos hosted here: the short VSL intro and the full walkthrough. New recordings get a new file
   // name, since /assets is cached for 7 days.
   var CLIPS = {
-    intro: { file: '/assets/site/intro-v4', poster: '/assets/site/intro-v4-poster.webp', label: 'GovProposalPro intro' },
+    intro: { file: '/assets/site/intro-v5', poster: '/assets/site/intro-v5-poster.webp', label: 'GovProposalPro intro' },
     demo: { file: '/assets/site/demo-v2', poster: '/assets/site/demo-poster.webp', label: 'GovProposalPro demo' },
   };
   // Points a video element at a clip hosted here, or at a full https video URL (SITE_VSL_VIDEO_URL).
@@ -210,14 +210,14 @@
       var calc = function () {
         var v = Number(value.value), m = Number(margin.value);
         var ed = document.querySelector('input[name="roi-ed"]:checked');
-        var price = Number(ed ? ed.value : 897);
+        var price = Number(ed ? ed.value : 97);
         var profit = v * m / 100;
-        var multiple = profit / price;
+        var multiple = profit / (price * 12); // against a full year of the plan
         document.getElementById('roi-value-out').textContent = money(v);
         document.getElementById('roi-margin-out').textContent = m + '%';
         document.getElementById('roi-profit').textContent = money(profit);
         document.getElementById('roi-multiple').textContent = (multiple >= 10 ? Math.round(multiple) : multiple.toFixed(1).replace(/\.0$/, '')) + '×';
-        document.getElementById('roi-ed-name').textContent = price > 897 ? 'Enterprise Edition' : 'Core Edition';
+        document.getElementById('roi-ed-name').textContent = price > 97 ? 'Enterprise' : 'Core';
         [value, margin].forEach(function (r) {
           var pct = (r.value - r.min) / (r.max - r.min) * 100;
           r.style.background = 'linear-gradient(90deg, #4DA3FF 0%, #9D7BFF ' + pct + '%, rgba(255,255,255,0.1) ' + pct + '%)';
@@ -228,14 +228,8 @@
       calc();
     }
 
-    // Pricing leads with pay in full; the access plan price shows once it is set.
     var co = document.getElementById('checkout');
     var cfg = co ? co.dataset : {};
-    ['core', 'enterprise'].forEach(function (ed) {
-      var maint = Number(cfg[ed + 'Maint']);
-      var m = document.querySelector('[data-maint="' + ed + '"]');
-      if (m && maint > 0) m.textContent = ' at ' + money(maint) + ' a month';
-    });
 
     // Optional extras: the call calendar and the demo video show only once they are configured.
     if (/^https:\/\//.test(cfg.bookingUrl || '')) {
@@ -272,30 +266,38 @@
       d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('[data-co-close]')) d.close(); });
       d.addEventListener('close', function () {
         if (!document.querySelector('dialog.co[open]')) document.body.classList.remove('co-lock');
-        if (d.id === 'checkout') { var left = flowKey && !finished && stepIdx === 0 ? flowKey : ''; resetCheckout(); offerDownsell(left); }
+        if (d.id === 'checkout') { var left = flowKey && !finished ? flowKey : ''; resetCheckout(); offerDownsell(left); }
       });
     });
 
     // Embedded Whop checkout. Buy buttons keep their whop.com link as the fallback (no script,
-    // old browser); with script the checkout opens here: the edition, then its monthly access plan.
+    // old browser); with script the checkout opens here. Core buyers then see the Enterprise upgrade.
+    // The -access flows are the monthly access plans for members who bought an edition outright before.
     var FLOWS = {
-      core: [{ plan: cfg.corePlan, title: 'Core Edition', sub: '$897 one-time' }, { plan: cfg.coreAccessPlan, title: 'Core monthly access', sub: 'Keeps your account, support and proposals active' }],
-      enterprise: [{ plan: cfg.enterprisePlan, title: 'Enterprise Edition', sub: '$4,997 one-time' }, { plan: cfg.enterpriseAccessPlan, title: 'Enterprise monthly access', sub: 'Keeps your account, support and Autopilot active' }],
-      'core-monthly': [{ plan: cfg.coreMonthlyPlan, title: 'Core Edition, monthly', sub: '$199 a month until you cancel' }],
-      'enterprise-monthly': [{ plan: cfg.enterpriseMonthlyPlan, title: 'Enterprise Edition, monthly', sub: '$999 a month until you cancel' }],
+      'core-monthly': [{ plan: cfg.coreMonthlyPlan, title: 'Core Edition', sub: '$97 a month, cancel anytime' }],
+      'enterprise-monthly': [{ plan: cfg.enterpriseMonthlyPlan, title: 'Enterprise Edition', sub: '$297 a month, cancel anytime' }],
+      'core-access': [{ plan: cfg.coreAccessPlan, title: 'Core monthly access', sub: 'For members who bought Core outright' }],
+      'enterprise-access': [{ plan: cfg.enterpriseAccessPlan, title: 'Enterprise monthly access', sub: 'For members who bought Enterprise outright' }],
     };
-    var flow = null, flowKey = '', finished = false, stepIdx = 0, mountSeq = 0, buyerEmail = '';
+    var flow = null, flowKey = '', finished = false, stepIdx = 0, mountSeq = 0;
     var mountEl = document.getElementById('co-mount');
     var doneEl = document.getElementById('co-done');
     var fallback = document.getElementById('co-fallback');
-    var loaderAdded = false;
-    function addLoader() {
-      if (loaderAdded) return;
-      loaderAdded = true;
-      var sc = document.createElement('script');
-      sc.src = 'https://js.whop.com/static/checkout/loader.js';
-      sc.async = true;
-      document.head.appendChild(sc);
+    // Whop Elements: Whop retired the old loader.js embed (it now answers "This checkout is no longer
+    // available"), so the checkout mounts through Elements with just the plan id. No API key needed.
+    var elementsAdded = false;
+    function withElements(cb, tries) {
+      if (typeof window.WhopElements === 'function') return cb(window.WhopElements);
+      if (!elementsAdded) {
+        elementsAdded = true;
+        var sc = document.createElement('script');
+        sc.src = 'https://cdn.whop.com/elements/amber/elements.js';
+        sc.setAttribute('data-whop-elements', '');
+        sc.async = true;
+        document.head.appendChild(sc);
+      }
+      if ((tries || 0) > 100) return cb(null); // ~15 seconds
+      setTimeout(function () { withElements(cb, (tries || 0) + 1); }, 150);
     }
     function paintSteps(final) {
       var two = flow.length > 1;
@@ -305,32 +307,63 @@
         var pos = final ? 3 : (two ? stepIdx + 1 : 1);
         li.classList.toggle('is-on', n === pos);
         li.classList.toggle('is-done', n < pos && !(n === 2 && !two));
+        if (n === 3) li.firstChild.textContent = two ? '3' : '2';
       });
       var first = co.querySelector('[data-co-step="1"]');
       if (first) first.lastChild.textContent = two ? 'Your edition' : 'Your plan';
     }
+    function loadFailed() {
+      mountEl.textContent = '';
+      var p = document.createElement('p');
+      p.className = 'co-loading';
+      p.textContent = 'The secure checkout did not load here. Use the button below to finish on whop.com.';
+      mountEl.appendChild(p);
+      fallback.textContent = 'Open the secure checkout on whop.com ›';
+    }
     function mountStep() {
       var step = flow[stepIdx];
+      var seq = ++mountSeq;
       document.getElementById('co-title').textContent = step.title;
       document.getElementById('co-sub').textContent = step.sub;
       fallback.href = 'https://whop.com/checkout/' + step.plan;
+      fallback.textContent = 'Trouble loading? Open on whop.com ›';
       fallback.hidden = false;
       doneEl.hidden = true;
       mountEl.hidden = false;
       mountEl.textContent = '';
+      var loading = document.createElement('p');
+      loading.className = 'co-loading';
+      loading.textContent = 'Loading secure checkout…';
       var holder = document.createElement('div');
-      holder.id = 'gpp-co-' + (++mountSeq);
-      holder.setAttribute('data-whop-checkout-plan-id', step.plan);
-      holder.setAttribute('data-whop-checkout-identifier', holder.id);
-      holder.setAttribute('data-whop-checkout-theme', 'dark');
-      holder.setAttribute('data-whop-checkout-skip-redirect', 'true');
-      holder.setAttribute('data-whop-checkout-on-complete', 'gppCheckoutComplete');
-      // The buyer's email from step one, or the one they gave to watch the demo (watch.js).
-      var prefill = buyerEmail || window.gppLeadEmail || '';
-      if (prefill) holder.setAttribute('data-whop-checkout-prefill-email', prefill);
+      holder.id = 'gpp-co-' + seq;
+      mountEl.appendChild(loading);
       mountEl.appendChild(holder);
       paintSteps(false);
-      addLoader();
+      try { sessionStorage.setItem('gpp_flow', flowKey); } catch (e) { /* only used for the upsell */ }
+      withElements(function (W) {
+        if (seq !== mountSeq || !flow) return; // closed or replaced while loading
+        if (!W) return loadFailed();
+        try {
+          var opts = {
+            plan: step.plan,
+            appearance: { theme: { appearance: 'dark', accentColor: 'blue' } },
+            onComplete: function (c) { if (seq === mountSeq && (!c || c.result === 'payment' || c.result === 'setup')) window.gppCheckoutComplete(); },
+          };
+          // Whop sends the tab back here after redirect-based payments (it needs https).
+          if (location.protocol === 'https:') opts.returnUrl = location.origin + location.pathname + '?checkout=done';
+          var group = W().checkout.create(opts);
+          // The email they gave to watch the demo (watch.js), so the purchase lands on the same contact.
+          var prefill = window.gppLeadEmail || '';
+          var el = group.create('checkout', {
+            buyerEmail: prefill || undefined,
+            onReady: function () { if (loading.parentNode) loading.remove(); },
+            onError: function () { if (seq === mountSeq) loadFailed(); },
+          });
+          el.mount('#' + holder.id);
+        } catch (e) {
+          loadFailed();
+        }
+      });
     }
     function showDone() {
       finished = true;
@@ -340,41 +373,44 @@
       fallback.hidden = true;
       document.getElementById('co-title').textContent = "You're all set";
       document.getElementById('co-sub').textContent = 'Your login link is on its way';
+      // Core buyers get one look at Enterprise before they go.
+      var up = document.getElementById('co-upsell');
+      if (up) up.hidden = flowKey !== 'core-monthly';
       paintSteps(true);
     }
-    function resetCheckout() { if (mountEl) mountEl.textContent = ''; flow = null; flowKey = ''; finished = false; }
+    function resetCheckout() { mountSeq += 1; if (mountEl) mountEl.textContent = ''; flow = null; flowKey = ''; finished = false; }
 
-    // Monthly is only offered as a downsell: once per visit, to someone who opens the pay-in-full
-    // checkout for an edition and closes it without paying.
+    // Core is offered once per visit to someone who opens the Enterprise checkout and closes it
+    // without paying.
     var ds = document.getElementById('downsell');
     function offerDownsell(key) {
-      if (!ds || (key !== 'core' && key !== 'enterprise')) return;
+      if (!ds || key !== 'enterprise-monthly') return;
       try { if (sessionStorage.getItem('gpp_ds')) return; sessionStorage.setItem('gpp_ds', '1'); } catch (e) { /* show it anyway */ }
-      ds.querySelectorAll('[data-ds]').forEach(function (n) { n.hidden = n.getAttribute('data-ds') !== key; });
       setTimeout(function () { openDialog(ds); }, 250);
     }
     if (ds) ds.addEventListener('click', function (e) { if (e.target.closest('[data-checkout]')) ds.close(); });
     // Whop calls this by name when a payment completes inside the embedded checkout.
     window.gppCheckoutComplete = function () {
       if (!flow) return;
-      var id = 'gpp-co-' + mountSeq;
-      var next = function () {
-        if (stepIdx + 1 < flow.length) { stepIdx += 1; mountStep(); } else showDone();
-      };
-      // Carry the buyer's email into the access plan so it lands on the same account.
-      var got = null;
-      try { if (window.wco && window.wco.getEmail) got = window.wco.getEmail(id, 2000); } catch (e) { got = null; }
-      Promise.race([Promise.resolve(got), new Promise(function (r) { setTimeout(r, 2500); })])
-        .then(function (email) { if (typeof email === 'string' && email.indexOf('@') > 0) buyerEmail = email; })
-        .catch(function () {})
-        .then(next);
+      if (stepIdx + 1 < flow.length) { stepIdx += 1; mountStep(); } else showDone();
     };
+    // Back from a redirect-based payment (Whop appends status): show the done screen.
+    (function () {
+      var q = new URLSearchParams(location.search);
+      if (!co || q.get('checkout') !== 'done') return;
+      if (q.get('status') && q.get('status') !== 'succeeded') return;
+      var key = '';
+      try { key = sessionStorage.getItem('gpp_flow') || ''; } catch (e) { /* fine */ }
+      flow = FLOWS[key] || [{}]; flowKey = key; stepIdx = 0;
+      showDone();
+      openDialog(co);
+      history.replaceState(null, '', location.pathname + location.hash);
+    })();
     document.querySelectorAll('[data-checkout]').forEach(function (a) {
       a.addEventListener('click', function (e) {
         if (!co || cfg.mode === 'link' || typeof co.showModal !== 'function' || e.metaKey || e.ctrlKey || e.shiftKey) return;
         var key = a.getAttribute('data-checkout');
         var start = 0;
-        if (/-access$/.test(key)) { key = key.replace(/-access$/, ''); start = 1; }
         var f = FLOWS[key];
         if (!f || !f.every(function (s) { return /^plan_/.test(s.plan || ''); })) return;
         e.preventDefault();

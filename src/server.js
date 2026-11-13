@@ -11,6 +11,7 @@ const helmet = require('helmet');
 const registerRouter = require('./routes/register');
 const whopWebhookRouter = require('./routes/whopWebhook');
 const leadsRouter = require('./routes/leads');
+const { PLANS, whopLink } = require('./plans');
 const { corsForSignup } = require('./cors');
 const authRouter = require('./app/routes/auth');
 const { router: bidsRouter } = require('./app/routes/bids');
@@ -101,18 +102,6 @@ const checkoutUrl = (name, fallback) => {
   const v = (process.env[name] || '').trim();
   return /^https:\/\/[^\s"'<>]+$/.test(v) ? v : fallback;
 };
-const planId = (name, fallback) => {
-  const v = (process.env[name] || '').trim();
-  return /^plan_[A-Za-z0-9]{4,40}$/.test(v) ? v : fallback;
-};
-const PLANS = {
-  core: planId('WHOP_CORE_PLAN_ID', 'plan_iIafOtFCKgFtZ'),
-  enterprise: planId('WHOP_ENTERPRISE_PLAN_ID', 'plan_0E1DCEALxYJLU'),
-  coreAccess: planId('WHOP_CORE_ACCESS_PLAN_ID', 'plan_YG4iM72R2silB'),
-  enterpriseAccess: planId('WHOP_ENTERPRISE_ACCESS_PLAN_ID', 'plan_Ksl5OvuMVFAhT'),
-  coreMonthly: planId('WHOP_CORE_MONTHLY_PLAN_ID', 'plan_3fn88Y0V7nDy8'),
-  enterpriseMonthly: planId('WHOP_ENTERPRISE_MONTHLY_PLAN_ID', 'plan_dodFFyk8v95Fv'),
-};
 // Optional extras, each hidden on the page until set: the monthly access plan prices (for the
 // "save" line on pay-in-full), the free call calendar and the demo video (a YouTube id).
 const dollars = (name) => {
@@ -125,14 +114,13 @@ const youtubeId = /^[A-Za-z0-9_-]{11}$/.test((process.env.SITE_VSL_YOUTUBE_ID ||
 // SITE_VSL_VIDEO_URL: one full demo video hosted elsewhere (for example GoHighLevel's media library),
 // played on /watch after the opt-in in place of the clips hosted here. Defaults to the full VSL in
 // our GoHighLevel media library; set it to "off" to play the clips hosted here instead.
-const DEFAULT_VSL_VIDEO_URL = 'https://assets.cdn.filesafe.space/2c9ZJNooQ8eEnTMWsHaX/media/6ade7099c9d5b7168d7e0b8f.mp4';
+const DEFAULT_VSL_VIDEO_URL = 'https://files.leadconnectorhq.com/file/6af5ff5a4a2360a4d7bc47a6/57f41d34-968c-4343-a5d3-bc186e5bcd78.mp4'; // v5: $97/$297 end card
 const vslVideoUrl = (() => {
   try {
     const u = new URL((process.env.SITE_VSL_VIDEO_URL ?? DEFAULT_VSL_VIDEO_URL).trim());
     return u.protocol === 'https:' ? u.href : '';
   } catch { return ''; }
 })();
-const whopLink = (plan) => `https://whop.com/checkout/${plan}`;
 const htmlText = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fillSite = (file) => fs.readFileSync(path.join(SITE_DIR, file), 'utf8')
   .replaceAll('__CTA_URL__', checkoutUrl('SITE_CTA_URL', '#editions'))
@@ -161,7 +149,7 @@ const watchHtml = fillSite('watch.html');
 // <style> tags that script adds. Every other page keeps the strict policy above.
 const SITE_CSP = [
   "default-src 'self'",
-  "script-src 'self' https://js.whop.com https://t.whop.tw https://cdn.plaid.com",
+  "script-src 'self' https://cdn.whop.com https://js.whop.com https://t.whop.tw https://cdn.plaid.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://*.whop.com https://i.ytimg.com",
   "font-src 'self'",
@@ -198,13 +186,20 @@ app.get('/embed/wins.js', (_req, res) => {
 });
 
 // access.* (the signup link in purchase emails and the setup PDF) opens the signup page at /;
-// every other host (govproposalpro.com, www) opens the landing page there. /access is always signup.
+// every other host (govproposalpro.com, www) opens the VSL sales page there. /access is always signup.
 const isAccessHost = (req) => /^access\./i.test(req.hostname || '');
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store');
   if (isAccessHost(req)) return res.type('html').send(indexHtml);
   res.set('Content-Security-Policy', SITE_CSP);
-  return res.type('html').send(siteHtml);
+  return res.type('html').send(watchHtml);
+});
+// The VSL page is the homepage. /watch and /demo stay as aliases for links already in ads and emails.
+// The previous long-form landing page stays reachable at /overview.
+app.get('/overview', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Content-Security-Policy', SITE_CSP);
+  res.type('html').send(siteHtml);
 });
 app.get(['/watch', '/demo'], (_req, res) => {
   res.set('Cache-Control', 'no-store');
