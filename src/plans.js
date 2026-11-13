@@ -44,4 +44,16 @@ const SUBSCRIPTION_TIERS = new Map(
 
 const whopLink = (plan) => `https://whop.com/checkout/${plan}`;
 
-module.exports = { PLANS, SUBSCRIPTION_TIERS, whopLink };
+// The free call calendar (GoHighLevel). BOOKING_URL overrides the link; BOOKING_EMBED_ID is the
+// calendar's widget id for the embedded booking form on the sales page.
+const httpsOr = (v, fallback) => (/^https:\/\/[^\s"'<>]+$/.test((v || '').trim()) ? v.trim() : fallback);
+const BOOKING_URL = httpsOr(process.env.BOOKING_URL, 'https://api.leadconnectorhq.com/widget/bookings/onboarding-call-5eikk');
+const BOOKING_EMBED_ID = /^[A-Za-z0-9]{10,40}$/.test((process.env.BOOKING_EMBED_ID || '').trim()) ? process.env.BOOKING_EMBED_ID.trim() : 'HMN20Q0KNddduy8ACKv3';
+// Meta (Facebook) pixel for the public sales pages. 'off' turns it off.
+const META_PIXEL_ID = (() => {
+  const v = (process.env.META_PIXEL_ID || '').trim();
+  if (v.toLowerCase() === 'off') return '';
+  return /^\d{6,20}$/.test(v) ? v : '2544535072700216';
+})();
+
+module.exports = { PLANS, SUBSCRIPTION_TIERS, whopLink, BOOKING_URL, BOOKING_EMBED_ID, META_PIXEL_ID };

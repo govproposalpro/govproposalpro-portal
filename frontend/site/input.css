@@ -359,3 +359,6 @@
   background: radial-gradient(900px 500px at 50% 0%, rgba(91,59,255,0.18), transparent 70%), radial-gradient(700px 400px at 90% 60%, rgba(255,45,70,0.10), transparent 70%); }
 @keyframes co-in { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
 body.co-lock { overflow: hidden; }
+
+/* Embedded GoHighLevel booking calendar; form_embed.js resizes it once it loads. */
+.booking-frame { display: block; width: 100%; min-height: 720px; border: 0; overflow: hidden; border-radius: 1rem; background: transparent; }

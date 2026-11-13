@@ -11,7 +11,7 @@ const helmet = require('helmet');
 const registerRouter = require('./routes/register');
 const whopWebhookRouter = require('./routes/whopWebhook');
 const leadsRouter = require('./routes/leads');
-const { PLANS, whopLink } = require('./plans');
+const { PLANS, whopLink, BOOKING_URL, BOOKING_EMBED_ID, META_PIXEL_ID } = require('./plans');
 const { corsForSignup } = require('./cors');
 const authRouter = require('./app/routes/auth');
 const { router: bidsRouter } = require('./app/routes/bids');
@@ -138,7 +138,9 @@ const fillSite = (file) => fs.readFileSync(path.join(SITE_DIR, file), 'utf8')
   .replaceAll('__ENTERPRISE_MONTHLY_PLAN__', PLANS.enterpriseMonthly)
   .replaceAll('__CORE_MAINT__', dollars('CORE_ACCESS_MONTHLY_PRICE'))
   .replaceAll('__ENTERPRISE_MAINT__', dollars('ENTERPRISE_ACCESS_MONTHLY_PRICE'))
-  .replaceAll('__BOOKING_URL__', checkoutUrl('BOOKING_URL', ''))
+  .replaceAll('__BOOKING_URL__', htmlText(BOOKING_URL))
+  .replaceAll('__BOOKING_EMBED_URL__', `https://api.leadconnectorhq.com/widget/booking/${BOOKING_EMBED_ID}`)
+  .replaceAll('__META_PIXEL_ID__', META_PIXEL_ID)
   .replaceAll('__VSL_ID__', youtubeId)
   .replaceAll('__VSL_URL__', htmlText(vslVideoUrl))
   .replaceAll('__CHECKOUT_MODE__', checkoutMode);
@@ -149,14 +151,14 @@ const watchHtml = fillSite('watch.html');
 // <style> tags that script adds. Every other page keeps the strict policy above.
 const SITE_CSP = [
   "default-src 'self'",
-  "script-src 'self' https://cdn.whop.com https://js.whop.com https://t.whop.tw https://cdn.plaid.com",
+  "script-src 'self' https://cdn.whop.com https://js.whop.com https://t.whop.tw https://cdn.plaid.com https://connect.facebook.net https://link.msgsndr.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://*.whop.com https://i.ytimg.com",
+  "img-src 'self' data: https://*.whop.com https://i.ytimg.com https://www.facebook.com",
   "font-src 'self'",
   `media-src 'self'${vslVideoUrl ? ` ${new URL(vslVideoUrl).origin}` : ''}`,
-  "connect-src 'self' https://whop.com https://*.whop.com https://t.whop.tw",
+  "connect-src 'self' https://whop.com https://*.whop.com https://t.whop.tw https://www.facebook.com https://connect.facebook.net",
   "worker-src 'self' blob:",
-  "frame-src https://whop.com https://*.whop.com https://*.plaid.com https://www.youtube-nocookie.com",
+  "frame-src https://whop.com https://*.whop.com https://*.plaid.com https://www.youtube-nocookie.com https://api.leadconnectorhq.com",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
