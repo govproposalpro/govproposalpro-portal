@@ -16,17 +16,17 @@
     return `<span class="inline-flex flex-wrap items-center gap-2"><span class="pill ${cls}">${label}</span>${extra}</span>`;
   }
 
-  /** One line above every page while the key needs attention; on the dashboard also when none is saved. */
+  /** One line above every page while no key is saved or the key needs attention, so members never need a reminder. */
   function drawKeybar(path) {
     const bar = $('#keybar');
     if (!bar) return;
     const k = state.me && state.me.samKey;
     const s = (k && k.state) || 'none';
-    const show = path !== '/sam-key' && path !== '/welcome' && (['expiring', 'expired', 'rejected', 'broken'].includes(s) || (s === 'none' && path === '/'));
+    const show = path !== '/sam-key' && path !== '/welcome' && ['none', 'expiring', 'expired', 'rejected', 'broken'].includes(s);
     bar.classList.toggle('hidden', !show);
     if (!show) { bar.innerHTML = ''; return; }
     const msg = {
-      none: ['Connect your free SAM.gov API key', 'It powers bid matching, subcontractor search, vetting and your SAM.gov check. It takes 2 minutes.', 'Add your key', 'border-brand-blueSoft/30 bg-brand-blue/10 text-mist-100'],
+      none: ['Add your free SAM.gov API key', 'It powers bid matching, Easy Wins, Amendment Watch, subcontractor search and vetting. It takes 2 minutes and this reminder goes away once it is in.', 'Add your key', 'border-brand-blueSoft/30 bg-brand-blue/10 text-mist-100'],
       expiring: [`Your SAM.gov API key expires ${k.daysLeft <= 0 ? 'today' : `in ${k.daysLeft} day${k.daysLeft === 1 ? '' : 's'}`}`, 'SAM.gov keys last 90 days. Get a new one in SAM.gov and paste it here so your tools keep working.', 'Update key', 'border-amber-300/30 bg-amber-400/10 text-amber-50'],
       expired: ['Your SAM.gov API key has expired', 'Bid matching, subcontractor search and vetting need a working key. Get a new one in SAM.gov under Account Details.', 'Add a new key', 'border-brand-red/30 bg-brand-red/10 text-mist-100'],
       rejected: ['SAM.gov stopped accepting your API key', 'It was probably reset or expired early. Get a new one in SAM.gov under Account Details.', 'Add a new key', 'border-brand-red/30 bg-brand-red/10 text-mist-100'],
@@ -35,7 +35,7 @@
     bar.innerHTML = `<div class="flex flex-wrap items-center gap-3 rounded-3xl border ${msg[3]} p-4">
       <span class="ico-bubble ${s === 'none' ? 'ico-blue' : s === 'expiring' ? 'ico-violet' : 'ico-red'}">${icon('lockshield', 'h-4 w-4')}</span>
       <p class="min-w-0 flex-1 text-sm"><strong class="text-white">${esc(msg[0])}.</strong> <span class="text-mist-300">${esc(msg[1])}</span></p>
-      <a href="/app/sam-key" data-link class="btn-primary !px-4 !py-2 !text-xs">${esc(msg[2])}</a></div>`;
+      ${state.me.seat ? '<span class="text-xs text-mist-400">Ask the account owner to add it.</span>' : `<a href="/app/sam-key" data-link class="btn-primary !px-4 !py-2 !text-xs">${esc(msg[2])}</a>`}</div>`;
   }
 
   async function viewSamKey(view) {
