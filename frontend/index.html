@@ -53,6 +53,7 @@
         <form id="capture-form" novalidate>
           <!-- Step 1: account -->
           <fieldset id="step-1">
+            <p id="edition-badge" class="mb-3 hidden w-fit rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-mist-100"></p>
             <legend class="text-2xl font-semibold tracking-tight text-white">Create your secure login</legend>
             <p class="mt-2 text-[15px] leading-relaxed text-mist-300">
               Use the same email you checked out with on Whop. These become your master credentials for the command center.
@@ -221,6 +222,21 @@
       var step = 1;
 
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      // Purchase emails link here with ?email=…&edition=core|enterprise so the form opens filled in
+      // for what was bought. Display only: access is checked against the Whop purchase on the server.
+      try {
+        var params = new URLSearchParams(location.search);
+        var preEmail = (params.get('email') || '').trim();
+        var emailField = document.getElementById('email');
+        if (preEmail && EMAIL_RE.test(preEmail) && emailField && !emailField.value) emailField.value = preEmail;
+        var ed = params.get('edition');
+        var badge = document.getElementById('edition-badge');
+        if (badge && (ed === 'core' || ed === 'enterprise')) {
+          badge.textContent = 'Setting up: ' + (ed === 'enterprise' ? 'Enterprise Edition' : 'Core Edition');
+          badge.classList.remove('hidden');
+        }
+      } catch (e) { /* older browsers: the form still works */ }
 
       function showError(message) { errorBox.textContent = message; errorBox.classList.remove('hidden'); }
       function clearError() { errorBox.textContent = ''; errorBox.classList.add('hidden'); }
