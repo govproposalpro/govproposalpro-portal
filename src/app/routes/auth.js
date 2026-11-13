@@ -58,9 +58,11 @@ router.post('/auth/login', loginLimiter, express.json({ limit: '4kb' }), async (
     }
 
     const { rows } = await db.query(
-      `SELECT u.id, u.password_hash, u.locked_until, u.status, u.ghl_contact_id, ap.id AS purchase_id, ap.revoked_at
+      `SELECT u.id, u.password_hash, u.locked_until, u.status, u.ghl_contact_id, u.team_owner_id,
+              o.status AS owner_status, ap.id AS purchase_id, ap.revoked_at
          FROM "Users" u
-         LEFT JOIN authorized_purchasers ap ON lower(ap.email) = lower(u.email)
+         LEFT JOIN "Users" o ON o.id = u.team_owner_id
+         LEFT JOIN authorized_purchasers ap ON lower(ap.email) = lower(COALESCE(o.email, u.email))
         WHERE lower(u.email) = $1`,
       [email]
     );
@@ -82,8 +84,11 @@ router.post('/auth/login', loginLimiter, express.json({ limit: '4kb' }), async (
       }
       return res.status(401).json({ error: INVALID });
     }
-    if (user.status === 'disabled') {
+    if (user.status === 'disabled' || (user.team_owner_id && user.owner_status === 'disabled')) {
       return res.status(403).json({ error: 'This account has been disabled. Contact support.' });
+    }
+    if (user.status === 'invited') {
+      return res.status(403).json({ error: 'Finish setting up your login with the link in your invite email first.' });
     }
     if (user.status === 'unverified') {
       // Right password, but the address was never confirmed: send a fresh confirmation link.
@@ -135,6 +140,8 @@ router.get('/me', requireAuth, async (req, res, next) => {
       samKey: await samkey.status(req.user.id),
       // Core members see an "Upgrade to Enterprise" button that opens this checkout.
       upgrade: tier === 'enterprise' ? null : { url: whopLink(PLANS.enterpriseMonthly), price: '$297/mo' },
+      // Signed in with a team login: the UI hides owner-only settings.
+      seat: req.user.seat ? { email: req.user.seat.email, name: req.user.seat.name || '' } : null,
     });
   } catch (err) {
     next(err);
@@ -224,15 +231,16 @@ router.post('/auth/reset', resetLimiter, express.json({ limit: '4kb' }), async (
 router.post('/me/password', requireAuth, loginLimiter, express.json({ limit: '4kb' }), async (req, res, next) => {
   try {
     const b = req.body || {};
-    const { rows } = await db.query('SELECT password_hash FROM "Users" WHERE id = $1', [req.user.id]);
+    const accountId = req.user.seat ? req.user.seat.id : req.user.id; // a team seat changes its own password
+    const { rows } = await db.query('SELECT password_hash FROM "Users" WHERE id = $1', [accountId]);
     if (typeof b.currentPassword !== 'string' || !(await bcrypt.compare(b.currentPassword.slice(0, 200), rows[0].password_hash))) {
       return res.status(400).json({ error: 'Your current password is not correct.' });
     }
     const problem = passwordProblem(b.password, b.confirmPassword);
     if (problem) return res.status(400).json({ error: problem });
-    await db.query('UPDATE "Users" SET password_hash = $2 WHERE id = $1', [req.user.id, await bcrypt.hash(b.password, BCRYPT_ROUNDS)]);
+    await db.query('UPDATE "Users" SET password_hash = $2 WHERE id = $1', [accountId, await bcrypt.hash(b.password, BCRYPT_ROUNDS)]);
     // Sign out every other device; keep this one.
-    await db.query('DELETE FROM sessions WHERE user_id = $1 AND token_hash <> $2', [req.user.id, currentTokenHash(req)]);
+    await db.query('DELETE FROM sessions WHERE user_id = $1 AND token_hash <> $2', [accountId, currentTokenHash(req)]);
     res.json({ ok: true });
   } catch (err) {
     next(err);

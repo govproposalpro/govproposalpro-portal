@@ -137,15 +137,16 @@
     const { states } = await api('/states');
     view.innerHTML = `
       ${pageHead('Per-State Directory', 'Where each state posts its bids. Register as a vendor in your state first, then the states next door.')}
+      <div id="st-sled"></div>
       <input id="st-q" class="field mb-6 max-w-md" placeholder="Search a state" aria-label="Search a state" />
       <div id="st-grid" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
       <p class="mt-6 text-xs text-mist-500">Cities, counties, school districts and universities post their own bids too. Search "[city] bid opportunities" for local work.</p>`;
     const home = (state.me.user.address || '').toUpperCase();
     const draw = (q) => {
       const s = q.trim().toLowerCase();
-      const list = states.filter(([code, name, office]) => !s || name.toLowerCase().includes(s) || code.toLowerCase() === s || office.toLowerCase().includes(s));
-      list.sort((a, b) => (new RegExp(`\\b${b[0]}\\b`).test(home) - new RegExp(`\\b${a[0]}\\b`).test(home)));
-      $('#st-grid').innerHTML = list.map(([code, name, office, url]) => `
+      const list = states.filter(({ code, name, office }) => !s || name.toLowerCase().includes(s) || code.toLowerCase() === s || office.toLowerCase().includes(s));
+      list.sort((a, b) => (new RegExp(`\\b${b.code}\\b`).test(home) - new RegExp(`\\b${a.code}\\b`).test(home)));
+      $('#st-grid').innerHTML = list.map(({ code, name, office, url }) => `
         <a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="card card-hover flex items-center gap-4 p-5">
           <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06] text-sm font-bold text-white">${esc(code)}</span>
           <span class="min-w-0"><span class="block font-semibold text-white">${esc(name)}${new RegExp(`\\b${code}\\b`).test(home) ? ' <span class="pill ml-1 bg-brand-blue/15 text-brand-blueSoft">Your state</span>' : ''}</span>
@@ -153,4 +154,34 @@
     };
     draw('');
     $('#st-q').addEventListener('input', (e) => draw(e.target.value));
+    sledStarter($('#st-sled'), states, home);
+  }
+
+  /**
+   * State and local starter: local work is often the easiest first win, but it is posted on
+   * thousands of portals. This walks the member through the handful that matter for their area.
+   */
+  function sledStarter(box, states, home) {
+    const m = home.match(/,\s*([A-Z .'-]+?),?\s+([A-Z]{2})\s+\d{5}/);
+    const st = states.find(({ code }) => (m ? m[2] === code : new RegExp(`\\b${code}\\b`).test(home)));
+    if (!st) {
+      box.innerHTML = '<div class="mb-6 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-5 text-sm text-mist-300">Add your business address in your <a href="/app/profile" data-link class="font-semibold text-brand-blueSoft hover:text-white">profile</a> to get a state and local starter plan for your area.</div>';
+      return;
+    }
+    const { name, office, url } = st;
+    const city = m ? titleCase(m[1].trim()) : '';
+    const g = (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+    const steps = [
+      [`Register as a vendor with ${name}`, `${office} is where ${name} agencies post bids. Registration is free; pick the commodity codes that match your NAICS so you get emailed.`, url, 'Open the state portal'],
+      [city ? `Register with the City of ${city}` : 'Register with your city', 'Cities buy grounds, janitorial, IT, repairs and supplies all year, often under small-purchase limits with little competition.', g(`${city || 'city'} ${name} bid opportunities vendor registration`), 'Find the city portal'],
+      ['Register with your county', 'Counties run their own purchasing office and bid board, separate from the state.', g(`${city ? city + ' ' : ''}${name} county purchasing bid opportunities`), 'Find the county portal'],
+      ['Add school districts, universities and transit', 'They buy constantly and many use the same bid platforms, so one registration can cover several buyers.', g(`${name} school district university bid opportunities vendor registration`), 'Search buyers'],
+      [`Get ${name}'s small business certifications`, 'Many states have their own small, minority, women or veteran business programs with set-asides, separate from SBA certifications.', g(`${name} state small business certification program`), 'Find the program'],
+      ['Track every state and local bid in your Bid CRM', 'Add them like federal bids (put the state or city as the agency) so deadlines, reminders and your calendar feed cover them too.', '/app/crm', 'Open Bid CRM'],
+    ];
+    box.innerHTML = sectionCard(`State and local starter: ${esc(name)}`, `
+      <p class="mb-4 text-sm text-mist-400">Local work is often the easiest first win: smaller jobs, fewer bidders and buyers close to you. Do these once and the bids come to your inbox.</p>
+      <ol class="grid gap-3 md:grid-cols-2">${steps.map(([t, body, href, label], i) => `
+        <li class="rounded-2xl border border-white/[0.07] p-4"><p class="font-semibold text-white">${i + 1}. ${esc(t)}</p><p class="mt-1 text-sm text-mist-400">${esc(body)}</p>
+          <a href="${esc(href)}" ${href.startsWith('/app') ? 'data-link' : 'target="_blank" rel="noopener noreferrer"'} class="mt-2 inline-block text-sm font-semibold text-brand-blueSoft hover:text-white">${esc(label)}</a></li>`).join('')}</ol>`, 'mb-6');
   }

@@ -606,3 +606,9 @@ CREATE TABLE IF NOT EXISTS coach_messages (
   created_at  TIMESTAMPTZ   NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS coach_messages_user_idx ON coach_messages (user_id, created_at DESC);
+
+-- Team seats (Nov 2026): an Enterprise member's VA or partner signs in with their own email and
+-- password and works inside the owner's account (src/app/session.js). Owner-only settings stay
+-- owner-only. Deleting the owner deletes their seats.
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS team_owner_id BIGINT REFERENCES "Users"(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS users_team_owner_idx ON "Users" (team_owner_id) WHERE team_owner_id IS NOT NULL;

@@ -68,9 +68,10 @@ async function requireAuth(req, res, next) {
 
     const { rows } = await db.query(
       `UPDATE sessions s SET last_seen_at = now()
-         FROM "Users" u
+         FROM "Users" login
+         JOIN "Users" u ON u.id = COALESCE(login.team_owner_id, login.id)
          LEFT JOIN authorized_purchasers ap ON lower(ap.email) = lower(u.email)
-        WHERE s.token_hash = $1 AND s.user_id = u.id
+        WHERE s.token_hash = $1 AND s.user_id = login.id
           AND s.expires_at > now()
           AND s.last_seen_at > now() - make_interval(hours => $2)
         RETURNING u.id, u.email, u.full_name, u.business_name, u.naics, u.capabilities, u.certifications,
@@ -78,7 +79,9 @@ async function requireAuth(req, res, next) {
                   u.uei, u.cage_code, u.sam_expires_on, u.website, u.address, u.year_founded, u.employees,
                   u.service_area, u.differentiators, u.key_personnel, u.past_performance, u.onboarded_at,
                   u.sam_checklist, u.email_alerts, u.entity_structure, u.primary_markets, u.contact_title, u.phone, u.status, u.ghl_contact_id, u.proposal_style,
-                  COALESCE(ap.tier, u.tier) AS tier, ap.id AS purchase_id, ap.revoked_at`,
+                  COALESCE(ap.tier, u.tier) AS tier, ap.id AS purchase_id, ap.revoked_at,
+                  login.id AS login_id, login.email AS login_email, login.full_name AS login_name, login.status AS login_status,
+                  login.team_owner_id AS team_owner_id`,
       [sha256(token), IDLE_HOURS]
     );
     const user = rows[0];
@@ -86,23 +89,51 @@ async function requireAuth(req, res, next) {
       res.setHeader('Set-Cookie', cookieHeader('', 0));
       return res.status(401).json({ error: 'Your session has ended. Please sign in again.' });
     }
+    if (user.team_owner_id && user.login_status !== 'active') user.status = 'disabled';
     if (user.status === 'disabled' || user.status === 'unverified') {
-      await db.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
+      await db.query('DELETE FROM sessions WHERE user_id = $1', [user.login_id]);
       res.setHeader('Set-Cookie', cookieHeader('', 0));
       return res.status(403).json({ error: user.status === 'unverified' ? 'Please confirm your email first.' : 'This account has been disabled. Contact support.' });
     }
     if (REQUIRE_PURCHASE && (!user.purchase_id || user.revoked_at)) {
-      await db.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
+      await db.query('DELETE FROM sessions WHERE user_id = $1', [user.login_id]);
       res.setHeader('Set-Cookie', cookieHeader('', 0));
       return res.status(403).json({ error: 'Your GovProposalPro membership is no longer active.' });
     }
     user.tier = normalizeTier(user.tier);
+    // A team seat (an Enterprise member's VA or partner) works inside the owner's account: every
+    // query below runs as the owner, and seatGuard keeps account-level settings owner-only.
+    if (user.team_owner_id) {
+      if (!hasFeature(user.tier, 'team_seats')) {
+        await db.query('DELETE FROM sessions WHERE user_id = $1', [user.login_id]);
+        res.setHeader('Set-Cookie', cookieHeader('', 0));
+        return res.status(403).json({ error: 'Team logins are part of the Enterprise Edition. Ask the account owner.' });
+      }
+      user.seat = { id: user.login_id, email: user.login_email, name: user.login_name };
+      const blocked = seatBlocked(req);
+      if (blocked) return res.status(403).json({ error: blocked });
+    }
+    for (const k of ['login_id', 'login_email', 'login_name', 'login_status', 'team_owner_id']) delete user[k];
     req.user = user;
     // Claude calls made for this request count toward the member's own daily AI limit.
     return forMember(user.id, next, user.tier);
   } catch (err) {
     return next(err);
   }
+}
+
+// Account-level changes a team seat may not make (method and path prefix under /api).
+const SEAT_BLOCKED = [
+  ['/api/me/profile', 'the company profile'], ['/api/me/logo', 'the company logo'], ['/api/me/onboarding', 'company setup'],
+  ['/api/me/settings', 'account settings'], ['/api/me/sam-key', 'the SAM.gov API key'], ['/api/me/sms-alerts', 'text reminders'],
+  ['/api/me/documents', 'company documents'], ['/api/autopilot/settings', 'Autopilot settings and keys'],
+  ['/api/calendar/reset', 'the calendar link'], ['/api/team', 'team logins'],
+];
+function seatBlocked(req) {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return null;
+  const path = (req.originalUrl || '').split('?')[0];
+  const hit = SEAT_BLOCKED.find(([prefix]) => path === prefix || path.startsWith(prefix + '/'));
+  return hit ? `Only the account owner can change ${hit[1]}.` : null;
 }
 
 function requireFeature(key) {
