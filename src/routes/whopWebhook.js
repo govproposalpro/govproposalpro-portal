@@ -72,7 +72,7 @@ function extract(event) {
 
 // Whop sends several grant events per purchase; the access_email_sent_at claim makes the
 // "set up your access" email go out exactly once per buyer. Runs after the 200 is returned.
-function sendAccessEmailOnce({ email, tier, fullName }) {
+function sendAccessEmailOnce({ email, tier, fullName, monthly }) {
   if (!ghl.enabled()) return;
   db.query(
     `UPDATE authorized_purchasers SET access_email_sent_at = now()
@@ -81,7 +81,7 @@ function sendAccessEmailOnce({ email, tier, fullName }) {
   )
     .then((claim) => {
       if (claim.rowCount === 0) return null;
-      return ghl.onPurchased({ email, tier, fullName }).catch((err) => {
+      return ghl.onPurchased({ email, tier, fullName, monthly }).catch((err) => {
         console.error('[whop] access email failed:', err.message);
         return db.query('UPDATE authorized_purchasers SET access_email_sent_at = NULL WHERE lower(email) = $1', [email]);
       });
@@ -137,7 +137,7 @@ router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '25
                revoked_at = NULL`,
         [email, tier, ref, monthly ? 'monthly' : 'one_time']
       );
-      sendAccessEmailOnce({ email, tier, fullName });
+      sendAccessEmailOnce({ email, tier, fullName, monthly });
       if (upgraded && ghl.enabled()) ghl.onUpgraded({ email }).catch((err) => console.error('[whop] upgrade flag failed:', err.message));
     } else if (REVOKE_EVENTS.has(type)) {
       await db.query('UPDATE authorized_purchasers SET revoked_at = now() WHERE lower(email) = $1', [email]);

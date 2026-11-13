@@ -31,6 +31,17 @@ const LOGIN_URL = process.env.APP_LOGIN_URL || 'https://govproposalpro.com/app/l
 const { BOOKING_URL } = require('../plans');
 const SIGNATURE_TEXT = ['Kinno & Jalen', 'The ContractBros'];
 
+// The signup link in purchase emails carries the buyer's email and edition, so the form opens
+// filled in for exactly what they bought. Access itself is still decided server-side from the
+// Whop purchase on that email; the edition in the link is only shown to the buyer.
+const accessLinkFor = (email, tier) => {
+  const q = new URLSearchParams();
+  if (email) q.set('email', email);
+  if (tier === 'core' || tier === 'enterprise') q.set('edition', tier);
+  const qs = q.toString();
+  return qs ? `${ACCESS_URL}${ACCESS_URL.includes('?') ? '&' : '?'}${qs}` : ACCESS_URL;
+};
+
 const editionName = (tier) => (tier === 'enterprise' ? 'Enterprise Edition' : tier === 'core' ? 'Core Edition' : 'GovProposalPro');
 
 const P = 'margin:0 0 14px 0;';
@@ -76,7 +87,9 @@ function layout({ eyebrow, heading, bodyHtml }) {
 }
 
 /** Sent the moment a GovProposalPro purchase lands on Whop: how to set up access. */
-function buildPurchaseEmail({ tier, firstName = '' }) {
+function buildPurchaseEmail({ tier, firstName = '', email = '', monthly = false }) {
+  const link = accessLinkFor(email, tier);
+  const linkHtml = escapeHtml(link);
   const edition = editionName(tier);
   const subject = 'Action required: set up your GovProposalPro access';
   const greeting = firstName ? `Welcome to the CEO Seat, ${firstName}.` : 'Welcome to the CEO Seat.';
@@ -86,7 +99,7 @@ function buildPurchaseEmail({ tier, firstName = '' }) {
     '',
     `Congratulations on securing your GovProposalPro ${edition} license. Your private command center requires a secure, encrypted login. Please complete your setup now:`,
     '',
-    `1. Initialize your account: ${ACCESS_URL}`,
+    `1. Initialize your account: ${link}`,
     '2. Create your keys: use the same email you used to purchase on Whop and create a secure password.',
     '3. Tailor your command center: tell us about your business and experience level. A member of our team will reach out to confirm your access.',
     '',
@@ -95,7 +108,7 @@ function buildPurchaseEmail({ tier, firstName = '' }) {
     '',
     `Setup guide (PDF): ${GUIDE_URL}`,
     'You can also find everything inside Whop under "GovProposalPro Access".',
-    tier === 'enterprise' ? '\nAs an Enterprise member, your VIP Onboarding Concierge will reach out separately to collect your business details for your Done-For-You SAM.gov registration.' : '',
+    tier === 'enterprise' && !monthly ? '\nAs an Enterprise member, your VIP Onboarding Concierge will reach out separately to collect your business details for your Done-For-You SAM.gov registration.' : '',
     '',
     ...SIGNATURE_TEXT,
   ].join('\n');
@@ -104,16 +117,46 @@ function buildPurchaseEmail({ tier, firstName = '' }) {
     eyebrow: 'Action required',
     heading: escapeHtml(greeting),
     bodyHtml: `<p style="${P}">Congratulations on securing your <strong style="color:#FFFFFF;">GovProposalPro ${edition}</strong> license. Your private command center requires a secure, encrypted login. Please complete your setup now.</p>
-      ${button(ACCESS_URL, 'Set Up My Access &rarr;')}
+      ${button(linkHtml, `Set Up My ${edition} Access &rarr;`)}
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        ${stepRow(1, 'Initialize your account.', `Open <a href="${ACCESS_URL}" style="color:#7FA2FF;">${ACCESS_URL.replace(/^https:\/\//, '')}</a>.`)}
+        ${stepRow(1, 'Initialize your account.', `Open <a href="${linkHtml}" style="color:#7FA2FF;">your personal setup link</a>. It opens already set up for your ${edition}.`)}
         ${stepRow(2, 'Create your keys.', 'Use the <strong style="color:#FFFFFF;">same email you used to purchase on Whop</strong> and create a secure password.')}
         ${stepRow(3, 'Tailor your command center.', 'Tell us about your business and experience level. A member of our team will reach out to confirm your access.')}
       </table>
       <p style="${P}">As soon as your login is created, <a href="${LOGIN_URL}" style="color:#7FA2FF;">sign in to your Command Center</a> and start your first bid.</p>
       ${BOOKING_URL ? `<p style="${P}">&#128197; <a href="${BOOKING_URL}" style="color:#7FA2FF;">Book your free onboarding call</a> and we'll walk through your first bid together.</p>` : ''}
-      ${tier === 'enterprise' ? `<p style="${P}">As an Enterprise member, your VIP Onboarding Concierge will reach out separately to collect your business details for your Done-For-You SAM.gov registration.</p>` : ''}
+      ${tier === 'enterprise' && !monthly ? `<p style="${P}">As an Enterprise member, your VIP Onboarding Concierge will reach out separately to collect your business details for your Done-For-You SAM.gov registration.</p>` : ''}
       <p style="${P}">&#128196; <a href="${GUIDE_URL}" style="color:#7FA2FF;">Download your setup guide (PDF)</a>. You can also find everything inside Whop under <strong style="color:#FFFFFF;">GovProposalPro Access</strong>.</p>`,
+  });
+  return { subject, text, html };
+}
+
+/** Sent when a Core member buys Enterprise: same login, Enterprise tools unlocked. */
+function buildUpgradeEmail({ email = '', firstName = '' }) {
+  const link = escapeHtml(accessLinkFor(email, 'enterprise'));
+  const subject = 'Enterprise is unlocked on your GovProposalPro account';
+  const greeting = firstName ? `You're on Enterprise, ${firstName}.` : "You're on Enterprise.";
+  const text = [
+    greeting,
+    '',
+    'Your account now has the Enterprise Edition: the GovCon Autopilot, 50 proposals a month and the full Enterprise toolkit.',
+    'Sign in with the same email and password you already use. Nothing new to set up.',
+    '',
+    `Sign in: ${LOGIN_URL}`,
+    `Haven't created your login yet? Use this link: ${accessLinkFor(email, 'enterprise')}`,
+    '',
+    "We cancel your Core plan for you, so you're never billed for both.",
+    '',
+    ...SIGNATURE_TEXT,
+  ].join('\n');
+  const html = layout({
+    eyebrow: 'Upgrade complete',
+    heading: escapeHtml(greeting),
+    bodyHtml: `<p style="${P}">Your account now has the <strong style="color:#FFFFFF;">Enterprise Edition</strong>: the GovCon Autopilot, 50 proposals a month and the full Enterprise toolkit.</p>
+      <p style="${P}">Sign in with the <strong style="color:#FFFFFF;">same email and password</strong> you already use. Nothing new to set up.</p>
+      ${button(LOGIN_URL, 'Open My Command Center &rarr;')}
+      <p style="${P}">Haven't created your login yet? <a href="${link}" style="color:#7FA2FF;">Use your personal setup link</a>.</p>
+      <p style="${P}">We cancel your Core plan for you, so you're never billed for both.</p>`,
   });
   return { subject, text, html };
 }
@@ -225,4 +268,4 @@ function buildAlertEmail({ heading, intro, items, href }) {
   return { subject, text, html };
 }
 
-module.exports = { sendWelcomeEmail, buildWelcomeEmail, buildPurchaseEmail, buildLinkEmail, buildAlertEmail };
+module.exports = { sendWelcomeEmail, buildWelcomeEmail, buildPurchaseEmail, buildUpgradeEmail, accessLinkFor, buildLinkEmail, buildAlertEmail };

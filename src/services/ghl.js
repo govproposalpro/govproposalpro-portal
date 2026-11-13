@@ -14,7 +14,7 @@
  */
 
 const { PROFILE_OPTIONS } = require('../validation');
-const { buildWelcomeEmail, buildPurchaseEmail } = require('./email');
+const { buildWelcomeEmail, buildPurchaseEmail, buildUpgradeEmail } = require('./email');
 
 // GHL_API_BASE_URL only points tests at a local stand-in.
 const BASE = process.env.GHL_API_BASE_URL || 'https://services.leadconnectorhq.com';
@@ -135,7 +135,7 @@ async function sendEmail(contactId, { subject, html }) {
  * Runs when a GovProposalPro purchase lands on Whop: makes sure the buyer is a GHL contact,
  * tags them, and emails the access link and setup instructions.
  */
-async function onPurchased({ email, tier, fullName = '' }) {
+async function onPurchased({ email, tier, fullName = '', monthly = false }) {
   if (!enabled()) throw new Error('GHL_API_KEY / GHL_LOCATION_ID are not set');
   const { firstName, lastName } = splitName(fullName);
   const upsert = await call('POST', '/contacts/upsert', {
@@ -150,7 +150,7 @@ async function onPurchased({ email, tier, fullName = '' }) {
   try {
     await call('POST', `/contacts/${contactId}/tags`, { tags: ['gpp-purchased', tier ? `gpp-${tier}` : 'gpp-tier-unknown'] });
   } catch (err) { console.error('[ghl] purchase tags failed:', err.message); }
-  await sendEmail(contactId, buildPurchaseEmail({ tier, firstName }));
+  await sendEmail(contactId, buildPurchaseEmail({ tier, firstName, email, monthly }));
   return { contactId };
 }
 
@@ -215,6 +215,7 @@ async function onUpgraded({ email }) {
     completed: false,
     ...(process.env.GHL_TASK_ASSIGNEE ? { assignedTo: process.env.GHL_TASK_ASSIGNEE } : {}),
   });
+  try { await sendEmail(contactId, buildUpgradeEmail({ email })); } catch (err) { console.error('[ghl] upgrade email failed:', err.message); }
 }
 
 module.exports = { onRegistered, onPurchased, onUpgraded, onLead, enabled, upsertContact, sendEmail };
