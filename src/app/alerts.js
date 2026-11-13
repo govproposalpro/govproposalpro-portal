@@ -9,6 +9,7 @@
 
 const db = require('../db');
 const mailer = require('../services/mailer');
+const ghl = require('../services/ghl');
 const { buildAlertEmail } = require('../services/email');
 const { baseUrl } = require('../tokens');
 
@@ -135,7 +136,7 @@ async function runAlertJob() {
       }
       for (const [userId, items] of byUser) {
         const u = await client.query(
-          `SELECT email, ghl_contact_id, email_alerts, status FROM "Users" WHERE id = $1`, [userId]);
+          `SELECT email, phone, ghl_contact_id, email_alerts, sms_alerts, status FROM "Users" WHERE id = $1`, [userId]);
         const user = u.rows[0];
         if (!user || !user.email_alerts || user.status === 'disabled') continue;
         const sent = await client.query(
@@ -164,6 +165,14 @@ async function runAlertJob() {
           }
         } catch (err) {
           console.error(`[alerts] email to user ${userId} failed:`, err.message);
+        }
+        // Opt-in text for proposal deadlines 3 days and 1 day out (GHL bills per text).
+        const texts = fresh.filter((i) => /^bid:\d+:due:(1|3)$/.test(i.key));
+        if (texts.length && user.sms_alerts && user.phone && process.env.ALERT_SMS === 'on' && ghl.enabled()) {
+          const message = texts.length === 1
+            ? `GovProposalPro: "${texts[0].title.slice(0, 80)}": ${texts[0].when} (${texts[0].detail}). Reply STOP to opt out.`
+            : `GovProposalPro: ${texts.length} proposals due soon. Open your Command Center: ${baseUrl()}/app/alerts. Reply STOP to opt out.`;
+          ghl.sendSms({ email: user.email, phone: user.phone, message }).catch((err) => console.error(`[alerts] text to user ${userId} failed:`, err.message));
         }
       }
     } finally {

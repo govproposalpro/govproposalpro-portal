@@ -33,6 +33,8 @@ services:
         sync: false
       - key: WHOP_API_KEY
         sync: false # optional: Whop company API key with membership:cancel; stops a Core plan renewing when the member upgrades
+      - key: ALERT_SMS
+        sync: false # optional: "on" lets members opt in to deadline texts through GoHighLevel (GHL bills per text)
       - key: CLARITY_ID
         sync: false # optional: Microsoft Clarity project id (free heatmaps/session replays on the sales pages)
       - key: AI_MEMBER_MONTHLY_BUDGET_CORE

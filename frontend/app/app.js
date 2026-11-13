@@ -176,6 +176,7 @@
 
   const ROUTE_OF = {
     first_win: '/first-win', recompete_radar: '/recompete',
+    competition_xray: '/x-ray', sources_sought: '/sources-sought', submission_preflight: '/preflight',
     autopilot: '/autopilot',
     proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
     vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
@@ -186,6 +187,7 @@
   };
   const ICON_OF = {
     first_win: 'route', recompete_radar: 'history',
+    competition_xray: 'search', sources_sought: 'pen', submission_preflight: 'check',
     autopilot: 'bolt',
     proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
     vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
@@ -197,9 +199,9 @@
   const NAV_GROUPS = [
     ['Start here', ['first_win']],
     ['Autopilot', ['autopilot']],
-    ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker', 'recompete_radar']],
+    ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker', 'recompete_radar', 'competition_xray', 'sources_sought']],
     ['Subs and pricing', ['vendor_scraper', 'outreach', 'pricing_matrix', 'foia', 'teaming_legal', 'sub_vetting']],
-    ['Review and submit', ['section_m', 'rfi_ghostwriter']],
+    ['Review and submit', ['section_m', 'rfi_ghostwriter', 'submission_preflight']],
     ['After award', ['milestones', 'invoicing']],
     ['Company and compliance', ['capability_statement', 'past_performance', 'winning_voice', 'cmmc_checklist', 'compliance_pulse',
       'subcontracting_check', 'sam_checklist', 'state_directory', 'deadline_alerts']],
@@ -207,6 +209,9 @@
   const ABOUT = {
     first_win: 'A step-by-step checklist from forming your LLC to winning your first federal contract. Steps tick themselves as you use the tools.',
     recompete_radar: 'Federal contracts in your NAICS codes that end in the next 3 to 18 months, with the agency, incumbent and value, so you can get in front of the buyer before the recompete posts.',
+    competition_xray: 'Before you bid, see who won this kind of work before: past winners, award prices, how many offers came in and whether it went to small business, from free public USAspending data.',
+    sources_sought: 'Finds Sources Sought and RFI notices in your NAICS codes and drafts a capability response that makes the case for a small business set-aside, so you shape the contract before it is posted.',
+    submission_preflight: 'A last check before you submit: page limits, formatting rules, the due date and time zone, amendments, clauses that need a response, pricing, signatures and leftover placeholders.',
     autopilot: 'Your hands-off government contracting assistant. It learns your business, finds matching solicitations on SAM.gov, reads them, emails vendors for quotes, checks what the government really paid, prices every line at your margin and writes the proposal, as many bids a day as you set.',
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
     invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
@@ -346,6 +351,11 @@
       else if (path === '/autopilot') await viewAutopilot(view);
       else if (path === '/first-win') await viewFirstWin(view);
       else if (path === '/recompete') await viewRecompete(view);
+      else if (path === '/x-ray') await viewXray(view);
+      else if (path === '/sources-sought') await viewSourcesSought(view);
+      else if ((m = path.match(/^\/sources-sought\/(\d+)$/))) await viewSourcesSoughtDraft(view, m[1]);
+      else if (path === '/preflight') await viewPreflightPicker(view);
+      else if ((m = path.match(/^\/preflight\/(\d+)$/))) await viewPreflight(view, m[1]);
       else if ((m = path.match(/^\/autopilot\/(\d+)$/))) await viewAutopilotItem(view, m[1]);
       else if (path === '/welcome') await viewWelcome(view);
       else if (path === '/capability') await viewCapabilityList(view);
@@ -670,7 +680,7 @@
         </div>
         <p id="bid-error" class="mt-4 hidden text-sm text-brand-redSoft" role="alert"></p>
         <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex gap-2">${bid ? `<button type="button" id="bid-delete" class="btn-danger">Delete</button><a href="/app/proposals/new?bid=${bid.id}" data-link class="btn-ghost" id="bid-write">${icon('proposal', 'h-4 w-4')}Write proposal</a>` : ''}</div>
+          <div class="flex gap-2">${bid ? `<button type="button" id="bid-delete" class="btn-danger">Delete</button><a href="/app/proposals/new?bid=${bid.id}" data-link class="btn-ghost" id="bid-write">${icon('proposal', 'h-4 w-4')}Write proposal</a>${hasTool('competition_xray') ? `<a href="/app/x-ray?bid=${bid.id}" data-link class="btn-ghost" id="bid-xray">${icon('search', 'h-4 w-4')}X-Ray</a>` : ''}` : ''}</div>
           <div class="flex gap-2"><button type="button" data-close class="btn-ghost">Cancel</button><button type="submit" class="btn-primary">Save</button></div>
         </div>
       </form>`);
@@ -696,6 +706,8 @@
     });
     const write = $('#bid-write', m.el);
     if (write) write.addEventListener('click', () => m.close());
+    const xr = $('#bid-xray', m.el);
+    if (xr) xr.addEventListener('click', () => m.close());
   }
 
   // ------------------------------------------------------------------ AI Bid Decryptor
@@ -2030,6 +2042,7 @@
             <p class="mt-2 ${u.samExpiresOn ? 'text-mist-100' : 'text-mist-400'}">${u.samExpiresOn ? fmtDate(u.samExpiresOn) : 'Not set yet. Add it to your profile to get renewal reminders.'}</p>
             <a href="/app/profile" data-link class="mt-3 inline-block font-semibold text-brand-blueSoft hover:text-white">${u.samExpiresOn ? 'Update' : 'Add it now'}</a>
           </section>
+          <div id="alerts-extras" class="space-y-6"></div>
         </div>
       </div>`;
     $('#alerts-toggle').addEventListener('change', async (e) => {
@@ -2038,7 +2051,7 @@
         state.me.user.emailAlerts = e.target.checked;
         toast(e.target.checked ? 'Email reminders on.' : 'Email reminders off.');
       } catch (err) { e.target.checked = !e.target.checked; toast(err.message, 'error'); }
-    });
+    });    alertsExtras($('#alerts-extras')).catch(() => {});
   }
 
   // ------------------------------------------------------------------ Sub-Safe SAM.gov Vetting
