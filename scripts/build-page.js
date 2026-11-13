@@ -81,6 +81,7 @@ const siteCss = tailwind('frontend/site/tailwind.config.js', 'frontend/site/inpu
 const siteJs = fs.readFileSync(path.join(root, 'frontend/site/site.js'), 'utf8');
 const winsJs = fs.readFileSync(path.join(root, 'frontend/site/wins.js'), 'utf8');
 const watchJs = fs.readFileSync(path.join(root, 'frontend/site/watch.js'), 'utf8');
+const pixelJs = fs.readFileSync(path.join(root, 'frontend/site/pixel.js'), 'utf8');
 const siteVersion = crypto.createHash('sha256').update(siteCss).update(siteJs).update(winsJs).update(watchJs).digest('hex').slice(0, 12);
 const siteStatic = path.join(root, 'public/site/static');
 fs.mkdirSync(siteStatic, { recursive: true });
@@ -88,6 +89,7 @@ fs.writeFileSync(path.join(siteStatic, 'site.css'), siteCss);
 fs.writeFileSync(path.join(siteStatic, 'site.js'), siteJs);
 fs.writeFileSync(path.join(siteStatic, 'wins.js'), winsJs);
 fs.writeFileSync(path.join(siteStatic, 'watch.js'), watchJs);
+fs.writeFileSync(path.join(siteStatic, 'pixel.js'), pixelJs);
 fs.writeFileSync(
   path.join(root, 'public/site/index.html'),
   fs.readFileSync(path.join(root, 'frontend/site/index.html'), 'utf8').replaceAll('__VERSION__', siteVersion)

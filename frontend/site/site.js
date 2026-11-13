@@ -365,12 +365,23 @@
         }
       });
     }
+    var PRICE = { 'core-monthly': 97, 'enterprise-monthly': 297 };
+    function track(ev, key) {
+      if (!window.gppTrack) return;
+      var p = { content_name: key, currency: 'USD' };
+      if (PRICE[key]) p.value = PRICE[key];
+      window.gppTrack(ev, p);
+    }
     function showDone() {
       finished = true;
       mountEl.textContent = '';
       mountEl.hidden = true;
       doneEl.hidden = false;
       fallback.hidden = true;
+      // One Purchase event per completed checkout, even if the return page reloads.
+      try {
+        if (flowKey && !sessionStorage.getItem('gpp_px_' + flowKey)) { sessionStorage.setItem('gpp_px_' + flowKey, '1'); track('Purchase', flowKey); }
+      } catch (e) { track('Purchase', flowKey); }
       document.getElementById('co-title').textContent = "You're all set";
       document.getElementById('co-sub').textContent = 'Your login link is on its way';
       // Core buyers get one look at Enterprise before they go.
@@ -415,6 +426,8 @@
         if (!f || !f.every(function (s) { return /^plan_/.test(s.plan || ''); })) return;
         e.preventDefault();
         flow = f; flowKey = key; finished = false; stepIdx = start;
+        try { sessionStorage.removeItem('gpp_px_' + key); } catch (err) { /* fine */ }
+        track('InitiateCheckout', key);
         mountStep();
         openDialog(co);
       });

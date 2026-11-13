@@ -159,6 +159,7 @@
           if (!res.ok) throw res.body;
           store.set(LEAD_KEY, { email: data.email.toLowerCase(), firstName: data.firstName });
           window.gppLeadEmail = data.email.toLowerCase();
+          if (window.gppTrack) window.gppTrack('Lead', { content_name: 'VSL opt-in' });
           unlock(true);
         })
         .catch(function (b) {

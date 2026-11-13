@@ -28,7 +28,7 @@ const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || 'https://govproposalpro-
 const GUIDE_URL = `${PUBLIC_BASE_URL}/assets/GovProposalPro_Access_Instructions.pdf`;
 const LOGIN_URL = process.env.APP_LOGIN_URL || 'https://govproposalpro.com/app/login';
 // Optional: the free onboarding call calendar (GoHighLevel). Left out of emails when not set.
-const BOOKING_URL = /^https:\/\/[^\s"'<>]+$/.test((process.env.BOOKING_URL || '').trim()) ? process.env.BOOKING_URL.trim() : '';
+const { BOOKING_URL } = require('../plans');
 const SIGNATURE_TEXT = ['Kinno & Jalen', 'The ContractBros'];
 
 const editionName = (tier) => (tier === 'enterprise' ? 'Enterprise Edition' : tier === 'core' ? 'Core Edition' : 'GovProposalPro');
