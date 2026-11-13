@@ -199,4 +199,4 @@ async function topRatedPlaces(query) {
     .sort((a, b) => (b.rating || 0) * Math.log10((b.reviews || 0) + 10) - (a.rating || 0) * Math.log10((a.reviews || 0) + 10));
 }
 
-module.exports = { cached, compliancePulse, matchOpportunities, opportunitiesFor, scoreOpportunities, placesEnabled, topRatedPlaces, naicsList };
+module.exports = { cached, compliancePulse, matchOpportunities, opportunitiesFor, scoreOpportunities, placesEnabled, topRatedPlaces, naicsList, SET_ASIDE_FOR_CERT, SMALL_BUSINESS };
