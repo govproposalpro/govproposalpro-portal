@@ -15,12 +15,12 @@
   <meta property="og:description" content="Find the contract. Price it from real award data. Submit a compliant, award-ready proposal. Or let the Autopilot do all of it." />
   <meta property="og:image" content="https://govproposalpro.com/assets/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="stylesheet" href="/site/static/site.css?v=a06b35bb4c5c" />
+  <link rel="stylesheet" href="/site/static/site.css?v=f63cec3d52c6" />
   <meta name="gpp-pixel" content="__META_PIXEL_ID__" />
   <meta name="gpp-clarity" content="__CLARITY_ID__" />
-  <script src="/site/static/pixel.js?v=a06b35bb4c5c" defer></script>
-  <script src="/site/static/site.js?v=a06b35bb4c5c" defer></script>
-  <script src="/site/static/wins.js?v=a06b35bb4c5c" defer></script>
+  <script src="/site/static/pixel.js?v=f63cec3d52c6" defer></script>
+  <script src="/site/static/site.js?v=f63cec3d52c6" defer></script>
+  <script src="/site/static/wins.js?v=f63cec3d52c6" defer></script>
 </head>
 <body class="bg-black font-sans text-mist-100 antialiased">
   <a href="#main" class="skip">Skip to content</a>
@@ -528,7 +528,7 @@
             </div>
           </div>
         </div>
-        <p class="reveal mt-5 text-center text-sm text-mist-400" data-booking-wrap hidden>Want our team to set it up and run your first bids with you? <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="text-brand-blueSoft hover:text-white">Book a free call about Done-With-You ›</a></p>
+        <p class="reveal mt-5 text-center text-sm text-mist-400" data-booking-wrap hidden>Want our team to set it up and run your first bids with you? <a href="__BOOKING_URL__" data-booking class="text-brand-blueSoft hover:text-white">Book a free call about Done-With-You ›</a></p>
 
         <div class="reveal mt-4 grid gap-4 md:grid-cols-3">
           <div class="mini"><span class="mini-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><p class="mini-h">Checkout right here</p><p class="mini-p">Pay securely through Whop without leaving this page. We never see your card number.</p></div></div>
@@ -644,7 +644,7 @@
         <img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="relative mx-auto h-14 w-auto" />
         <h2 class="relative mt-7 text-4xl font-semibold tracking-[-0.035em] text-white sm:text-6xl">Put your first bid<br class="hidden sm:block" /> in this week.</h2>
         <p class="relative mx-auto mt-5 max-w-xl text-lg text-mist-300">Start with Core for $97 a month. Your login arrives by email right after checkout.</p>
-        <div class="relative mt-9 flex flex-wrap justify-center gap-3"><a href="__CTA_URL__" class="btn-lg btn-shine">Get access <span aria-hidden="true">→</span></a><a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="btn-lg-ghost" hidden>Book a call ›</a><a href="/app/login" class="btn-lg-ghost">Sign in</a></div>
+        <div class="relative mt-9 flex flex-wrap justify-center gap-3"><a href="__CTA_URL__" class="btn-lg btn-shine">Get access <span aria-hidden="true">→</span></a><a href="__BOOKING_URL__" data-booking class="btn-lg-ghost" hidden>Book a call ›</a><a href="/app/login" class="btn-lg-ghost">Sign in</a></div>
       </div>
     </section>
   </main>
@@ -685,9 +685,20 @@
         <p class="mx-auto mt-4 max-w-md leading-relaxed text-mist-400">The Proposal Engine, Bid Decryptor and pricing tools, 10 proposals a month. Upgrade to Enterprise from your dashboard whenever you're ready.</p>
         <a href="__CORE_MONTHLY_URL__" data-checkout="core-monthly" class="btn-lg-grad mt-8 w-full sm:w-auto sm:px-10">Start Core for $97/mo</a>
         <p class="mt-3 text-xs text-mist-500">Billed $97 today and every month until you cancel. Cancel anytime in Whop. 7-day money-back guarantee.</p>
-        <p class="mt-5 text-sm" data-booking-wrap hidden><a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="text-brand-blueSoft hover:text-white">Questions first? Book a free 20-minute call ›</a></p>
+        <p class="mt-5 text-sm" data-booking-wrap hidden><a href="__BOOKING_URL__" data-booking class="text-brand-blueSoft hover:text-white">Questions first? Book a free call ›</a></p>
       </div>
       <div class="co-foot justify-center"><button type="button" data-co-close class="hover:text-white">No thanks</button></div>
+    </div>
+  </dialog>
+
+  <!-- Free call calendar (GoHighLevel), opened in place by any [data-booking] link. site.js runs it. -->
+  <dialog id="booking" class="co" aria-labelledby="bk-title">
+    <div class="co-panel bk-panel">
+      <div class="co-head">
+        <div class="flex min-w-0 items-center gap-3"><img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-7 w-auto flex-none" /><div class="min-w-0"><p id="bk-title" class="co-title">Book a free call</p><p class="co-sub">Pick a time that works for you</p></div></div>
+        <button type="button" class="co-x" data-co-close aria-label="Close"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <iframe id="bk-frame" class="bk-frame" title="Book a free call with Contract Bros" data-src="__BOOKING_EMBED_URL__" allow="payment"></iframe>
     </div>
   </dialog>
 
@@ -724,7 +735,7 @@
             <a href="__ENTERPRISE_MONTHLY_URL__" data-checkout="enterprise-monthly" class="btn-lg-grad mt-5 w-full">Upgrade to Enterprise · $297/mo</a>
             <p class="mt-3 text-xs text-mist-500">Billed $297 today and every month until you cancel. We cancel your Core plan for you, so you're never billed for both.</p>
           </div>
-          <p class="mt-5 text-sm text-mist-400" data-booking-wrap hidden>Want a hand getting started? <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="text-brand-blueSoft hover:text-white">Book your free onboarding call ›</a></p>
+          <p class="mt-5 text-sm text-mist-400" data-booking-wrap hidden>Want a hand getting started? <a href="__BOOKING_URL__" data-booking class="text-brand-blueSoft hover:text-white">Book your free onboarding call ›</a></p>
         </div>
       </div>
       <div class="co-foot">

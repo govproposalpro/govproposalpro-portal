@@ -262,6 +262,19 @@
       document.body.classList.add('co-lock');
       return true;
     }
+    // Free call: the calendar opens in a popup on this page instead of a new tab. The iframe loads
+    // on first open, so the page itself stays fast.
+    var bk = document.getElementById('booking');
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('[data-booking]');
+      if (!a || !bk || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      var frame = document.getElementById('bk-frame');
+      if (!frame || !/^https:\/\//.test(frame.getAttribute('data-src') || '')) return;
+      e.preventDefault();
+      if (!frame.getAttribute('src')) frame.setAttribute('src', frame.getAttribute('data-src'));
+      if (!openDialog(bk)) window.open(a.href, '_blank', 'noopener');
+      if (window.gppTrack) window.gppTrack('Contact', { content_name: 'Book a call' });
+    });
     document.querySelectorAll('dialog.co').forEach(function (d) {
       d.addEventListener('click', function (e) { if (e.target === d || e.target.closest('[data-co-close]')) d.close(); });
       d.addEventListener('close', function () {

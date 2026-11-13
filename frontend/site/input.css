@@ -360,5 +360,17 @@
 @keyframes co-in { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
 body.co-lock { overflow: hidden; }
 
-/* Embedded GoHighLevel booking calendar; form_embed.js resizes it once it loads. */
-.booking-frame { display: block; width: 100%; min-height: 720px; border: 0; overflow: hidden; border-radius: 1rem; background: transparent; }
+/* Booking popup: the GoHighLevel calendar in an iframe that scrolls inside the panel. */
+.bk-panel { display: flex; flex-direction: column; }
+.bk-frame { display: block; width: 100%; height: min(760px, calc(100dvh - 9rem)); border: 0; background: #fff; border-radius: 0 0 1.25rem 1.25rem; }
+/* Muted autoplay: the sound button sits over the playing video. */
+.vsl-sound { position: absolute; z-index: 5; left: 50%; bottom: 1rem; transform: translateX(-50%); display: inline-flex; align-items: center; gap: .5rem;
+  padding: .7rem 1.2rem; border-radius: 999px; font-size: .9rem; font-weight: 600; color: #fff; white-space: nowrap;
+  background: linear-gradient(135deg, #1E5BFF 0%, #5B3BFF 45%, #FF1F3D 100%); box-shadow: 0 10px 30px rgba(30, 91, 255, .45);
+  animation: vsl-pulse 2.2s ease-in-out infinite; }
+.vsl-sound[hidden] { display: none; }
+@media (min-width: 640px) { .vsl-sound { bottom: auto; top: 50%; transform: translate(-50%, -50%); padding: 1rem 1.6rem; font-size: 1.05rem; } }
+@keyframes vsl-pulse { 0%, 100% { box-shadow: 0 10px 30px rgba(30, 91, 255, .45); } 50% { box-shadow: 0 10px 44px rgba(255, 31, 61, .55); } }
+@media (prefers-reduced-motion: reduce) { .vsl-sound { animation: none; } }
+.stage.is-asking .vsl-iframe { filter: blur(6px) brightness(.45); }
+.stage.is-asking .vsl-sound { display: none; }

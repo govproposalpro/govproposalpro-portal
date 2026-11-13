@@ -123,6 +123,9 @@ const dollars = (name) => {
   return Number.isFinite(n) && n > 0 && n < 100000 ? String(n) : '';
 };
 // SITE_CHECKOUT_MODE=link turns the on-page checkout off and sends buy buttons to whop.com instead.
+// SITE_VSL_GATE: 'sound' (default) autoplays the VSL muted and asks for the opt-in on tap for sound;
+// 'none' never asks; 'first' asks before the video plays.
+const vslGate = ['none', 'first'].includes((process.env.SITE_VSL_GATE || '').trim().toLowerCase()) ? process.env.SITE_VSL_GATE.trim().toLowerCase() : 'sound';
 const checkoutMode = (process.env.SITE_CHECKOUT_MODE || '').trim().toLowerCase() === 'link' ? 'link' : 'embed';
 const youtubeId = /^[A-Za-z0-9_-]{11}$/.test((process.env.SITE_VSL_YOUTUBE_ID || '').trim()) ? process.env.SITE_VSL_YOUTUBE_ID.trim() : '';
 // SITE_VSL_VIDEO_URL: one full demo video hosted elsewhere (for example GoHighLevel's media library),
@@ -158,7 +161,8 @@ const fillSite = (file) => fs.readFileSync(path.join(SITE_DIR, file), 'utf8')
   .replaceAll('__CLARITY_ID__', CLARITY_ID)
   .replaceAll('__VSL_ID__', youtubeId)
   .replaceAll('__VSL_URL__', htmlText(vslVideoUrl))
-  .replaceAll('__CHECKOUT_MODE__', checkoutMode);
+  .replaceAll('__CHECKOUT_MODE__', checkoutMode)
+  .replaceAll('__VSL_GATE__', vslGate);
 const siteHtml = fillSite('index.html');
 // The demo video page for ads: the video unlocks after a name, email and phone opt-in (routes/leads.js).
 const watchHtml = fillSite('watch.html');

@@ -1,5 +1,5 @@
 /*
- * Demo video page (/watch): the video unlocks after a first name, email and phone opt-in, sent to
+ * The VSL sales page (/, /watch, /demo): the video starts muted on open; the first name, email and phone opt-in, sent to
  * /api/leads with the ad source (UTM tags, Facebook or Google click id, referring site). Someone
  * who already opted in on this browser goes straight to the video. site.js runs the rest of the
  * page (checkout, booking button, reveal, wins).
@@ -69,62 +69,92 @@
       still.addEventListener('error', function () { still.src = 'https://i.ytimg.com/vi/' + vslId + '/hqdefault.jpg'; }, { once: true });
     }
 
-    // The YouTube video once SITE_VSL_YOUTUBE_ID is set, or the one full video at SITE_VSL_VIDEO_URL.
-    // Otherwise the intro plays first and rolls straight into the full walkthrough; the chapter
-    // buttons jump between the two. One video element is reused, so phones that allowed it to play
-    // with sound keep allowing it.
+    // How the opt-in works (SITE_VSL_GATE): 'sound' (default) starts the video muted the moment the
+    // page opens and asks for the opt-in when they tap for sound; 'none' never asks; 'first' asks
+    // before the video plays. Browsers never allow sound without a tap, so every mode starts muted
+    // or waits for a tap.
+    var gateMode = (co && co.dataset.gate) || 'sound';
+    if (vslId) gateMode = 'first'; // a YouTube player can't be started muted and unmuted from here
     var chapters = document.getElementById('chapters');
-    var current = play;
-    var primed = null;
     var useChapters = !vslId && !vslUrl;
-    function show(clip) {
-      if (current.tagName === 'VIDEO') {
-        window.gppSetClip(current, clip);
-      } else {
-        var v = primed || window.gppVideo(vslId, clip);
-        if (primed) window.gppSetClip(v, clip);
-        primed = null;
-        current.replaceWith(v);
-        current = v;
-        watchForOffer(v);
-        // A YouTube player can't report its time, so its viewers get the offer right away.
-        if (v.tagName !== 'VIDEO') showOffer();
-        if (!vslId) v.addEventListener('ended', function () { if (current.dataset.now === 'intro') show('demo'); });
-      }
-      if (current.tagName !== 'VIDEO') return;
-      current.dataset.now = clip;
-      var p = current.play();
-      if (p && p.catch) p.catch(function () { /* the browser wants a tap on play */ });
-      if (!useChapters) return;
-      chapters.querySelectorAll('[data-clip]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.clip === clip)); });
+    var current = play;
+    var soundBtn = document.getElementById('vsl-sound');
+    var hasLead = function () { return Boolean(lead && lead.email); };
+    // Win popups wait while the opt-in form is open, and on phones while the video fills the screen.
+    window.gppWinsQuiet = function () {
+      if (!gate.hidden) return true;
+      if (!window.matchMedia('(max-width: 639px)').matches) return false;
+      var r = stage.getBoundingClientRect();
+      return r.bottom > 0 && r.top < window.innerHeight;
+    };
+
+    function mount(clip) {
+      if (current.tagName === 'VIDEO' || current.tagName === 'IFRAME') return current;
+      var v = window.gppVideo(vslId, clip);
+      current.replaceWith(v);
+      current = v;
+      still.hidden = v.tagName === 'VIDEO';
+      watchForOffer(v);
+      if (v.tagName !== 'VIDEO') showOffer(); // YouTube can't report its time
+      if (!vslId) v.addEventListener('ended', function () { if (current.dataset.now === 'intro') show('demo', !current.muted); });
+      return v;
     }
-    function start() { show(vslUrl || 'intro'); }
+    function show(clip, withSound) {
+      var v = mount(clip);
+      if (v.tagName !== 'VIDEO') return;
+      if (v.dataset.now !== clip) window.gppSetClip(v, clip);
+      // Keep the cover image up while the first frames load.
+      if (!v.getAttribute('poster')) v.setAttribute('poster', '/assets/site/intro-v5-poster.webp');
+      v.dataset.now = clip;
+      v.muted = !withSound;
+      // iOS Safari checks the attribute as well as the property before it allows muted autoplay.
+      if (withSound) v.removeAttribute('muted'); else v.setAttribute('muted', '');
+      v.controls = Boolean(withSound);
+      var p = v.play();
+      if (p && p.catch) p.catch(function (er) {
+        if (er && er.name === 'AbortError') return; // a newer play() call took over
+        // Low Power Mode and some browsers refuse even muted autoplay: show the play button.
+        if (!withSound) { v.controls = true; if (soundBtn) soundBtn.hidden = false; }
+      });
+      if (useChapters) chapters.querySelectorAll('[data-clip]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.clip === clip)); });
+    }
+    // Sound on: from the top, with sound, inside the tap so phones allow it.
+    function playWithSound() {
+      gate.hidden = true;
+      stage.classList.remove('is-locked', 'is-asking');
+      if (soundBtn) soundBtn.hidden = true;
+      if (useChapters) chapters.hidden = false;
+      var v = mount(vslUrl || 'intro');
+      if (v.tagName === 'VIDEO') { try { v.currentTime = 0; } catch (e) { /* not loaded yet */ } }
+      show((v.dataset && v.dataset.now) || vslUrl || 'intro', true);
+    }
+    function askForOptIn() {
+      gate.hidden = false;
+      stage.classList.add('is-asking');
+      var first = gate.elements.firstName;
+      if (window.matchMedia('(max-width: 1023px)').matches) gate.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 250);
+    }
+    function wantSound() { if (gateMode === 'sound' && !hasLead()) askForOptIn(); else playWithSound(); }
+
     if (useChapters) {
       chapters.querySelectorAll('[data-clip]').forEach(function (b) {
-        b.addEventListener('click', function () { show(b.dataset.clip); });
+        b.addEventListener('click', function () { show(b.dataset.clip, true); });
       });
     }
     if (vslUrl) still.src = '/assets/site/intro-v5-poster.webp';
-    function unlock(autoplay) {
-      stage.classList.remove('is-locked');
-      gate.hidden = true;
-      play.hidden = false;
-      if (useChapters) chapters.hidden = false;
-      play.addEventListener('click', start, { once: true });
-      if (autoplay) start();
-    }
-    // Phones only let a video start with sound from a tap. Saving the opt-in takes a moment, so the
-    // player is created and started inside the Watch now tap, then paused until the opt-in is saved.
-    function prime() {
-      if (vslId || primed) return;
-      primed = window.gppVideo('', vslUrl || 'intro');
-      primed.autoplay = false;
-      var p = primed.play();
-      if (p && p.then) p.then(function () { if (primed) primed.pause(); }).catch(function () { /* fine: it starts after the save */ });
-    }
+    if (soundBtn) soundBtn.addEventListener('click', wantSound);
 
-    if (lead && lead.email) { unlock(false); return; }
-    stage.classList.add('is-locked');
+    if (gateMode === 'first' && !hasLead()) {
+      stage.classList.add('is-locked');
+    } else {
+      // Muted autoplay straight away; a tap anywhere on the video (or the sound button) turns sound on.
+      gate.hidden = true;
+      play.hidden = true;
+      show(vslUrl || 'intro', false);
+      if (soundBtn) soundBtn.hidden = false;
+      if (current.tagName === 'VIDEO') current.addEventListener('click', function (e) { if (current.muted) { e.preventDefault(); wantSound(); } });
+    }
 
     function fail(msg, field) {
       err.textContent = msg;
@@ -149,23 +179,26 @@
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return fail('Please enter a valid email address.', 'email');
       if (data.phone.replace(/\D/g, '').length < 10) return fail('Please enter your mobile number with area code.', 'phone');
       err.hidden = true;
-      prime();
-      go.disabled = true;
-      var label = go.lastChild.textContent;
-      go.lastChild.textContent = 'One moment…';
+      // Start the sound inside this tap (phones only allow it from a tap); saving happens alongside.
+      playWithSound();
+      lead = { email: data.email.toLowerCase(), firstName: data.firstName };
+      store.set(LEAD_KEY, lead);
+      window.gppLeadEmail = lead.email;
       fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(data) })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, body: b }; }); })
         .then(function (res) {
           if (!res.ok) throw res.body;
-          store.set(LEAD_KEY, { email: data.email.toLowerCase(), firstName: data.firstName });
-          window.gppLeadEmail = data.email.toLowerCase();
           if (window.gppTrack) window.gppTrack('Lead', { content_name: 'VSL opt-in' });
-          unlock(true);
         })
         .catch(function (b) {
-          go.disabled = false;
-          go.lastChild.textContent = label;
-          fail((b && b.error) || 'We could not save that. Check your connection and try again.', b && b.field);
+          // Only a bad field stops them; a network hiccup never interrupts the video.
+          if (b && b.field) {
+            lead = null;
+            try { localStorage.removeItem(LEAD_KEY); } catch (x) { /* fine */ }
+            if (current.tagName === 'VIDEO') current.pause();
+            askForOptIn();
+            fail(b.error || 'Please check that field.', b.field);
+          }
         });
     });
   });
