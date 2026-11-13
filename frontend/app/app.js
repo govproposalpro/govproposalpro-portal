@@ -178,7 +178,7 @@
     first_win: '/first-win', recompete_radar: '/recompete',
     competition_xray: '/x-ray', sources_sought: '/sources-sought', submission_preflight: '/preflight',
     easy_wins: '/easy-wins', amendment_watch: '/amendments', teaming_finder: '/partners', compliance_watchdog: '/watchdog',
-    govcon_coach: '/coach', cash_flow: '/cashflow',
+    govcon_coach: '/coach', cash_flow: '/cashflow', team_seats: '/team',
     autopilot: '/autopilot',
     proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
     vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
@@ -191,7 +191,7 @@
     first_win: 'route', recompete_radar: 'history',
     competition_xray: 'search', sources_sought: 'pen', submission_preflight: 'check',
     easy_wins: 'target', amendment_watch: 'bell', teaming_finder: 'handshake', compliance_watchdog: 'shield',
-    govcon_coach: 'spark', cash_flow: 'dollar',
+    govcon_coach: 'spark', cash_flow: 'dollar', team_seats: 'users',
     autopilot: 'bolt',
     proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
     vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
@@ -208,7 +208,7 @@
     ['Review and submit', ['section_m', 'rfi_ghostwriter', 'submission_preflight']],
     ['After award', ['milestones', 'invoicing', 'cash_flow']],
     ['Company and compliance', ['capability_statement', 'past_performance', 'winning_voice', 'cmmc_checklist', 'compliance_pulse',
-      'subcontracting_check', 'sam_checklist', 'compliance_watchdog', 'state_directory', 'deadline_alerts']],
+      'subcontracting_check', 'sam_checklist', 'compliance_watchdog', 'state_directory', 'deadline_alerts', 'team_seats']],
   ];
   const ABOUT = {
     first_win: 'A step-by-step checklist from forming your LLC to winning your first federal contract. Steps tick themselves as you use the tools.',
@@ -222,6 +222,7 @@
     compliance_watchdog: 'Your SAM.gov registration, API key and every subcontractor re-checked weekly against SAM.gov and the exclusions list, plus insurance and licence expiry reminders.',
     govcon_coach: 'A 24/7 coach for any government contracting question, from "what is a CLIN?" to "can I sub this out?", that knows your profile, your pipeline and your decrypted bids.',
     cash_flow: 'Tells you which portal to bill in (WAWF, IPP or the agency\'s own), checks invoices before you submit, predicts when the government pays and shows the cash gap before your subs are due.',
+    team_seats: 'Give your VA or business partner their own login to your Command Center. They can work bids, proposals and subs; account settings, keys and billing stay yours.',
     autopilot: 'Your hands-off government contracting assistant. It learns your business, finds matching solicitations on SAM.gov, reads them, emails vendors for quotes, checks what the government really paid, prices every line at your margin and writes the proposal, as many bids a day as you set.',
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
     invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
@@ -280,7 +281,7 @@
           <nav class="flex-1 space-y-0.5 overflow-y-auto pl-1.5 pr-1">${navItems()}</nav>
           <div class="mt-3 rounded-[22px] border border-white/[0.07] bg-white/[0.04] p-3">
             <p class="truncate text-sm font-medium text-mist-100">${esc(me.user.businessName || me.user.fullName || me.user.email)}</p>
-            <p class="truncate text-xs text-mist-500">${esc(me.user.email)}</p>
+            <p class="truncate text-xs text-mist-500">${me.seat ? `Team login: ${esc(me.seat.email)}` : esc(me.user.email)}</p>
             <div class="mt-2 flex gap-2">
               <a href="/app/profile" data-link class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('user', 'h-4 w-4')}Profile</a>
               <button id="logout" class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('out', 'h-4 w-4')}Sign out</button>
@@ -364,6 +365,7 @@
       else if (path === '/x-ray') await viewXray(view);
       else if (path === '/easy-wins') await viewEasyWins(view);
       else if (path === '/coach') await viewCoach(view);
+      else if (path === '/team') await viewTeam(view);
       else if (path === '/cashflow') await viewCashflow(view);
       else if (path === '/import') await viewImport(view);
       else if (path === '/amendments') await viewAmendments(view);

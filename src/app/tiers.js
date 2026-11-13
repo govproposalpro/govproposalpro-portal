@@ -49,6 +49,7 @@ const FEATURES = [
   { key: 'teaming_finder', name: 'Teaming Partner Finder', tiers: ENT, status: 'live' },
   { key: 'compliance_watchdog', name: 'Compliance Watchdog', tiers: ENT, status: 'live' },
   { key: 'cash_flow', name: 'Cash-Flow Autopilot', tiers: ENT, status: 'live' },
+  { key: 'team_seats', name: 'Team Login', tiers: ENT, status: 'live' },
   { key: 'state_directory', name: 'Per-State Directory', tiers: ENT, status: 'live' },
   { key: 'deadline_alerts', name: 'Deadline Alerts', tiers: BOTH, status: 'live' },
 ];

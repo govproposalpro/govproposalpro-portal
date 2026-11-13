@@ -178,7 +178,7 @@
     first_win: '/first-win', recompete_radar: '/recompete',
     competition_xray: '/x-ray', sources_sought: '/sources-sought', submission_preflight: '/preflight',
     easy_wins: '/easy-wins', amendment_watch: '/amendments', teaming_finder: '/partners', compliance_watchdog: '/watchdog',
-    govcon_coach: '/coach', cash_flow: '/cashflow',
+    govcon_coach: '/coach', cash_flow: '/cashflow', team_seats: '/team',
     autopilot: '/autopilot',
     proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
     vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
@@ -191,7 +191,7 @@
     first_win: 'route', recompete_radar: 'history',
     competition_xray: 'search', sources_sought: 'pen', submission_preflight: 'check',
     easy_wins: 'target', amendment_watch: 'bell', teaming_finder: 'handshake', compliance_watchdog: 'shield',
-    govcon_coach: 'spark', cash_flow: 'dollar',
+    govcon_coach: 'spark', cash_flow: 'dollar', team_seats: 'users',
     autopilot: 'bolt',
     proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
     vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
@@ -208,7 +208,7 @@
     ['Review and submit', ['section_m', 'rfi_ghostwriter', 'submission_preflight']],
     ['After award', ['milestones', 'invoicing', 'cash_flow']],
     ['Company and compliance', ['capability_statement', 'past_performance', 'winning_voice', 'cmmc_checklist', 'compliance_pulse',
-      'subcontracting_check', 'sam_checklist', 'compliance_watchdog', 'state_directory', 'deadline_alerts']],
+      'subcontracting_check', 'sam_checklist', 'compliance_watchdog', 'state_directory', 'deadline_alerts', 'team_seats']],
   ];
   const ABOUT = {
     first_win: 'A step-by-step checklist from forming your LLC to winning your first federal contract. Steps tick themselves as you use the tools.',
@@ -222,6 +222,7 @@
     compliance_watchdog: 'Your SAM.gov registration, API key and every subcontractor re-checked weekly against SAM.gov and the exclusions list, plus insurance and licence expiry reminders.',
     govcon_coach: 'A 24/7 coach for any government contracting question, from "what is a CLIN?" to "can I sub this out?", that knows your profile, your pipeline and your decrypted bids.',
     cash_flow: 'Tells you which portal to bill in (WAWF, IPP or the agency\'s own), checks invoices before you submit, predicts when the government pays and shows the cash gap before your subs are due.',
+    team_seats: 'Give your VA or business partner their own login to your Command Center. They can work bids, proposals and subs; account settings, keys and billing stay yours.',
     autopilot: 'Your hands-off government contracting assistant. It learns your business, finds matching solicitations on SAM.gov, reads them, emails vendors for quotes, checks what the government really paid, prices every line at your margin and writes the proposal, as many bids a day as you set.',
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
     invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
@@ -280,7 +281,7 @@
           <nav class="flex-1 space-y-0.5 overflow-y-auto pl-1.5 pr-1">${navItems()}</nav>
           <div class="mt-3 rounded-[22px] border border-white/[0.07] bg-white/[0.04] p-3">
             <p class="truncate text-sm font-medium text-mist-100">${esc(me.user.businessName || me.user.fullName || me.user.email)}</p>
-            <p class="truncate text-xs text-mist-500">${esc(me.user.email)}</p>
+            <p class="truncate text-xs text-mist-500">${me.seat ? `Team login: ${esc(me.seat.email)}` : esc(me.user.email)}</p>
             <div class="mt-2 flex gap-2">
               <a href="/app/profile" data-link class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('user', 'h-4 w-4')}Profile</a>
               <button id="logout" class="btn-ghost flex-1 !px-2 !py-1.5 !text-xs">${icon('out', 'h-4 w-4')}Sign out</button>
@@ -364,6 +365,7 @@
       else if (path === '/x-ray') await viewXray(view);
       else if (path === '/easy-wins') await viewEasyWins(view);
       else if (path === '/coach') await viewCoach(view);
+      else if (path === '/team') await viewTeam(view);
       else if (path === '/cashflow') await viewCashflow(view);
       else if (path === '/import') await viewImport(view);
       else if (path === '/amendments') await viewAmendments(view);
@@ -4945,6 +4947,68 @@
     draw();
   }
 
+  // ---- 29-team.js
+  // ------------------------------------------------------------------ Team login (Enterprise)
+
+  async function viewTeam(view) {
+    const head = pageHead('Team Login', 'Give your VA or business partner their own login. They work inside your Command Center; your profile, keys, Autopilot settings and team stay owner-only.');
+    if (state.me.seat) {
+      view.innerHTML = head + emptyState('You are signed in with a team login', 'Only the account owner can manage team logins.');
+      return;
+    }
+    let data = await api('/team');
+    const showLink = (url) => {
+      $('#tm-link').innerHTML = sectionCard('Send them this link', `<p class="text-sm text-mist-400">Email is not set up, so send this one-time link yourself:</p><p class="mt-2 break-all font-mono text-xs text-mist-100">${esc(url || '')}</p>`, 'mt-6');
+    };
+    const draw = () => {
+      const full = data.seats.length >= data.max;
+      view.innerHTML = `${head}
+        <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr),360px]">
+          ${sectionCard('Your team', data.seats.length ? `<ul class="divide-y divide-white/[0.06]">${data.seats.map((s) => `
+            <li class="flex flex-wrap items-center gap-3 py-3"><div class="min-w-0 flex-1"><p class="truncate font-medium text-white">${esc(s.name || s.email)}</p>
+              <p class="text-xs text-mist-500">${esc(s.email)} · ${s.status === 'invited' ? '<span class="text-amber-200">Invite sent, password not set yet</span>' : s.lastLoginAt ? `last signed in ${fmtDate(s.lastLoginAt)}` : 'active'}</p></div>
+              ${s.status === 'invited' ? `<button class="btn-ghost !px-3 !py-1.5 !text-xs" data-resend="${s.id}">Resend invite</button>` : ''}
+              <button class="btn-ghost !px-3 !py-1.5 !text-xs" data-remove="${s.id}">Remove</button></li>`).join('')}</ul>`
+            : '<p class="text-sm text-mist-500">No team logins yet.</p>')}
+          ${sectionCard('Invite someone', full ? `<p class="text-sm text-mist-400">Enterprise includes ${data.max} team login${data.max === 1 ? '' : 's'}. Remove one to invite someone else.</p>` : `
+            <form id="tm-form" class="space-y-3" novalidate>
+              <div><label class="label" for="tm-name">Name</label><input id="tm-name" class="field" maxlength="120" /></div>
+              <div><label class="label" for="tm-email">Email</label><input id="tm-email" type="email" class="field" maxlength="254" /></div>
+              <button class="btn-primary w-full">${icon('mail', 'h-4 w-4')}Send invite</button>
+              <p class="text-xs text-mist-500">They get an email to set their own password. They can use every tool and share your monthly limits, but cannot change your profile, keys, settings or team.</p>
+            </form>`)}
+        </div>
+        <div id="tm-link"></div>`;
+      const form = $('#tm-form');
+      if (form) form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = $('button', form);
+        btn.disabled = true;
+        try {
+          const r = await api('/team', { method: 'POST', body: { name: $('#tm-name').value, email: $('#tm-email').value } });
+          data = await api('/team');
+          draw();
+          if (r.emailed) toast('Invite sent.');
+          else showLink(r.url);
+        } catch (err) { btn.disabled = false; toast(err.message, 'error'); }
+      });
+      $$('[data-resend]', view).forEach((b) => b.addEventListener('click', async () => {
+        b.disabled = true;
+        try {
+          const r = await api(`/team/${b.dataset.resend}/resend`, { method: 'POST', body: {} });
+          if (r.emailed) toast('Invite sent again.');
+          else showLink(r.url);
+        } catch (err) { toast(err.message, 'error'); }
+        b.disabled = false;
+      }));
+      $$('[data-remove]', view).forEach((b) => b.addEventListener('click', async () => {
+        if (!confirm('Remove this team login? They are signed out right away.')) return;
+        try { await api('/team/' + b.dataset.remove, { method: 'DELETE' }); data = await api('/team'); draw(); toast('Removed.'); } catch (err) { toast(err.message, 'error'); }
+      }));
+    };
+    draw();
+  }
+
   // ---- 30-matchmaker.js
   // ------------------------------------------------------------------ Predictive Bid Matchmaker (Enterprise)
 
@@ -6343,15 +6407,16 @@ ${[u.phone, u.email].filter(Boolean).join(' · ')}`;
     const { states } = await api('/states');
     view.innerHTML = `
       ${pageHead('Per-State Directory', 'Where each state posts its bids. Register as a vendor in your state first, then the states next door.')}
+      <div id="st-sled"></div>
       <input id="st-q" class="field mb-6 max-w-md" placeholder="Search a state" aria-label="Search a state" />
       <div id="st-grid" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
       <p class="mt-6 text-xs text-mist-500">Cities, counties, school districts and universities post their own bids too. Search "[city] bid opportunities" for local work.</p>`;
     const home = (state.me.user.address || '').toUpperCase();
     const draw = (q) => {
       const s = q.trim().toLowerCase();
-      const list = states.filter(([code, name, office]) => !s || name.toLowerCase().includes(s) || code.toLowerCase() === s || office.toLowerCase().includes(s));
-      list.sort((a, b) => (new RegExp(`\\b${b[0]}\\b`).test(home) - new RegExp(`\\b${a[0]}\\b`).test(home)));
-      $('#st-grid').innerHTML = list.map(([code, name, office, url]) => `
+      const list = states.filter(({ code, name, office }) => !s || name.toLowerCase().includes(s) || code.toLowerCase() === s || office.toLowerCase().includes(s));
+      list.sort((a, b) => (new RegExp(`\\b${b.code}\\b`).test(home) - new RegExp(`\\b${a.code}\\b`).test(home)));
+      $('#st-grid').innerHTML = list.map(({ code, name, office, url }) => `
         <a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="card card-hover flex items-center gap-4 p-5">
           <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06] text-sm font-bold text-white">${esc(code)}</span>
           <span class="min-w-0"><span class="block font-semibold text-white">${esc(name)}${new RegExp(`\\b${code}\\b`).test(home) ? ' <span class="pill ml-1 bg-brand-blue/15 text-brand-blueSoft">Your state</span>' : ''}</span>
@@ -6359,6 +6424,36 @@ ${[u.phone, u.email].filter(Boolean).join(' · ')}`;
     };
     draw('');
     $('#st-q').addEventListener('input', (e) => draw(e.target.value));
+    sledStarter($('#st-sled'), states, home);
+  }
+
+  /**
+   * State and local starter: local work is often the easiest first win, but it is posted on
+   * thousands of portals. This walks the member through the handful that matter for their area.
+   */
+  function sledStarter(box, states, home) {
+    const m = home.match(/,\s*([A-Z .'-]+?),?\s+([A-Z]{2})\s+\d{5}/);
+    const st = states.find(({ code }) => (m ? m[2] === code : new RegExp(`\\b${code}\\b`).test(home)));
+    if (!st) {
+      box.innerHTML = '<div class="mb-6 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-5 text-sm text-mist-300">Add your business address in your <a href="/app/profile" data-link class="font-semibold text-brand-blueSoft hover:text-white">profile</a> to get a state and local starter plan for your area.</div>';
+      return;
+    }
+    const { name, office, url } = st;
+    const city = m ? titleCase(m[1].trim()) : '';
+    const g = (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+    const steps = [
+      [`Register as a vendor with ${name}`, `${office} is where ${name} agencies post bids. Registration is free; pick the commodity codes that match your NAICS so you get emailed.`, url, 'Open the state portal'],
+      [city ? `Register with the City of ${city}` : 'Register with your city', 'Cities buy grounds, janitorial, IT, repairs and supplies all year, often under small-purchase limits with little competition.', g(`${city || 'city'} ${name} bid opportunities vendor registration`), 'Find the city portal'],
+      ['Register with your county', 'Counties run their own purchasing office and bid board, separate from the state.', g(`${city ? city + ' ' : ''}${name} county purchasing bid opportunities`), 'Find the county portal'],
+      ['Add school districts, universities and transit', 'They buy constantly and many use the same bid platforms, so one registration can cover several buyers.', g(`${name} school district university bid opportunities vendor registration`), 'Search buyers'],
+      [`Get ${name}'s small business certifications`, 'Many states have their own small, minority, women or veteran business programs with set-asides, separate from SBA certifications.', g(`${name} state small business certification program`), 'Find the program'],
+      ['Track every state and local bid in your Bid CRM', 'Add them like federal bids (put the state or city as the agency) so deadlines, reminders and your calendar feed cover them too.', '/app/crm', 'Open Bid CRM'],
+    ];
+    box.innerHTML = sectionCard(`State and local starter: ${esc(name)}`, `
+      <p class="mb-4 text-sm text-mist-400">Local work is often the easiest first win: smaller jobs, fewer bidders and buyers close to you. Do these once and the bids come to your inbox.</p>
+      <ol class="grid gap-3 md:grid-cols-2">${steps.map(([t, body, href, label], i) => `
+        <li class="rounded-2xl border border-white/[0.07] p-4"><p class="font-semibold text-white">${i + 1}. ${esc(t)}</p><p class="mt-1 text-sm text-mist-400">${esc(body)}</p>
+          <a href="${esc(href)}" ${href.startsWith('/app') ? 'data-link' : 'target="_blank" rel="noopener noreferrer"'} class="mt-2 inline-block text-sm font-semibold text-brand-blueSoft hover:text-white">${esc(label)}</a></li>`).join('')}</ol>`, 'mb-6');
   }
 
 
