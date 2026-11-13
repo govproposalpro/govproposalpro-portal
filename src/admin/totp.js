@@ -56,6 +56,8 @@ function codeAt(secret, step) {
  * matching step so the caller can refuse to accept it twice, or null.
  */
 function verify(secret, code, lastStep = null, now = Date.now()) {
+  // An empty or unreadable secret must never verify: HMAC with an empty key is guessable.
+  if (typeof secret !== 'string' || secret.length < 16) return null;
   if (typeof code !== 'string' || !/^\d{6}$/.test(code.trim())) return null;
   const current = Math.floor(now / 1000 / STEP);
   for (const step of [current - 1, current, current + 1]) {
@@ -69,4 +71,11 @@ function verify(secret, code, lastStep = null, now = Date.now()) {
 const otpauthUrl = (secret, email) =>
   `otpauth://totp/${encodeURIComponent(`GovProposalPro Admin:${email}`)}?secret=${secret}&issuer=${encodeURIComponent('GovProposalPro Admin')}&algorithm=SHA1&digits=6&period=30`;
 
-module.exports = { generateSecret, verify, otpauthUrl, codeAt };
+// Authenticator secrets are encrypted at rest (AES-256-GCM, src/app/secrets.js), so a copy of the
+// database alone can't mint admin codes. Secrets saved before this change are plain base32 and
+// still read; they are encrypted the next time the admin enrolls.
+const secrets = require('../app/secrets');
+const storeSecret = (secret) => secrets.encrypt(secret);
+const readSecret = (stored) => (typeof stored === 'string' && stored.startsWith('v1:') ? secrets.decrypt(stored) || '' : stored || '');
+
+module.exports = { generateSecret, verify, otpauthUrl, codeAt, storeSecret, readSecret };

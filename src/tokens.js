@@ -9,7 +9,7 @@
 const crypto = require('crypto');
 const db = require('./db');
 
-const TTL_MINUTES = { member_reset: 60, member_invite: 7 * 24 * 60, admin_setup: 72 * 60 };
+const TTL_MINUTES = { member_reset: 60, member_invite: 7 * 24 * 60, member_verify: 3 * 24 * 60, admin_setup: 72 * 60 };
 const sha256 = (v) => crypto.createHash('sha256').update(v).digest('hex');
 
 function baseUrl() {
@@ -25,8 +25,9 @@ async function issue(kind, subjectId, createdBy = null) {
      VALUES ($1, $2, $3, now() + make_interval(mins => $4), $5)`,
     [sha256(token), kind, subjectId, TTL_MINUTES[kind], createdBy]
   );
-  const path = kind === 'admin_setup' ? '/admin/setup' : '/app/reset';
-  return { token, url: `${baseUrl()}${path}#${token}`, expiresMinutes: TTL_MINUTES[kind] };
+  // Email confirmation links open the signup page, which confirms the address and sends them to sign in.
+  const path = kind === 'admin_setup' ? '/admin/setup#' : kind === 'member_verify' ? '/access#verify=' : '/app/reset#';
+  return { token, url: `${baseUrl()}${path}${token}`, expiresMinutes: TTL_MINUTES[kind] };
 }
 
 /** Returns the token row if it is valid for one of the kinds, without using it up. */

@@ -58,7 +58,7 @@ function requireAdmin({ mfa = true } = {}) {
            FROM admins a
           WHERE s.token_hash = $1 AND s.admin_id = a.id AND a.disabled_at IS NULL
             AND s.expires_at > now() AND s.last_seen_at > now() - make_interval(mins => $2)
-          RETURNING a.id, a.email, a.full_name, a.role, a.totp_enabled, a.totp_secret, a.totp_last_step, s.mfa_passed`,
+          RETURNING a.id, a.email, a.full_name, a.role, a.totp_enabled, a.totp_secret, a.totp_last_step, a.locked_until, s.mfa_passed`,
         [sha256(token), IDLE_MINUTES]
       );
       const admin = rows[0];
