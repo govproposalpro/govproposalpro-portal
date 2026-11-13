@@ -570,3 +570,28 @@ ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS activation JSONB NOT NULL DEFAULT '
 ALTER TABLE proposals ADD COLUMN IF NOT EXISTS preflight JSONB NOT NULL DEFAULT '{}';
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS calendar_nonce VARCHAR(20);
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS sms_alerts BOOLEAN NOT NULL DEFAULT false;
+
+-- Amendment Watch (Nov 2026): the last SAM.gov snapshot of each saved bid's solicitation number,
+-- and every new notice found under it since (with a rules-based list of what changed).
+ALTER TABLE bids ADD COLUMN IF NOT EXISTS amend_watch JSONB;
+CREATE TABLE IF NOT EXISTS bid_amendments (
+  id           BIGSERIAL     PRIMARY KEY,
+  user_id      BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  bid_id       BIGINT        NOT NULL REFERENCES bids(id) ON DELETE CASCADE,
+  notice_id    VARCHAR(100)  NOT NULL,
+  notice_type  VARCHAR(80),
+  title        VARCHAR(300),
+  posted_date  VARCHAR(40),
+  url          VARCHAR(500),
+  changes      JSONB         NOT NULL DEFAULT '[]',
+  seen_at      TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  UNIQUE (bid_id, notice_id)
+);
+CREATE INDEX IF NOT EXISTS bid_amendments_user_idx ON bid_amendments (user_id, created_at DESC);
+
+-- Compliance Watchdog (Nov 2026): weekly SAM.gov re-checks of saved subcontractors and the
+-- expiry dates of their insurance certificate and licence.
+ALTER TABLE sub_contacts ADD COLUMN IF NOT EXISTS watch           JSONB;
+ALTER TABLE sub_contacts ADD COLUMN IF NOT EXISTS coi_expires     DATE;
+ALTER TABLE sub_contacts ADD COLUMN IF NOT EXISTS license_expires DATE;

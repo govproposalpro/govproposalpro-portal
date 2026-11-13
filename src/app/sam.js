@@ -134,41 +134,63 @@ async function searchOpportunities(naics, days = 30, { apiKey, types = 'o,k,p,r'
   const data = await get(OPPORTUNITIES, {
     postedFrom: mmddyyyy(from), postedTo: mmddyyyy(to), ncode: naics, ptype: types, limit: '100', offset: '0',
   }, apiKey);
-  return (data.opportunitiesData || []).filter((o) => o.active !== 'No').map((o) => {
-    const pop = o.placeOfPerformance || {};
-    const poc = (o.pointOfContact || [])[0] || {};
-    return {
-      noticeId: o.noticeId,
-      title: o.title,
-      solicitationNumber: o.solicitationNumber,
-      agency: [...new Set((o.fullParentPathName || '').split('.').slice(0, 2))].join(' / '),
-      office: (o.fullParentPathName || '').split('.').slice(-1)[0],
-      type: o.type,
-      postedDate: o.postedDate,
-      responseDeadline: o.responseDeadLine,
-      naics: o.naicsCode,
-      setAside: o.typeOfSetAsideDescription || '',
-      setAsideCode: o.typeOfSetAside || '',
-      state: (pop.state && pop.state.code) || '',
-      city: (pop.city && pop.city.name) || '',
-      contact: [poc.fullName, poc.email].filter(Boolean).join(', '),
-      url: o.uiLink || `https://sam.gov/opp/${o.noticeId}/view`,
-      descriptionUrl: /^https:\/\//.test(o.description || '') ? o.description : '',
-      resourceLinks: (o.resourceLinks || []).filter((l) => /^https:\/\//.test(l)).slice(0, 10),
-    };
-  });
+  return (data.opportunitiesData || []).filter((o) => o.active !== 'No').map(shapeNotice);
+}
+
+/** One SAM.gov opportunity record in the shape every tool uses. */
+function shapeNotice(o) {
+  const pop = o.placeOfPerformance || {};
+  const poc = (o.pointOfContact || [])[0] || {};
+  return {
+    noticeId: o.noticeId,
+    title: o.title,
+    solicitationNumber: o.solicitationNumber,
+    agency: [...new Set((o.fullParentPathName || '').split('.').slice(0, 2))].join(' / '),
+    office: (o.fullParentPathName || '').split('.').slice(-1)[0],
+    type: o.type,
+    postedDate: o.postedDate,
+    responseDeadline: o.responseDeadLine,
+    naics: o.naicsCode,
+    setAside: o.typeOfSetAsideDescription || '',
+    setAsideCode: o.typeOfSetAside || '',
+    state: (pop.state && pop.state.code) || '',
+    city: (pop.city && pop.city.name) || '',
+    contact: [poc.fullName, poc.email].filter(Boolean).join(', '),
+    url: o.uiLink || `https://sam.gov/opp/${o.noticeId}/view`,
+    descriptionUrl: /^https:\/\//.test(o.description || '') ? o.description : '',
+    resourceLinks: (o.resourceLinks || []).filter((l) => /^https:\/\//.test(l)).slice(0, 10),
+  };
+}
+
+/**
+ * Every notice posted under one solicitation number in the last year, oldest first (Amendment
+ * Watch). Amendments are posted as new notices that share the solicitation number.
+ */
+async function noticesForSolicitation(solnum, apiKey) {
+  const to = new Date();
+  const from = new Date(Date.now() - 364 * 86400000);
+  const data = await get(OPPORTUNITIES, {
+    postedFrom: mmddyyyy(from), postedTo: mmddyyyy(to), solnum, limit: '100', offset: '0',
+  }, apiKey);
+  return (data.opportunitiesData || [])
+    .filter((o) => String(o.solicitationNumber || '').trim().toUpperCase() === solnum.trim().toUpperCase())
+    .map((o) => ({ ...shapeNotice(o), resourceCount: (o.resourceLinks || []).length }))
+    .sort((a, b) => String(a.postedDate).localeCompare(String(b.postedDate)));
 }
 
 /** Active SAM.gov registrants for a NAICS code in one state (Smart Vendor Scraper). One page of 10. */
-async function searchEntities({ naics, state }, apiKey) {
-  const data = await get('entities', {
+async function searchEntities({ naics, state, businessType, sbaType, page = 0 }, apiKey) {
+  const params = {
     naicsCode: naics,
-    physicalAddressProvinceOrStateCode: state,
     registrationStatus: 'A',
     includeSections: 'entityRegistration,coreData,pointsOfContact',
-    page: '0',
+    page: String(page),
     size: '10',
-  }, apiKey);
+  };
+  if (state) params.physicalAddressProvinceOrStateCode = state;
+  if (businessType) params.businessTypeCode = businessType;
+  if (sbaType) params.sbaBusinessTypeCode = sbaType;
+  const data = await get('entities', params, apiKey);
   return {
     total: data.totalRecords || 0,
     entities: (data.entityData || []).map((e) => {
@@ -228,4 +250,4 @@ async function downloadAttachment(link) {
   return { name, bytes, kind: isPdf ? 'pdf' : 'docx' };
 }
 
-module.exports = { enabled, vet, registration, checkKey, isKeyRejected, searchOpportunities, searchEntities, noticeDescription, downloadAttachment, SamError };
+module.exports = { enabled, vet, registration, checkKey, isKeyRejected, searchOpportunities, noticesForSolicitation, searchEntities, noticeDescription, downloadAttachment, SamError };

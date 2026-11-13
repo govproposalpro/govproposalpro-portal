@@ -24,6 +24,8 @@ const { router: aiJobsRouter } = require('./app/routes/aijobs');
 const { router: autopilotRouter } = require('./app/routes/autopilot');
 const { router: growthRouter } = require('./app/routes/growth');
 const { router: bidToolsRouter } = require('./app/routes/bidtools');
+const { router: watchRouter } = require('./app/routes/watch');
+const { runAmendmentWatch, runWatchdog } = require('./app/watch');
 const { failInterruptedRuns } = require('./app/autopilot');
 const { loadSpend } = require('./app/ai');
 const { publicRouter: winsPublicRouter } = require('./app/wins');
@@ -75,7 +77,7 @@ app.use('/api', leadsRouter);
 // Dashboard API. Responses are per-member, so never cache them anywhere.
 app.use(['/api/auth', '/api/me', '/api/bids', '/api/decryptor', '/api/proposals', '/api/capability-statements',
   '/api/vetting', '/api/alerts', '/api/admin', '/api/subs', '/api/foia', '/api/pricing', '/api/milestones', '/api/invoices',
-  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs', '/api/proposal-files', '/api/first-win', '/api/recompete', '/api/xray', '/api/sources-sought', '/api/calendar'], sameOrigin, (_req, res, next) => {
+  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs', '/api/proposal-files', '/api/first-win', '/api/recompete', '/api/xray', '/api/sources-sought', '/api/calendar', '/api/amendments', '/api/easy-wins', '/api/partners', '/api/watchdog'], sameOrigin, (_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
@@ -90,6 +92,7 @@ app.use('/api', aiJobsRouter);
 app.use('/api', autopilotRouter);
 app.use('/api', growthRouter);
 app.use('/api', bidToolsRouter);
+app.use('/api', watchRouter);
 app.use('/api', adminAuthRouter);
 app.use('/api', adminManageRouter);
 
@@ -276,3 +279,7 @@ loadSpend().catch((err) => console.error('[ai] could not load this month\'s spen
 const alerts = () => runAlertJob().catch((err) => console.error('[alerts] job failed:', err.message));
 setInterval(alerts, 60 * 60 * 1000).unref();
 setTimeout(alerts, 60 * 1000).unref();
+// Amendment Watch (daily per bid) and Compliance Watchdog (weekly per sub), checked hourly.
+const watches = () => runAmendmentWatch().then(runWatchdog).catch((err) => console.error('[watch] job failed:', err.message));
+setInterval(watches, 60 * 60 * 1000).unref();
+setTimeout(watches, 3 * 60 * 1000).unref();

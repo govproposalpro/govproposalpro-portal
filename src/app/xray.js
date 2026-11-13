@@ -195,4 +195,4 @@ async function xray(raw) {
   return { query: q, agencyMatched: data.agencyMatched, ...summarize(data.awards), awards: data.awards.slice(0, 40), fetchedAt: data.fetchedAt };
 }
 
-module.exports = { xray, inputs, summarize, verdictOf };
+module.exports = { xray, inputs, summarize, verdictOf, post, fetchAward, median, ORIGIN };
