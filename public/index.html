@@ -189,14 +189,14 @@
         <div class="cta mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full shadow-glow">
           <svg viewBox="0 0 24 24" class="h-8 w-8 text-white" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5" /></svg>
         </div>
-        <h2 class="text-2xl font-semibold tracking-tight text-white">Credentials secured.</h2>
-        <p class="mt-3 text-[15px] leading-relaxed text-mist-300">
+        <h2 id="success-title" class="text-2xl font-semibold tracking-tight text-white">Credentials secured.</h2>
+        <p id="success-team" class="mt-3 text-[15px] leading-relaxed text-mist-300">
           A member of the GovProposalPro team will reach out to confirm your access and walk through your setup.
         </p>
-        <p class="mt-3 text-[15px] leading-relaxed text-mist-300">
+        <p id="success-body" class="mt-3 text-[15px] leading-relaxed text-mist-300">
           Your Command Center is ready. Sign in now with the email and password you just created.
         </p>
-        <a href="/app/login" class="cta mt-6 inline-flex items-center justify-center rounded-full px-7 py-3.5 text-[15px] font-semibold text-white shadow-glow">Open my Command Center</a>
+        <a id="success-cta" href="/app/login" class="cta mt-6 inline-flex items-center justify-center rounded-full px-7 py-3.5 text-[15px] font-semibold text-white shadow-glow">Open my Command Center</a>
       </section>
 
       <p class="mt-8 text-center text-xs text-mist-500">&copy; GovProposalPro · Contract Bros</p>
@@ -237,6 +237,37 @@
           badge.classList.remove('hidden');
         }
       } catch (e) { /* older browsers: the form still works */ }
+      // The k in the purchase email link proves this email belongs to the buyer; without it the
+      // server emails a confirmation link before the account unlocks.
+      var accessKey = '';
+      try { accessKey = (new URLSearchParams(location.search).get('k') || '').slice(0, 64); } catch (e) { /* none */ }
+
+      function showSuccess(title, body, cta) {
+        document.getElementById('success-title').textContent = title;
+        document.getElementById('success-body').textContent = body;
+        var link = document.getElementById('success-cta');
+        if (cta) link.textContent = cta; else link.classList.add('hidden');
+        formCard.classList.add('hidden');
+        successCard.classList.remove('hidden');
+        successCard.classList.add('rise');
+        successCard.focus();
+      }
+
+      // The confirmation email links to /access#verify=<token>.
+      var verifyMatch = /^#verify=([A-Za-z0-9_-]{20,100})$/.exec(location.hash || '');
+      if (verifyMatch) {
+        history.replaceState(null, '', location.pathname);
+        document.getElementById('success-team').classList.add('hidden');
+        fetch('/api/register/verify', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+          body: JSON.stringify({ token: verifyMatch[1] }),
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (data) {
+            if (res.ok) showSuccess('Email confirmed.', 'Your Command Center is unlocked. Sign in with the email and password you created.', 'Open my Command Center');
+            else showError(data.error || 'This confirmation link did not work. Sign up again with the same email to get a new one.');
+          });
+        }).catch(function () { showError('Network error. Reload this page to try again.'); });
+      }
 
       function showError(message) { errorBox.textContent = message; errorBox.classList.remove('hidden'); }
       function clearError() { errorBox.textContent = ''; errorBox.classList.add('hidden'); }
@@ -323,15 +354,18 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
-            body: JSON.stringify({ email: email, password: password, confirmPassword: confirmPassword, profile: profile }),
+            body: JSON.stringify({ email: email, password: password, confirmPassword: confirmPassword, profile: profile, k: accessKey || undefined }),
           });
 
           if (res.ok) {
+            var ok = {};
+            try { ok = await res.json(); } catch (_) { /* plain success */ }
             form.reset();
-            formCard.classList.add('hidden');
-            successCard.classList.remove('hidden');
-            successCard.classList.add('rise');
-            successCard.focus();
+            if (ok.verify) {
+              showSuccess('Check your email.', 'We sent a confirmation link to ' + email + '. Click it to unlock your Command Center, then sign in. Check spam if it is not there in a minute.', '');
+            } else {
+              showSuccess('Credentials secured.', 'Your Command Center is ready. Sign in now with the email and password you just created.', 'Open my Command Center');
+            }
             return;
           }
 

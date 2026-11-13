@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS admins (
   full_name       VARCHAR(120),
   role            VARCHAR(10)  NOT NULL DEFAULT 'va' CHECK (role IN ('owner', 'va')),
   password_hash   CHAR(60),                     -- null until the setup link is used
-  totp_secret     VARCHAR(64),                  -- base32; set on MFA enrollment
+  totp_secret     TEXT,                         -- encrypted base32 (src/admin/totp.js); set on MFA enrollment
   totp_enabled    BOOLEAN      NOT NULL DEFAULT false,
   totp_last_step  BIGINT,                       -- blocks replay of a code within its window
   failed_logins   INTEGER      NOT NULL DEFAULT 0,
@@ -159,6 +159,8 @@ CREATE TABLE IF NOT EXISTS admins (
   created_at      TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS admins_email_key ON admins (lower(email));
+-- Encrypted authenticator secrets are longer than the old 64-character column.
+ALTER TABLE admins ALTER COLUMN totp_secret TYPE TEXT;
 
 CREATE TABLE IF NOT EXISTS admin_sessions (
   token_hash    CHAR(64)     PRIMARY KEY,

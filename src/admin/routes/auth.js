@@ -35,6 +35,17 @@ async function recordFailure(adminId) {
   );
 }
 
+/**
+ * The authenticator step honours the same lockout as the password: after MAX_FAILED wrong codes the
+ * half-signed-in session is ended, so codes can't be guessed from one session (or many IPs).
+ */
+async function refuseIfLocked(req, res) {
+  if (!req.admin.locked_until || new Date(req.admin.locked_until) <= new Date()) return false;
+  await destroyAdminSession(req, res);
+  res.status(429).json({ error: `Too many failed attempts. Try again in ${LOCK_MINUTES} minutes or ask an owner to unlock you.` });
+  return true;
+}
+
 router.post('/admin/auth/login', limiter(15), express.json({ limit: '4kb' }), async (req, res, next) => {
   try {
     const email = normalizeEmail(req.body && req.body.email);
@@ -63,9 +74,10 @@ router.post('/admin/auth/login', limiter(15), express.json({ limit: '4kb' }), as
 // Starts (or restarts) authenticator enrollment for an admin who has not finished it.
 router.post('/admin/auth/mfa/enroll/start', requireAdmin({ mfa: false }), async (req, res, next) => {
   try {
+    if (await refuseIfLocked(req, res)) return;
     if (req.admin.totp_enabled) return res.status(400).json({ error: 'Your authenticator is already set up.' });
     const secret = totp.generateSecret();
-    await db.query('UPDATE admins SET totp_secret = $2 WHERE id = $1', [req.admin.id, secret]);
+    await db.query('UPDATE admins SET totp_secret = $2 WHERE id = $1', [req.admin.id, totp.storeSecret(secret)]);
     const url = totp.otpauthUrl(secret, req.admin.email);
     res.json({ secret, qr: await QRCode.toDataURL(url, { margin: 1, width: 220 }) });
   } catch (err) {
@@ -75,9 +87,13 @@ router.post('/admin/auth/mfa/enroll/start', requireAdmin({ mfa: false }), async 
 
 router.post('/admin/auth/mfa/enroll', requireAdmin({ mfa: false }), limiter(20), express.json({ limit: '1kb' }), async (req, res, next) => {
   try {
+    if (await refuseIfLocked(req, res)) return;
     if (req.admin.totp_enabled || !req.admin.totp_secret) return res.status(400).json({ error: 'Start enrollment first.' });
-    const step = totp.verify(req.admin.totp_secret, req.body && req.body.code);
-    if (step === null) return res.status(400).json({ error: 'That code did not match. Check the time on your phone and try the newest code.' });
+    const step = totp.verify(totp.readSecret(req.admin.totp_secret), req.body && req.body.code);
+    if (step === null) {
+      await recordFailure(req.admin.id);
+      return res.status(400).json({ error: 'That code did not match. Check the time on your phone and try the newest code.' });
+    }
     await db.query('UPDATE admins SET totp_enabled = true, totp_last_step = $2, failed_logins = 0, locked_until = NULL, last_login_at = now() WHERE id = $1', [req.admin.id, step]);
     await markMfaPassed(req);
     await audit(req, 'admin.mfa_enrolled');
@@ -89,14 +105,17 @@ router.post('/admin/auth/mfa/enroll', requireAdmin({ mfa: false }), limiter(20),
 
 router.post('/admin/auth/mfa/verify', requireAdmin({ mfa: false }), limiter(20), express.json({ limit: '1kb' }), async (req, res, next) => {
   try {
+    if (await refuseIfLocked(req, res)) return;
     if (!req.admin.totp_enabled) return res.status(400).json({ error: 'Set up your authenticator first.' });
-    const step = totp.verify(req.admin.totp_secret, req.body && req.body.code, req.admin.totp_last_step);
+    const step = totp.verify(totp.readSecret(req.admin.totp_secret), req.body && req.body.code, req.admin.totp_last_step);
     if (step === null) {
       await recordFailure(req.admin.id);
       await audit(req, 'admin.mfa_failed');
       return res.status(400).json({ error: 'That code did not match. Try the newest code in your authenticator app.' });
     }
-    await db.query('UPDATE admins SET totp_last_step = $2, failed_logins = 0, locked_until = NULL, last_login_at = now() WHERE id = $1', [req.admin.id, step]);
+    // Secrets saved before encryption at rest are encrypted on the next good code.
+    const stored = String(req.admin.totp_secret).startsWith('v1:') ? req.admin.totp_secret : totp.storeSecret(req.admin.totp_secret);
+    await db.query('UPDATE admins SET totp_last_step = $2, totp_secret = $3, failed_logins = 0, locked_until = NULL, last_login_at = now() WHERE id = $1', [req.admin.id, step, stored]);
     await markMfaPassed(req);
     await audit(req, 'admin.login');
     res.json({ ok: true });

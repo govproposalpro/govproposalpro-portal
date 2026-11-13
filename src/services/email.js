@@ -34,10 +34,14 @@ const SIGNATURE_TEXT = ['Kinno & Jalen', 'The ContractBros'];
 // The signup link in purchase emails carries the buyer's email and edition, so the form opens
 // filled in for exactly what they bought. Access itself is still decided server-side from the
 // Whop purchase on that email; the edition in the link is only shown to the buyer.
+const { accessKey } = require('../app/secrets');
 const accessLinkFor = (email, tier) => {
   const q = new URLSearchParams();
   if (email) q.set('email', email);
   if (tier === 'core' || tier === 'enterprise') q.set('edition', tier);
+  // Proves the link came from this email (src/app/secrets.js), so signup needs no extra confirmation.
+  const k = email ? accessKey(email) : '';
+  if (k) q.set('k', k);
   const qs = q.toString();
   return qs ? `${ACCESS_URL}${ACCESS_URL.includes('?') ? '&' : '?'}${qs}` : ACCESS_URL;
 };

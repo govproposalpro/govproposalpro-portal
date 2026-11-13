@@ -247,6 +247,9 @@ app.use((err, _req, res, _next) => {
 
 const port = Number.parseInt(process.env.PORT || '3000', 10);
 app.listen(port, () => console.log(`GovProposalPro listening on :${port}`));
+if (process.env.NODE_ENV === 'production' && !process.env.KEY_ENCRYPTION_SECRET) {
+  console.warn('[security] KEY_ENCRYPTION_SECRET is not set: member API keys, mailbox passwords and admin authenticator secrets are encrypted with a key derived from DATABASE_URL. Set a dedicated secret.');
+}
 
 const sweep = () => Promise.all([failInterruptedJobs(), failInterruptedRuns()]).catch((err) => console.error('[jobs] sweep failed:', err.message));
 setInterval(sweep, 5 * 60 * 1000).unref();

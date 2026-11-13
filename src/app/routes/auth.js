@@ -56,7 +56,7 @@ router.post('/auth/login', loginLimiter, express.json({ limit: '4kb' }), async (
     }
 
     const { rows } = await db.query(
-      `SELECT u.id, u.password_hash, u.locked_until, u.status, ap.id AS purchase_id, ap.revoked_at
+      `SELECT u.id, u.password_hash, u.locked_until, u.status, u.ghl_contact_id, ap.id AS purchase_id, ap.revoked_at
          FROM "Users" u
          LEFT JOIN authorized_purchasers ap ON lower(ap.email) = lower(u.email)
         WHERE lower(u.email) = $1`,
@@ -82,6 +82,11 @@ router.post('/auth/login', loginLimiter, express.json({ limit: '4kb' }), async (
     }
     if (user.status === 'disabled') {
       return res.status(403).json({ error: 'This account has been disabled. Contact support.' });
+    }
+    if (user.status === 'unverified') {
+      // Right password, but the address was never confirmed: send a fresh confirmation link.
+      sendMemberLink(user, email, 'member_verify').catch((err) => console.error('[login] confirmation email failed:', err.message));
+      return res.status(403).json({ error: 'Please confirm your email first. We just sent you a new confirmation link. Check your inbox and spam folder.' });
     }
     if (REQUIRE_PURCHASE && (!user.purchase_id || user.revoked_at)) {
       return res.status(403).json({ error: 'Your GovProposalPro membership is not active. Contact support if this is a mistake.' });
@@ -197,7 +202,7 @@ router.post('/auth/reset', resetLimiter, express.json({ limit: '4kb' }), async (
     }
     await client.query(
       `UPDATE "Users" SET password_hash = $2, failed_logins = 0, locked_until = NULL,
-              status = CASE WHEN status IN ('invited', 'pending_launch') THEN 'active' ELSE status END
+              status = CASE WHEN status IN ('invited', 'pending_launch', 'unverified') THEN 'active' ELSE status END
         WHERE id = $1`,
       [t.subject_id, hash]
     );
@@ -233,17 +238,27 @@ router.post('/me/password', requireAuth, loginLimiter, express.json({ limit: '4k
 /** Emails a reset or invite link to a member. Returns the link (for admins who want to copy it). */
 async function sendMemberLink(user, email, kind, createdBy = null) {
   const link = await tokens.issue(kind, user.id, createdBy);
-  const invite = kind === 'member_invite';
-  const msg = buildLinkEmail({
-    eyebrow: invite ? 'Your access is ready' : 'Password reset',
-    heading: invite ? 'Set up your GovProposalPro login' : 'Reset your GovProposalPro password',
-    intro: invite
-      ? 'Your GovProposalPro Command Center is ready. Create your password to sign in, then add your business details so every proposal is written for your company.'
-      : 'We received a request to reset the password for your GovProposalPro account. Choose a new password with the button below.',
-    href: link.url,
-    cta: invite ? 'Create my password' : 'Reset my password',
-    expires: tokens.expiresLabel(link.expiresMinutes),
-  });
+  const COPY = {
+    member_invite: {
+      eyebrow: 'Your access is ready',
+      heading: 'Set up your GovProposalPro login',
+      intro: 'Your GovProposalPro Command Center is ready. Create your password to sign in, then add your business details so every proposal is written for your company.',
+      cta: 'Create my password',
+    },
+    member_verify: {
+      eyebrow: 'Confirm your email',
+      heading: 'Confirm your GovProposalPro account',
+      intro: 'Someone, hopefully you, just created a GovProposalPro login with this email. Confirm it with the button below and your Command Center unlocks. If this was not you, ignore this email and nothing happens.',
+      cta: 'Confirm my email',
+    },
+    member_reset: {
+      eyebrow: 'Password reset',
+      heading: 'Reset your GovProposalPro password',
+      intro: 'We received a request to reset the password for your GovProposalPro account. Choose a new password with the button below.',
+      cta: 'Reset my password',
+    },
+  }[kind];
+  const msg = buildLinkEmail({ ...COPY, href: link.url, expires: tokens.expiresLabel(link.expiresMinutes) });
   let emailed = false;
   if (mailer.canSend()) {
     await mailer.send({ to: email, contactId: user.ghl_contact_id || undefined, ...msg });

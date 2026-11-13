@@ -51,4 +51,27 @@ function hint(stored) {
   return { set: true, last4: plain.slice(-4) };
 }
 
-module.exports = { encrypt, decrypt, hint };
+/**
+ * Signup links in purchase emails carry ?k=<proof> next to the buyer's email. The proof is an HMAC
+ * of the email, so only someone who received that email can sign up without confirming the address
+ * first. Signing up without it still works, but the account stays locked until the emailed
+ * confirmation link is clicked (routes/register.js).
+ */
+function accessKey(email) {
+  const key = keyFor(currentSource());
+  if (!key || !email) return '';
+  return crypto.createHmac('sha256', key).update(`gpp-access:${String(email).trim().toLowerCase()}`).digest('base64url').slice(0, 24);
+}
+
+function checkAccessKey(email, given) {
+  if (typeof given !== 'string' || !/^[A-Za-z0-9_-]{24}$/.test(given)) return false;
+  // Links signed with either key still work after KEY_ENCRYPTION_SECRET is added.
+  return ['e', 'd'].some((source) => {
+    const key = keyFor(source);
+    if (!key) return false;
+    const expected = crypto.createHmac('sha256', key).update(`gpp-access:${String(email).trim().toLowerCase()}`).digest('base64url').slice(0, 24);
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(given));
+  });
+}
+
+module.exports = { encrypt, decrypt, hint, accessKey, checkAccessKey };

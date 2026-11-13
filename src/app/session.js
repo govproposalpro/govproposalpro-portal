@@ -86,10 +86,10 @@ async function requireAuth(req, res, next) {
       res.setHeader('Set-Cookie', cookieHeader('', 0));
       return res.status(401).json({ error: 'Your session has ended. Please sign in again.' });
     }
-    if (user.status === 'disabled') {
+    if (user.status === 'disabled' || user.status === 'unverified') {
       await db.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
       res.setHeader('Set-Cookie', cookieHeader('', 0));
-      return res.status(403).json({ error: 'This account has been disabled. Contact support.' });
+      return res.status(403).json({ error: user.status === 'unverified' ? 'Please confirm your email first.' : 'This account has been disabled. Contact support.' });
     }
     if (REQUIRE_PURCHASE && (!user.purchase_id || user.revoked_at)) {
       await db.query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
