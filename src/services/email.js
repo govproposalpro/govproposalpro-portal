@@ -272,4 +272,20 @@ function buildAlertEmail({ heading, intro, items, href, eyebrow = 'Deadline aler
   return { subject, text, html };
 }
 
-module.exports = { sendWelcomeEmail, buildWelcomeEmail, buildPurchaseEmail, buildUpgradeEmail, accessLinkFor, buildLinkEmail, buildAlertEmail };
+/** A payment did not go through. recoveryUrl is Whop's update-your-card link when it sends one. */
+function buildPaymentFailedEmail({ recoveryUrl = '', reason = '' }) {
+  const href = /^https:\/\/[^\s"'<>]+$/.test(recoveryUrl) ? recoveryUrl : 'https://whop.com/@me/settings/memberships/';
+  const subject = 'Your GovProposalPro payment did not go through';
+  const intro = 'We tried to charge the card on your GovProposalPro membership and it was declined'
+    + (reason ? ` (${String(reason).slice(0, 120)})` : '') + '. Whop will try again over the next few days. Update your card now so your Command Center, proposals and saved bids stay available.';
+  const text = `${intro}\n\nUpdate your payment method: ${href}\n\nQuestions? Reply to this email.\n\nKinno & Jalen, The ContractBros`;
+  const html = layout({
+    eyebrow: 'Billing',
+    heading: 'Your payment did not go through',
+    bodyHtml: `<p style="${P}">${escapeHtml(intro)}</p>${button(href, 'Update my payment method')}
+      <p style="${P}font-size:13px;color:#8E9AC8;">Questions? Just reply to this email.</p>`,
+  });
+  return { subject, text, html };
+}
+
+module.exports = { sendWelcomeEmail, buildWelcomeEmail, buildPurchaseEmail, buildUpgradeEmail, buildPaymentFailedEmail, accessLinkFor, buildLinkEmail, buildAlertEmail };

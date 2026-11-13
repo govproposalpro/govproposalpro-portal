@@ -3,6 +3,7 @@
 // Visual Bid CRM: the member's opportunities as a Kanban board.
 
 const express = require('express');
+const { markActivated } = require('../activation');
 const db = require('../../db');
 const { requireAuth, requireFeature } = require('../session');
 
@@ -88,6 +89,7 @@ router.post('/bids', express.json({ limit: '32kb' }), async (req, res, next) => 
        RETURNING ${COLUMNS}`,
       [req.user.id, ...keys.map((k) => fields[k]), fields.stage]
     );
+    markActivated(req.user.id, 'first_bid');
     res.status(201).json({ bid: rows[0] });
   } catch (err) { next(err); }
 });

@@ -99,7 +99,7 @@ async function requireAuth(req, res, next) {
     user.tier = normalizeTier(user.tier);
     req.user = user;
     // Claude calls made for this request count toward the member's own daily AI limit.
-    return forMember(user.id, next);
+    return forMember(user.id, next, user.tier);
   } catch (err) {
     return next(err);
   }

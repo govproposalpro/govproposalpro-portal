@@ -8,6 +8,7 @@
 const express = require('express');
 const mammoth = require('mammoth');
 const rateLimit = require('express-rate-limit');
+const { markActivated } = require('../activation');
 const db = require('../../db');
 const ai = require('../ai');
 const { requireAuth, requireFeature } = require('../session');
@@ -118,7 +119,8 @@ router.post(
 
       ai.decryptRfp({ files, text: pasted, profile: req.user.onboarded_at ? aiProfile(req.user) : null })
         .then((summary) => db.query(
-          `UPDATE rfp_summaries SET status = 'ready', summary = $2, completed_at = now() WHERE id = $1`, [id, summary]))
+          `UPDATE rfp_summaries SET status = 'ready', summary = $2, completed_at = now() WHERE id = $1`, [id, summary])
+          .then(() => markActivated(req.user.id, 'first_decrypt')))
         .catch((err) => {
           console.error(`[decryptor] ${id} failed:`, err.message);
           return db.query(`UPDATE rfp_summaries SET status = 'failed', error = $2, completed_at = now() WHERE id = $1`, [id, safeError(err)]);
@@ -177,6 +179,7 @@ router.post('/decryptor/:id/to-bid', requireAuth, requireFeature('bid_crm'), asy
         [val(s.response_due, 200) && `Response due: ${s.response_due}`, val(s.executive_summary, 4000)].filter(Boolean).join('\n\n')]
     );
     await db.query('UPDATE rfp_summaries SET bid_id = $2 WHERE id = $1', [id, bid.rows[0].id]);
+    markActivated(req.user.id, 'first_bid');
     res.status(201).json({ bidId: bid.rows[0].id });
   } catch (err) { next(err); }
 });
@@ -321,7 +324,8 @@ router.post(
         : [];
       ai.writeProposal({ bid, summary, profile, documents, instructions, title, voice, ...details })
         .then((md) => db.query(
-          `UPDATE proposals SET status = 'ready', content_md = $2, completed_at = now() WHERE id = $1`, [id, md]))
+          `UPDATE proposals SET status = 'ready', content_md = $2, completed_at = now() WHERE id = $1`, [id, md])
+          .then(() => markActivated(req.user.id, 'first_proposal')))
         .catch((err) => {
           console.error(`[proposals] ${id} failed:`, err.message);
           return db.query(`UPDATE proposals SET status = 'failed', error = $2, completed_at = now() WHERE id = $1`, [id, safeError(err)]);
