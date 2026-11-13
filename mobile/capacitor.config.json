@@ -1,0 +1,38 @@
+{
+  "appId": "com.govproposalpro.app",
+  "appName": "GovProposalPro",
+  "webDir": "www",
+  "server": {
+    "url": "https://govproposalpro.com/app",
+    "errorPath": "offline.html",
+    "allowNavigation": [
+      "govproposalpro.com"
+    ]
+  },
+  "ios": {
+    "appendUserAgent": "GovProposalProApp/1.0 (iOS)",
+    "backgroundColor": "#04050A",
+    "contentInset": "never",
+    "scrollEnabled": true,
+    "allowsLinkPreview": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#04050A",
+      "showSpinner": false
+    },
+    "PushNotifications": {
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "overlaysWebView": true
+    }
+  }
+}

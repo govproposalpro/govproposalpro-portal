@@ -1,0 +1,131 @@
+# GovProposalPro iPhone app (mobile/). Builds on GitHub's Mac runners, so nobody needs Xcode.
+#  - Pull requests that touch mobile/: a quick unsigned build to prove the app still compiles.
+#  - "Run workflow" (Actions tab > iPhone app > Run workflow): signs the app with the App Store
+#    Connect API key and uploads it to TestFlight. Setup steps: mobile/README.md.
+# The app shows the live site, so website changes reach phones without a new build. Only changes
+# under mobile/ (icon, native features, permissions) need one.
+name: iPhone app
+
+on:
+  workflow_dispatch:
+    inputs:
+      whats_new:
+        description: "What to test (shown to testers in TestFlight)"
+        required: false
+        default: "GovProposalPro on your iPhone: your Command Center, proposals, deadlines and alerts."
+      send_to_testers:
+        description: "Submit for Apple's beta review so outside testers (public link) get it"
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/ios-testflight.yml"
+
+concurrency:
+  group: ios-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Compile check (no signing)
+    if: github.event_name == 'pull_request'
+    runs-on: macos-26
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npx cap sync ios
+      - name: Build for the iPhone simulator
+        run: |
+          set -o pipefail
+          xcodebuild -version
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/dd" \
+            CODE_SIGNING_ALLOWED=NO build | grep -E "error:|warning: .*GPPNative|BUILD (SUCCEEDED|FAILED)" || true
+          test -d "$RUNNER_TEMP/dd/Build/Products/Debug-iphonesimulator/App.app"
+
+  testflight:
+    name: Build and upload to TestFlight
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-26
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      BUNDLE_ID: com.govproposalpro.app
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+      APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+      CERTIFICATE_PRIVATE_KEY: ${{ secrets.IOS_CERTIFICATE_PRIVATE_KEY }}
+      WHATS_NEW: ${{ inputs.whats_new }}
+    steps:
+      - name: Check the GitHub secrets are set
+        run: |
+          missing=""
+          for s in APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_KEY_IDENTIFIER APP_STORE_CONNECT_PRIVATE_KEY CERTIFICATE_PRIVATE_KEY; do
+            [ -n "${!s}" ] || missing="$missing $s"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing GitHub secrets:$missing (CERTIFICATE_PRIVATE_KEY is the secret named IOS_CERTIFICATE_PRIVATE_KEY). See mobile/README.md."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npx cap sync ios
+      - name: Install Codemagic CLI tools (App Store Connect signing and upload)
+        run: pip3 install --break-system-packages codemagic-cli-tools==0.70.2 || pip3 install codemagic-cli-tools==0.70.2
+
+      - name: Register the app ID with push notifications
+        run: |
+          id_of() { python3 -c 'import json,sys; d=json.load(sys.stdin); d=d[0] if isinstance(d,list) and d else d; print(d.get("id","") if isinstance(d,dict) else "")'; }
+          ID=$(app-store-connect bundle-ids list --bundle-id-identifier "$BUNDLE_ID" --strict-match-identifier --platform IOS --json | id_of)
+          if [ -z "$ID" ]; then
+            ID=$(app-store-connect bundle-ids create "$BUNDLE_ID" --name "GovProposalPro" --platform IOS --json | id_of)
+          fi
+          echo "App ID: $BUNDLE_ID ($ID)"
+          app-store-connect bundle-ids enable-capabilities "$ID" --capability "Push Notifications" || echo "Push Notifications already on."
+
+      - name: Get the App Store signing certificate and profile
+        run: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --platform IOS --create
+          keychain add-certificates
+          xcode-project use-profiles --project ios/App/App.xcodeproj
+
+      - name: Build the app
+        run: |
+          # Every upload needs a higher build number than the last one.
+          BUILD=$(( ${{ github.run_number }} + 100 ))
+          echo "Build number $BUILD"
+          xcode-project build-ipa --project ios/App/App.xcodeproj --scheme App \
+            --archive-xcargs "CURRENT_PROJECT_VERSION=$BUILD"
+
+      - name: Upload to TestFlight
+        run: |
+          args=(--path build/ios/ipa/*.ipa --whats-new "@env:WHATS_NEW")
+          if [ "$SEND_TO_TESTERS" = "true" ]; then args+=(--testflight); fi
+          # Optional: Settings > Secrets and variables > Actions > Variables > TESTFLIGHT_GROUP = your
+          # outside-tester group's name (for example Members) adds each build to that group.
+          if [ -n "$TESTFLIGHT_GROUP" ]; then args+=(--beta-group "$TESTFLIGHT_GROUP"); fi
+          app-store-connect publish "${args[@]}"
+        env:
+          SEND_TO_TESTERS: ${{ inputs.send_to_testers }}
+          TESTFLIGHT_GROUP: ${{ vars.TESTFLIGHT_GROUP }}
