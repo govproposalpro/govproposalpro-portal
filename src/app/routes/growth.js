@@ -14,6 +14,7 @@ const { requireAuth, requireFeature } = require('../session');
 const { hasFeature } = require('../tiers');
 const { pathFor, KEYS } = require('../firstwin');
 const recompete = require('../recompete');
+const samkey = require('../samkey');
 
 const router = express.Router();
 const CORE_PREVIEW = 3;
@@ -67,10 +68,10 @@ router.post('/first-win/sam-check', requireAuth, requireFeature('first_win'), pe
     const last = user.sam_checked;
     const fresh = last && last.uei === user.uei && Date.now() - Date.parse(last.checkedAt) < SAM_RECHECK_HOURS * 3600_000;
     if (!fresh) {
-      if (!sam.enabled()) return res.status(503).json({ error: 'The SAM.gov check is being switched on. Please try again shortly.' });
+      if (!(await samkey.available(user.id))) return res.status(503).json({ error: 'Add your SAM.gov API key in your profile to run this check.' });
       let result;
       try {
-        result = await sam.registration(user.uei);
+        result = await samkey.withKey(user.id, (key) => sam.registration(user.uei, key));
       } catch (err) {
         console.error('[first-win] SAM.gov check failed:', err.message);
         return res.status(502).json({ error: err.userMessage || 'SAM.gov did not respond. Please try again later.' });
@@ -89,6 +90,34 @@ router.post('/first-win/sam-check', requireAuth, requireFeature('first_win'), pe
       user.sam_checked = checked;
     }
     res.json(await pathFor(user));
+  } catch (err) { next(err); }
+});
+
+// ---------------------------------------------------------------- The member's own SAM.gov API key
+
+router.get('/me/sam-key', requireAuth, async (req, res, next) => {
+  try {
+    res.json({ samKey: await samkey.status(req.user.id) });
+  } catch (err) { next(err); }
+});
+
+router.put('/me/sam-key', requireAuth, perUser(5), express.json({ limit: '2kb' }), async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    let status;
+    try {
+      status = await samkey.save(req.user.id, b.key, b.expiresOn || null);
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    res.json({ samKey: status });
+  } catch (err) { next(err); }
+});
+
+router.delete('/me/sam-key', requireAuth, async (req, res, next) => {
+  try {
+    await samkey.remove(req.user.id);
+    res.json({ samKey: await samkey.status(req.user.id) });
   } catch (err) { next(err); }
 });
 

@@ -256,14 +256,14 @@ function buildLinkEmail({ eyebrow, heading, intro, href, cta, expires }) {
 }
 
 /** Deadline reminders. items: [{ title, when, detail }] */
-function buildAlertEmail({ heading, intro, items, href }) {
+function buildAlertEmail({ heading, intro, items, href, eyebrow = 'Deadline alert', cta = 'Open your Command Center' }) {
   const subject = heading;
   const text = `${intro}\n\n${items.map((i) => `- ${i.title}: ${i.when}${i.detail ? ` (${i.detail})` : ''}`).join('\n')}\n\n${href}`;
   const rows = items.map((i) => stepRow('&#9200;', escapeHtml(i.title), `<br/><span style="color:#FF8A9A;">${escapeHtml(i.when)}</span>${i.detail ? ` &middot; ${escapeHtml(i.detail)}` : ''}`).replace('&#9200;. ', '&#9200; ')).join('');
   const html = layout({
-    eyebrow: 'Deadline alert',
+    eyebrow,
     heading: escapeHtml(heading),
-    bodyHtml: `<p style="${P}">${escapeHtml(intro)}</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>${button(href, 'Open your Command Center')}`,
+    bodyHtml: `<p style="${P}">${escapeHtml(intro)}</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>${button(href, cta)}`,
   });
   return { subject, text, html };
 }

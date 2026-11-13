@@ -124,10 +124,10 @@ const naicsList = (s) => [...new Set(String(s || '').match(/\b\d{6}\b/g) || [])]
  * Open opportunities for the member's NAICS codes, scored by how likely they are to win them:
  * exact NAICS, a set-aside they qualify for, where the work is, and time left to respond.
  */
-async function matchOpportunities(user) {
+async function matchOpportunities(user, apiKey) {
   const codes = naicsList(user.naics);
   if (!codes.length) return { codes, matches: [], needsNaics: true };
-  const lists = await Promise.all(codes.map((code) => opportunitiesFor(code)));
+  const lists = await Promise.all(codes.map((code) => opportunitiesFor(code, apiKey)));
   return { codes, matches: scoreOpportunities(user, codes, lists.flat()).slice(0, 60) };
 }
 

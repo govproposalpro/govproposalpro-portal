@@ -8,6 +8,7 @@
  */
 
 const db = require('../db');
+const samkey = require('./samkey');
 
 // tool: the dashboard feature that does the step (the page shows its upgrade card if locked).
 // link: an official free resource. target: how many of something finishes the step.
@@ -31,6 +32,11 @@ const STEPS = [
     key: 'sam', title: 'Get SAM.gov Active with a UEI and CAGE code',
     body: 'Register in SAM.gov (free) to get your Unique Entity ID and CAGE code. Add your UEI to your profile and we check SAM.gov for you. Registration usually takes 2 to 4 weeks, so start now.',
     link: 'https://sam.gov', linkLabel: 'SAM.gov', tool: 'sam_checklist', auto: 'Ticks itself when SAM.gov shows your UEI as Active.',
+  },
+  {
+    key: 'sam_key', title: 'Connect your SAM.gov API key',
+    body: 'Your own free SAM.gov key powers bid matching, subcontractor search, vetting and the SAM.gov check. In SAM.gov, sign in, open your profile, go to Account Details and copy your Public API Key. Keys expire every 90 days; we remind you before yours does.',
+    link: 'https://sam.gov/profile/details', linkLabel: 'SAM.gov Account Details', path: '/sam-key', auto: 'Ticks itself while your key is saved and working.',
   },
   {
     key: 'capability', title: 'Create your capability statement',
@@ -59,6 +65,8 @@ const STEPS = [
   },
 ];
 const KEYS = STEPS.map((s) => s.key);
+// Steps only real data can finish (a key has to actually be saved and working).
+const AUTO_ONLY = ['sam_key'];
 
 /** What the member's data says about each step: { key: { done, count } }. */
 async function autoProgress(user) {
@@ -72,11 +80,13 @@ async function autoProgress(user) {
   );
   const n = rows[0];
   const sam = user.sam_checked || null;
+  const key = await samkey.status(user.id);
   return {
     llc: { done: Boolean(user.entity_structure && /llc|corp|inc|partnership/i.test(user.entity_structure)) },
     ein: { done: false },
     naics: { done: /\b\d{6}\b/.test(user.naics || '') },
     sam: { done: Boolean(sam && sam.active && sam.uei === user.uei) },
+    sam_key: { done: ['ok', 'expiring'].includes(key.state) },
     capability: { done: n.capability > 0, count: n.capability },
     subs: { done: n.subs >= 3, count: n.subs },
     sources_sought: { done: false },
@@ -88,13 +98,15 @@ async function autoProgress(user) {
 /** The checklist as the dashboard shows it. */
 async function pathFor(user) {
   const auto = await autoProgress(user);
-  const manual = user.first_win || {};
+  const manual = { ...(user.first_win || {}) };
+  for (const k of AUTO_ONLY) delete manual[k];
   const steps = STEPS.map((s) => {
     const a = auto[s.key] || {};
     return {
       key: s.key, title: s.title, body: s.body, link: s.link || null, linkLabel: s.linkLabel || null,
       tool: s.tool || null, path: s.path || null, autoNote: s.auto || null, target: s.target || null,
       count: a.count ?? null,
+      autoOnly: AUTO_ONLY.includes(s.key),
       done: Boolean(a.done || manual[s.key]),
       doneBy: a.done ? 'auto' : manual[s.key] ? 'manual' : null,
       doneOn: manual[s.key] || null,
@@ -110,4 +122,4 @@ async function pathFor(user) {
   };
 }
 
-module.exports = { STEPS, KEYS, pathFor };
+module.exports = { STEPS, KEYS: KEYS.filter((k) => !AUTO_ONLY.includes(k)), pathFor };
