@@ -21,7 +21,6 @@
   <script src="/site/static/site.js?v=__VERSION__" defer></script>
   <script src="/site/static/watch.js?v=__VERSION__" defer></script>
   <script src="/site/static/wins.js?v=__VERSION__" defer></script>
-  <script src="https://link.msgsndr.com/js/form_embed.js" defer></script>
 </head>
 <body class="bg-black font-sans text-mist-100 antialiased">
   <a href="#main" class="skip">Skip to content</a>
@@ -34,7 +33,6 @@
       </a>
       <div class="flex items-center gap-2">
         <a href="/app/login" class="hidden rounded-full px-3 py-1.5 text-[13px] text-mist-300 transition hover:text-white sm:inline-block">Sign in</a>
-        <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="hidden rounded-full px-3 py-1.5 text-[13px] text-mist-300 transition hover:text-white sm:inline-block" hidden>Book a call</a>
         <a href="#editions" class="btn-sm" data-offer hidden>See pricing</a>
       </div>
     </div>
@@ -42,26 +40,26 @@
 
   <main id="main">
     <!-- Hero: the demo video, unlocked by a short opt-in -->
-    <section id="hero" class="relative overflow-hidden px-4 pb-14 pt-28 sm:px-6 sm:pt-32">
+    <section id="hero" class="relative overflow-hidden px-4 pb-14 pt-24 sm:px-6 sm:pt-28">
       <div class="aurora" aria-hidden="true"><span class="aurora-a"></span><span class="aurora-b"></span><span class="aurora-c"></span></div>
       <div class="hero-grid" aria-hidden="true"></div>
       <div class="grain" aria-hidden="true"></div>
       <div class="relative mx-auto max-w-5xl text-center">
         <p class="pill reveal"><span class="live-dot" aria-hidden="true"></span><span id="live-pill-text">Free demo for small businesses</span></p>
-        <h1 class="reveal display mt-7 !text-[clamp(2.1rem,5.6vw,4.4rem)]">Government contracting,<br /><span class="grad-text">on autopilot.</span></h1>
-        <p class="reveal lede mx-auto mt-6 max-w-2xl">Watch GovProposalPro read a federal solicitation, score the bid, price it from real federal award data and write a compliant proposal. On Enterprise, the Autopilot runs every step for you. You just review and submit.</p>
+        <h1 class="reveal display mt-5 !text-[clamp(2rem,5vw,3.7rem)] sm:mt-6">Government contracting,<br /><span class="grad-text">on autopilot.</span></h1>
 
-        <div class="reveal stage mt-10" id="stage">
+        <div class="reveal stage mt-6 sm:mt-8" id="stage">
           <div class="shot vsl" id="vsl">
             <img id="vsl-still" src="/assets/site/intro-v5-poster.webp" alt="" width="1280" height="720" class="vsl-thumb" />
+            <button type="button" class="vsl-sound" id="vsl-sound" hidden><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>Tap to turn on sound</button>
             <button type="button" class="vsl-play" id="vsl-play" aria-label="Play the GovProposalPro demo video" hidden>
               <span class="vsl-btn" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span>
             </button>
           </div>
           <form id="gate" class="gate" novalidate aria-labelledby="gate-h">
             <div class="gate-card">
-              <p id="gate-h" class="text-xl font-semibold tracking-tight text-white">Watch the free demo</p>
-              <p class="mt-1 text-sm text-mist-400">Tell us where to send your follow-up notes, then press play.</p>
+              <p id="gate-h" class="text-xl font-semibold tracking-tight text-white">Watch it with sound</p>
+              <p class="mt-1 text-sm text-mist-400">Tell us where to send your follow-up notes. The video starts over from the top.</p>
               <div class="mt-5 grid gap-3 text-left lg:mt-4 lg:gap-2.5">
                 <label class="gate-f"><span>First name</span><input name="firstName" autocomplete="given-name" maxlength="80" required /></label>
                 <label class="gate-f"><span>Email</span><input name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required /></label>
@@ -69,8 +67,8 @@
                 <label class="gate-hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off" /></label>
               </div>
               <p id="gate-err" class="mt-3 text-sm text-brand-redSoft" role="alert" hidden></p>
-              <button class="btn-lg-grad mt-5 w-full lg:mt-4" id="gate-go"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Watch now</button>
-              <p class="mt-4 text-[11px] leading-relaxed text-mist-500 lg:mt-3 lg:leading-snug">By pressing Watch now, you agree that GovProposalPro (Contract Bros) may email, call and text you at this number about GovProposalPro, including by automated means. Consent is not a condition of purchase. Message and data rates may apply. Reply STOP to opt out. See our <a href="/privacy" class="underline hover:text-white">Privacy Policy</a>.</p>
+              <button class="btn-lg-grad mt-5 w-full lg:mt-4" id="gate-go"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Play with sound</button>
+              <p class="mt-4 text-[11px] leading-relaxed text-mist-500 lg:mt-3 lg:leading-snug">By pressing Play with sound, you agree that GovProposalPro (Contract Bros) may email, call and text you at this number about GovProposalPro, including by automated means. Consent is not a condition of purchase. Message and data rates may apply. Reply STOP to opt out. See our <a href="/privacy" class="underline hover:text-white">Privacy Policy</a>.</p>
             </div>
           </form>
         </div>
@@ -78,6 +76,7 @@
           <button type="button" class="chapter" data-clip="intro" aria-pressed="false"><span class="chapter-n">1</span>The intro<span class="chapter-t">1:51</span></button>
           <button type="button" class="chapter" data-clip="demo" aria-pressed="false"><span class="chapter-n">2</span>Full walkthrough<span class="chapter-t">3:30</span></button>
         </div>
+        <p class="reveal lede mx-auto mt-6 max-w-2xl">Watch GovProposalPro read a federal solicitation, score the bid, price it from real federal award data and write a compliant proposal. On Enterprise, the Autopilot runs every step for you. You just review and submit.</p>
         <p class="mt-3 text-[11px] text-mist-500">Intro music: "Voxel Revolution" by Kevin MacLeod (incompetech.com), licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" class="underline hover:text-white">CC BY 4.0</a>.</p>
 
         <div data-offer hidden>
@@ -560,18 +559,13 @@
       </div>
     </section>
 
-    <!-- Free call: the GoHighLevel calendar, embedded. Shows with the offer. -->
-    <section id="call" class="section border-t border-white/[0.06]" data-offer hidden>
-      <div class="mx-auto max-w-4xl">
-        <div class="reveal mx-auto max-w-3xl text-center">
-          <p class="eyebrow">Talk to us first</p>
-          <h2 class="h2">Rather talk it through? <span class="grad-text">Book a free call.</span></h2>
-          <p class="lede mx-auto mt-5 max-w-2xl">Ask anything about government contracting, the two editions, or having our team set everything up and run it with you. Pick a time that works.</p>
-        </div>
-        <div class="reveal mt-10 overflow-hidden rounded-[24px] border border-white/[0.07] bg-white/[0.03] p-2 sm:p-4">
-          <iframe src="__BOOKING_EMBED_URL__" title="Book a free call with Contract Bros" id="gpp-booking" class="booking-frame" scrolling="no" allow="payment"></iframe>
-        </div>
-        <p class="mt-4 text-center text-sm text-mist-400">Calendar not loading? <a href="__BOOKING_URL__" target="_blank" rel="noopener" class="text-brand-blueSoft hover:text-white">Open it in a new tab ›</a></p>
+    <!-- Free call: opens the GoHighLevel calendar in a popup on this page. Shows with the offer. -->
+    <section id="call" class="section-tight border-t border-white/[0.06]" data-offer hidden>
+      <div class="mx-auto max-w-3xl text-center">
+        <p class="eyebrow">Questions before you start?</p>
+        <h2 class="h2">Talk to us. <span class="grad-text">It's free.</span></h2>
+        <p class="lede mx-auto mt-5 max-w-2xl">Ask anything about government contracting, the two editions, or having our team set everything up and run it with you.</p>
+        <a href="__BOOKING_URL__" data-booking class="btn-lg mt-8">Book a free call</a>
       </div>
     </section>
 
@@ -629,9 +623,20 @@
         <p class="mx-auto mt-4 max-w-md leading-relaxed text-mist-400">The Proposal Engine, Bid Decryptor and pricing tools, 10 proposals a month. Upgrade to Enterprise from your dashboard whenever you're ready.</p>
         <a href="__CORE_MONTHLY_URL__" data-checkout="core-monthly" class="btn-lg-grad mt-8 w-full sm:w-auto sm:px-10">Start Core for $97/mo</a>
         <p class="mt-3 text-xs text-mist-500">Billed $97 today and every month until you cancel. Cancel anytime in Whop. 7-day money-back guarantee.</p>
-        <p class="mt-5 text-sm" data-booking-wrap hidden><a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="text-brand-blueSoft hover:text-white">Questions first? Book a free 20-minute call ›</a></p>
+        <p class="mt-5 text-sm" data-booking-wrap hidden><a href="__BOOKING_URL__" data-booking class="text-brand-blueSoft hover:text-white">Questions first? Book a free call ›</a></p>
       </div>
       <div class="co-foot justify-center"><button type="button" data-co-close class="hover:text-white">No thanks</button></div>
+    </div>
+  </dialog>
+
+  <!-- Free call calendar (GoHighLevel), opened in place by any [data-booking] link. site.js runs it. -->
+  <dialog id="booking" class="co" aria-labelledby="bk-title">
+    <div class="co-panel bk-panel">
+      <div class="co-head">
+        <div class="flex min-w-0 items-center gap-3"><img src="/assets/gpp-logo-mark.png" alt="" width="480" height="499" class="h-7 w-auto flex-none" /><div class="min-w-0"><p id="bk-title" class="co-title">Book a free call</p><p class="co-sub">Pick a time that works for you</p></div></div>
+        <button type="button" class="co-x" data-co-close aria-label="Close"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <iframe id="bk-frame" class="bk-frame" title="Book a free call with Contract Bros" data-src="__BOOKING_EMBED_URL__" allow="payment"></iframe>
     </div>
   </dialog>
 
@@ -640,7 +645,7 @@
     data-core-plan="__CORE_PLAN__" data-enterprise-plan="__ENTERPRISE_PLAN__"
     data-core-access-plan="__CORE_ACCESS_PLAN__" data-enterprise-access-plan="__ENTERPRISE_ACCESS_PLAN__"
     data-core-monthly-plan="__CORE_MONTHLY_PLAN__" data-enterprise-monthly-plan="__ENTERPRISE_MONTHLY_PLAN__"
-    data-core-maint="__CORE_MAINT__" data-enterprise-maint="__ENTERPRISE_MAINT__" data-booking-url="__BOOKING_URL__" data-vsl-id="__VSL_ID__" data-vsl-url="__VSL_URL__" data-mode="__CHECKOUT_MODE__">
+    data-core-maint="__CORE_MAINT__" data-enterprise-maint="__ENTERPRISE_MAINT__" data-booking-url="__BOOKING_URL__" data-vsl-id="__VSL_ID__" data-vsl-url="__VSL_URL__" data-mode="__CHECKOUT_MODE__" data-gate="__VSL_GATE__">
     <div class="co-panel">
       <div class="co-head">
         <div class="flex min-w-0 items-center gap-3">
@@ -668,7 +673,7 @@
             <a href="__ENTERPRISE_MONTHLY_URL__" data-checkout="enterprise-monthly" class="btn-lg-grad mt-5 w-full">Upgrade to Enterprise · $297/mo</a>
             <p class="mt-3 text-xs text-mist-500">Billed $297 today and every month until you cancel. We cancel your Core plan for you, so you're never billed for both.</p>
           </div>
-          <p class="mt-5 text-sm text-mist-400" data-booking-wrap hidden>Want a hand getting started? <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="text-brand-blueSoft hover:text-white">Book your free onboarding call ›</a></p>
+          <p class="mt-5 text-sm text-mist-400" data-booking-wrap hidden>Want a hand getting started? <a href="__BOOKING_URL__" data-booking class="text-brand-blueSoft hover:text-white">Book your free onboarding call ›</a></p>
         </div>
       </div>
       <div class="co-foot">

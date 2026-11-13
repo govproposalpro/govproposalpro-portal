@@ -87,6 +87,8 @@
   function next() {
     if (dismissed()) return;
     if (document.hidden) { timer = setTimeout(next, 3000); return; }
+    // A page can ask for quiet (the sales page does while its opt-in form or the phone video is on screen).
+    if (typeof window.gppWinsQuiet === 'function' && window.gppWinsQuiet()) { timer = setTimeout(next, 4000); return; }
     if (!queue.length) { load(); return; }
     var win = queue.shift();
     var seen = readSeen();
