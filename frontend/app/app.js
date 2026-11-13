@@ -284,6 +284,7 @@
               <button id="logout-m" class="nav-link w-full">${icon('out')}<span>Sign out</span></button>
             </nav>
           </div>
+          <div id="keybar" class="no-print mx-auto hidden w-full max-w-7xl px-4 pt-5 sm:px-8"></div>
           <main id="view" class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-9"></main>
         </div>
       </div>`;
@@ -331,6 +332,7 @@
     }
     if (!state.shellReady) renderShell();
     markActive(path);
+    drawKeybar(path);
     const view = $('#view');
     view.innerHTML = '<div class="flex justify-center py-20"><span class="spinner"></span></div>';
     window.scrollTo(0, 0);
@@ -379,6 +381,7 @@
       else if (path === '/proposals/new') await viewNewProposal(view);
       else if ((m = path.match(/^\/proposals\/(\d+)$/))) await viewProposal(view, m[1]);
       else if (path === '/profile') await viewProfile(view);
+      else if (path === '/sam-key') await viewSamKey(view);
       else if ((m = path.match(/^\/feature\/([a-z_]+)$/))) viewFeature(view, m[1]);
       else view.innerHTML = emptyState('Page not found', 'That page does not exist.', '<a href="/app" data-link class="btn-primary">Back to Command Center</a>');
     } catch (err) {
@@ -1206,7 +1209,7 @@
     });
   }
 
-  const ALERT_LABEL = { proposal_due: 'Proposal due', questions_due: 'Questions due', sam_expiring: 'SAM.gov renewal' };
+  const ALERT_LABEL = { proposal_due: 'Proposal due', questions_due: 'Questions due', sam_expiring: 'SAM.gov renewal', sam_key: 'SAM.gov API key' };
   const daysLabel = (n) => (n <= 0 ? 'Today' : n === 1 ? 'Tomorrow' : `${n} days`);
   const alertRow = (a) => `
     <li class="flex items-center justify-between gap-3 py-2.5">
@@ -1619,6 +1622,12 @@
           <div class="sticky bottom-4 mt-8 flex justify-end"><button type="submit" class="btn-primary">Save profile</button></div>
         </form>
         <div class="space-y-6">
+          <section class="card p-6">
+            <h2 class="font-semibold text-white">SAM.gov API key</h2>
+            <p class="mt-1 text-sm text-mist-400">Powers bid matching, subcontractor search, vetting and your SAM.gov check. Keys expire every 90 days.</p>
+            <div class="mt-3">${samKeyPill(state.me.samKey)}</div>
+            <a href="/app/sam-key" data-link class="btn-ghost mt-4 !px-3 !py-1.5 !text-xs">${icon('lockshield', 'h-3.5 w-3.5')}${state.me.samKey && state.me.samKey.set ? 'Update key' : 'Add your key'}</a>
+          </section>
           <section class="card p-6">
             <h2 class="font-semibold text-white">Company documents</h2>
             <p class="mt-1 text-sm text-mist-400">The proposal engine and capability statement generator read these for facts about your work.</p>

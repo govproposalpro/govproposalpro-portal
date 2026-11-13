@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 const db = require('../../db');
 const ai = require('../ai');
 const sam = require('../sam');
+const samkey = require('../samkey');
 const { requireAuth, requireFeature } = require('../session');
 const { aiProfile } = require('../profile');
 const { documentContext } = require('./profile');
@@ -156,13 +157,13 @@ router.get('/vetting', requireAuth, requireFeature('sub_vetting'), async (req, r
     const { rows } = await db.query(
       `SELECT id, query, verdict, result, created_at AS "createdAt" FROM sub_vettings
         WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`, [req.user.id]);
-    res.json({ vettings: rows, configured: sam.enabled() });
+    res.json({ vettings: rows, configured: await samkey.available(req.user.id) });
   } catch (err) { next(err); }
 });
 
 router.post('/vetting', requireAuth, requireFeature('sub_vetting'), perUser(5), express.json({ limit: '2kb' }), async (req, res, next) => {
   try {
-    if (!sam.enabled()) return res.status(503).json({ error: 'SAM.gov vetting is being switched on. Please try again shortly.' });
+    if (!(await samkey.available(req.user.id))) return res.status(503).json({ error: 'Add your SAM.gov API key in your profile to run vetting.' });
     const q = typeof req.body?.query === 'string' ? req.body.query.replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, 200) : '';
     if (q.length < 3) return res.status(400).json({ error: "Enter the subcontractor's legal business name or 12-character UEI." });
     // SAM.gov public keys have a small daily quota, so a recent identical lookup is reused.
@@ -171,7 +172,7 @@ router.post('/vetting', requireAuth, requireFeature('sub_vetting'), perUser(5), 
         ORDER BY created_at DESC LIMIT 1`, [q]);
     let result = cached.rows[0] && cached.rows[0].result;
     if (!result) try {
-      result = await sam.vet(q);
+      result = await samkey.withKey(req.user.id, (key) => sam.vet(q, key));
     } catch (err) {
       console.error('[vetting] SAM.gov call failed:', err.message);
       return res.status(502).json({ error: err.userMessage || 'SAM.gov did not respond. Please try again in a few minutes.' });

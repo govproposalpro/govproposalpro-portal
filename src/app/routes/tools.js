@@ -11,6 +11,7 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const db = require('../../db');
 const sam = require('../sam');
+const samkey = require('../samkey');
 const intel = require('../intel');
 const STATES = require('../data/states');
 const { requireAuth, requireFeature } = require('../session');
@@ -315,8 +316,8 @@ router.get('/pulse', requireAuth, requireFeature('compliance_pulse'), async (_re
 
 router.get('/matchmaker', requireAuth, requireFeature('bid_matchmaker'), perUser(10), async (req, res, next) => {
   try {
-    if (!sam.enabled()) return res.json({ configured: false, matches: [], codes: [] });
-    res.json({ configured: true, ...(await intel.matchOpportunities(req.user)) });
+    if (!(await samkey.available(req.user.id))) return res.json({ configured: false, matches: [], codes: [] });
+    res.json({ configured: true, ...(await samkey.withKey(req.user.id, (key) => intel.matchOpportunities(req.user, key))) });
   } catch (err) {
     console.error('[matchmaker] failed:', err.message);
     if (err instanceof sam.SamError) return res.status(502).json({ error: err.userMessage || 'SAM.gov did not respond. Try again in a few minutes.' });
@@ -336,8 +337,9 @@ router.get('/vendors/search', requireAuth, requireFeature('vendor_scraper'), per
     const state = String(req.query.state || '').trim().toUpperCase();
     if (!/^\d{6}$/.test(naics)) return res.status(400).json({ error: 'Enter a 6-digit NAICS code.' });
     if (!STATE_CODES.has(state)) return res.status(400).json({ error: 'Choose a state.' });
-    if (!sam.enabled()) return res.json({ configured: false, entities: [], total: 0 });
-    const result = await intel.cached(`sam:entities:${naics}:${state}`, 24 * 3600_000, () => sam.searchEntities({ naics, state }));
+    if (!(await samkey.available(req.user.id))) return res.json({ configured: false, entities: [], total: 0 });
+    const result = await samkey.withKey(req.user.id, (key) =>
+      intel.cached(`sam:entities:${naics}:${state}`, 24 * 3600_000, () => sam.searchEntities({ naics, state }, key)));
     res.json({ configured: true, ...result, topRated: hasFeature(req.user.tier, 'places_vendors') && intel.placesEnabled() });
   } catch (err) {
     console.error('[vendors] SAM search failed:', err.message);

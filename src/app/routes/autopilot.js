@@ -140,11 +140,19 @@ function parseSettings(b) {
   }
   for (const [field, column] of Object.entries(SECRET_FIELDS)) {
     if (b[field] === undefined) continue;
-    if (b[field] === null || b[field] === '') { out[column] = null; continue; }
+    if (b[field] === null || b[field] === '') {
+      out[column] = null;
+      if (field === 'samKey') Object.assign(out, { sam_key_set_at: null, sam_key_expires_on: null, sam_key_rejected_at: null });
+      continue;
+    }
     const v = String(b[field]).trim();
     if (v.length < 8 || v.length > 400 || /\s/.test(v) && field !== 'emailPassword') throw new Error('That key does not look right. Paste it again.');
     if (field === 'aiKey' && !/^sk-ant-/.test(v)) throw new Error('Anthropic API keys start with sk-ant-.');
     out[column] = secrets.encrypt(v);
+    // A new SAM.gov key lasts 90 days; the expiry reminders count from today.
+    if (field === 'samKey') {
+      Object.assign(out, { sam_key_set_at: new Date(), sam_key_expires_on: new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10), sam_key_rejected_at: null });
+    }
   }
   return out;
 }

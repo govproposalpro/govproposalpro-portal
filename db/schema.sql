@@ -535,3 +535,14 @@ ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS first_win JSONB NOT NULL DEFAULT '{
 -- Last live SAM.gov check of the member's own UEI (First Win Path), so the page never spends
 -- more than one SAM.gov call per member per day.
 ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS sam_checked JSONB;
+
+-- Every member's own SAM.gov API key (stored encrypted in autopilot_settings.sam_key_enc, which
+-- the Autopilot already used). SAM.gov public keys expire every 90 days, so we track when the
+-- key was added and when it expires, and remind the member before it does. rejected_at is set
+-- when SAM.gov refuses the key (expired or reset early), so the member is asked to add a new one.
+ALTER TABLE autopilot_settings ADD COLUMN IF NOT EXISTS sam_key_set_at      TIMESTAMPTZ;
+ALTER TABLE autopilot_settings ADD COLUMN IF NOT EXISTS sam_key_expires_on  DATE;
+ALTER TABLE autopilot_settings ADD COLUMN IF NOT EXISTS sam_key_rejected_at TIMESTAMPTZ;
+-- Keys saved before these columns existed: assume 90 days from the last settings change.
+UPDATE autopilot_settings SET sam_key_set_at = updated_at, sam_key_expires_on = (updated_at + interval '90 days')::date
+ WHERE sam_key_enc IS NOT NULL AND sam_key_set_at IS NULL;

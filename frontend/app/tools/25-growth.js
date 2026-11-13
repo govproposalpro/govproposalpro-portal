@@ -3,6 +3,7 @@
   const toolHref = (s) => (s.path ? '/app' + s.path : s.tool && ROUTE_OF[s.tool] ? '/app' + ROUTE_OF[s.tool] : '');
   const toolLabel = (s) => {
     if (s.path === '/profile') return 'Open profile';
+    if (s.path === '/sam-key') return s.done ? 'Update your SAM.gov key' : 'Add your SAM.gov key';
     const f = s.tool && state.me.features.find((x) => x.key === s.tool);
     if (!f) return 'Open';
     return f.unlocked ? `Open ${f.name}` : `${f.name} (Enterprise)`;
@@ -61,7 +62,7 @@
           const href = toolHref(s);
           return `
           <li class="card flex gap-4 p-5 ${s.done ? 'opacity-75' : ''} ${isNext ? 'ring-1 ring-brand-blueSoft/40' : ''}">
-            <label class="mt-0.5 shrink-0"><input type="checkbox" data-step="${s.key}" class="h-5 w-5 accent-brand-blue" ${s.done ? 'checked' : ''} ${s.doneBy === 'auto' ? 'disabled' : ''} aria-label="Mark step ${i + 1} done" /></label>
+            <label class="mt-0.5 shrink-0"><input type="checkbox" data-step="${s.key}" class="h-5 w-5 accent-brand-blue" ${s.done ? 'checked' : ''} ${s.doneBy === 'auto' || s.autoOnly ? 'disabled' : ''} aria-label="Mark step ${i + 1} done" /></label>
             <div class="min-w-0 flex-1">
               <p class="font-semibold text-white">${i + 1}. ${esc(s.title)}
                 ${isNext ? '<span class="pill ml-1 bg-brand-blue/20 text-brand-blueSoft">Next</span>' : ''}
@@ -71,7 +72,7 @@
               ${s.autoNote ? `<p class="mt-1 text-xs text-mist-500">${esc(s.autoNote)}</p>` : ''}
               ${s.key === 'sam' ? samLine() : ''}
               ${href || s.link ? `<div class="mt-3 flex flex-wrap gap-2">
-                ${href ? `<a href="${href}" data-link class="btn-ghost !px-3 !py-1.5 !text-xs">${icon(ICON_OF[s.tool] || 'user', 'h-3.5 w-3.5')}${esc(toolLabel(s))}</a>` : ''}
+                ${href ? `<a href="${href}" data-link class="btn-ghost !px-3 !py-1.5 !text-xs">${icon(s.path === '/sam-key' ? 'lockshield' : ICON_OF[s.tool] || 'user', 'h-3.5 w-3.5')}${esc(toolLabel(s))}</a>` : ''}
                 ${s.link ? `<a href="${esc(s.link)}" target="_blank" rel="noopener noreferrer" class="btn-ghost !px-3 !py-1.5 !text-xs">${esc(s.linkLabel || 'Open')}</a>` : ''}
               </div>` : ''}
             </div>

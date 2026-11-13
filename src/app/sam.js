@@ -16,8 +16,11 @@ const UEI_RE = /^[A-Z0-9]{12}$/;
 const enabled = () => Boolean(process.env.SAM_API_KEY);
 
 class SamError extends Error {
-  constructor(message, userMessage) { super(message); this.userMessage = userMessage; }
+  constructor(message, userMessage, status) { super(message); this.userMessage = userMessage; this.status = status; }
 }
+
+/** True when SAM.gov refused the key itself (expired, reset or mistyped), not a busy or down service. */
+const isKeyRejected = (err) => err instanceof SamError && (err.status === 401 || err.status === 403);
 
 /** apiKey: a member's own key (Autopilot); defaults to the platform key. */
 async function get(path, params, apiKey = process.env.SAM_API_KEY) {
@@ -25,8 +28,8 @@ async function get(path, params, apiKey = process.env.SAM_API_KEY) {
   url.searchParams.set('api_key', apiKey);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const res = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(20_000) });
-  if (res.status === 429) throw new SamError('SAM.gov 429', 'SAM.gov lookup limit reached for today. Try again tomorrow.');
-  if (res.status === 401 || res.status === 403) throw new SamError(`SAM.gov ${res.status}`, 'SAM.gov did not accept the API key. Check it in SAM.gov under Account Details.');
+  if (res.status === 429) throw new SamError('SAM.gov 429', 'SAM.gov lookup limit reached for today. Add your own SAM.gov API key in your profile, or try again tomorrow.', 429);
+  if (res.status === 401 || res.status === 403) throw new SamError(`SAM.gov ${res.status}`, 'SAM.gov did not accept the API key. Keys expire every 90 days: get a new one in SAM.gov under Account Details and paste it in your profile.', res.status);
   if (res.status === 404) return {};
   if (!res.ok) throw new SamError(`SAM.gov ${path} -> ${res.status}`);
   return res.json();
@@ -47,12 +50,12 @@ const isActiveExclusion = (actions) => {
  * @param {string} query legal business name or UEI
  * @returns {Promise<{verdict: 'clear'|'excluded'|'not_registered'|'review', entities: object[], exclusions: object[], checkedAt: string, by: string}>}
  */
-async function vet(query) {
+async function vet(query, apiKey) {
   const uei = query.toUpperCase().replace(/\s/g, '');
   const byUei = UEI_RE.test(uei);
   const [entityRes, exclusionRes] = await Promise.all([
-    get('entities', byUei ? { ueiSAM: uei, includeSections: 'entityRegistration,coreData' } : { legalBusinessName: query, includeSections: 'entityRegistration,coreData' }),
-    get('exclusions', byUei ? { ueiSAM: uei } : { exclusionName: query }),
+    get('entities', byUei ? { ueiSAM: uei, includeSections: 'entityRegistration,coreData' } : { legalBusinessName: query, includeSections: 'entityRegistration,coreData' }, apiKey),
+    get('exclusions', byUei ? { ueiSAM: uei } : { exclusionName: query }, apiKey),
   ]);
 
   const entities = (entityRes.entityData || []).slice(0, 8).map((e) => {
@@ -97,8 +100,8 @@ async function vet(query) {
  * The member's own registration by UEI (First Win Path): status, CAGE code and expiration.
  * @returns {Promise<{found: boolean, active: boolean, status?: string, cage?: string, expires?: string, name?: string, checkedAt: string}>}
  */
-async function registration(uei) {
-  const res = await get('entities', { ueiSAM: uei, includeSections: 'entityRegistration' });
+async function registration(uei, apiKey) {
+  const res = await get('entities', { ueiSAM: uei, includeSections: 'entityRegistration' }, apiKey);
   const r = ((res.entityData || [])[0] || {}).entityRegistration;
   const checkedAt = new Date().toISOString();
   if (!r) return { found: false, active: false, checkedAt };
@@ -111,6 +114,12 @@ async function registration(uei) {
     name: r.legalBusinessName || '',
     checkedAt,
   };
+}
+
+/** Checks a member's key with one cheap lookup. Throws SamError (status 401/403) when SAM.gov refuses it. */
+async function checkKey(apiKey) {
+  await get('entities', { ueiSAM: 'ZZZZZZZZZZZZ', includeSections: 'entityRegistration' }, apiKey);
+  return true;
 }
 
 const mmddyyyy = (d) => `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}/${d.getUTCFullYear()}`;
@@ -219,4 +228,4 @@ async function downloadAttachment(link) {
   return { name, bytes, kind: isPdf ? 'pdf' : 'docx' };
 }
 
-module.exports = { enabled, vet, registration, searchOpportunities, searchEntities, noticeDescription, downloadAttachment, SamError };
+module.exports = { enabled, vet, registration, checkKey, isKeyRejected, searchOpportunities, searchEntities, noticeDescription, downloadAttachment, SamError };
