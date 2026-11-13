@@ -186,13 +186,20 @@ app.get('/embed/wins.js', (_req, res) => {
 });
 
 // access.* (the signup link in purchase emails and the setup PDF) opens the signup page at /;
-// every other host (govproposalpro.com, www) opens the landing page there. /access is always signup.
+// every other host (govproposalpro.com, www) opens the VSL sales page there. /access is always signup.
 const isAccessHost = (req) => /^access\./i.test(req.hostname || '');
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store');
   if (isAccessHost(req)) return res.type('html').send(indexHtml);
   res.set('Content-Security-Policy', SITE_CSP);
-  return res.type('html').send(siteHtml);
+  return res.type('html').send(watchHtml);
+});
+// The VSL page is the homepage. /watch and /demo stay as aliases for links already in ads and emails.
+// The previous long-form landing page stays reachable at /overview.
+app.get('/overview', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Content-Security-Policy', SITE_CSP);
+  res.type('html').send(siteHtml);
 });
 app.get(['/watch', '/demo'], (_req, res) => {
   res.set('Cache-Control', 'no-store');
