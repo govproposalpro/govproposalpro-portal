@@ -15,9 +15,11 @@
   <meta property="og:image" content="https://govproposalpro.com/assets/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/site/static/site.css?v=__VERSION__" />
+  <link rel="stylesheet" href="/site/static/plans.css?v=__VERSION__" />
   <meta name="gpp-pixel" content="__META_PIXEL_ID__" />
   <meta name="gpp-clarity" content="__CLARITY_ID__" />
   <script src="/site/static/pixel.js?v=__VERSION__" defer></script>
+  <script src="/site/static/plans.js?v=__VERSION__" defer></script>
   <script src="/site/static/site.js?v=__VERSION__" defer></script>
   <script src="/site/static/watch.js?v=__VERSION__" defer></script>
   <script src="/site/static/wins.js?v=__VERSION__" defer></script>
@@ -35,7 +37,7 @@
       <div class="flex items-center gap-2">
         <a href="/app/login" class="hidden rounded-full px-3 py-1.5 text-[13px] text-mist-300 transition hover:text-white sm:inline-block">Sign in</a>
         <a href="__BOOKING_URL__" data-booking target="_blank" rel="noopener" class="hidden rounded-full px-3 py-1.5 text-[13px] text-mist-300 transition hover:text-white sm:inline-block" hidden>Book a call</a>
-        <a href="#editions" class="btn-sm" data-offer hidden>See pricing</a>
+        <a href="#editions" class="btn-sm" data-offer data-plans="core" hidden>See pricing</a>
       </div>
     </div>
   </header>
@@ -85,7 +87,8 @@
           <a href="__CORE_MONTHLY_URL__" data-checkout="core-monthly" class="btn-lg-grad btn-shine sm:px-12">Start for $97/mo</a>
           <a href="__ENTERPRISE_MONTHLY_URL__" data-checkout="enterprise-monthly" class="text-sm font-medium text-mist-300 hover:text-white">Want the Autopilot? Get Enterprise for $297/mo ›</a>
         </div>
-        <p class="reveal mt-4 text-sm text-mist-400"><a href="#editions" class="hover:text-white">Compare the editions ›</a></p>
+        <p class="reveal mt-5"><a href="#editions" data-plans="core" class="btn-lg sm:px-10">See everything you get ›</a></p>
+        <p class="reveal mt-3 text-sm text-mist-400"><a href="#editions" data-plans="compare" class="hover:text-white">Compare Core and Enterprise ›</a></p>
         <p class="reveal mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-mist-500">
           <span>Secure checkout by Whop</span><span aria-hidden="true">·</span><span>Cancel anytime</span><span aria-hidden="true">·</span><span>7-day money-back guarantee</span><span aria-hidden="true">·</span><span>Your login arrives by email</span>
         </p>
@@ -556,7 +559,7 @@
               <p class="mt-3 text-center text-xs text-mist-500">Billed $297 today and every month until you cancel. Cancel anytime in Whop. Access ends when billing stops.</p></div>
           </div>
         </div>
-        <p class="reveal mt-6 text-center text-sm text-mist-400"><a href="/#editions" class="text-white hover:text-brand-blueSoft">Compare every feature ›</a></p>
+        <p class="reveal mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-sm text-mist-400"><a href="#editions" data-plans="core" class="text-white hover:text-brand-blueSoft">Everything in Core ›</a><a href="#editions" data-plans="enterprise" class="text-white hover:text-brand-blueSoft">Everything in Enterprise ›</a><a href="#editions" data-plans="compare" class="text-white hover:text-brand-blueSoft">Compare every feature ›</a></p>
       </div>
     </section>
 

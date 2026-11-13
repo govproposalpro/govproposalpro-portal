@@ -223,6 +223,11 @@ app.get(['/watch', '/demo'], (_req, res) => {
   res.set('Content-Security-Policy', SITE_CSP);
   res.type('html').send(watchHtml);
 });
+// "See pricing": the one-pager sheet on the sales page, with the offer shown (plans.js opens it from the hash).
+app.get(['/plans', '/pricing'], (req, res) => {
+  const tab = ['core', 'enterprise', 'compare'].includes(req.query.tab) ? `-${req.query.tab}` : '';
+  res.redirect(302, `/?offer=1#plans${tab}`);
+});
 app.get('/access', (_req, res) => {
   res.set('Cache-Control', 'no-store');
   res.type('html').send(indexHtml);
