@@ -31,6 +31,14 @@ services:
         sync: false
       - key: WHOP_WEBHOOK_SECRET
         sync: false
+      - key: WHOP_API_KEY
+        sync: false # optional: Whop company API key with membership:cancel; stops a Core plan renewing when the member upgrades
+      - key: CLARITY_ID
+        sync: false # optional: Microsoft Clarity project id (free heatmaps/session replays on the sales pages)
+      - key: AI_MEMBER_MONTHLY_BUDGET_CORE
+        sync: false # optional: monthly fair-use AI budget per Core member in USD (default 30)
+      - key: AI_MEMBER_MONTHLY_BUDGET_ENTERPRISE
+        sync: false # optional: monthly fair-use AI budget per Enterprise member in USD (default 150)
       # --- Command Center (dashboard at /app) ---
       - key: ANTHROPIC_API_KEY
         sync: false # Claude API key for the Proposal Engine and Bid Decryptor

@@ -3,6 +3,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
+const { budgetFor } = require('../ai');
 const db = require('../../db');
 const { normalizeEmail, isValidEmail } = require('../../validation');
 const { createSession, destroySession, requireAuth } = require('../session');
@@ -128,7 +129,7 @@ router.get('/me', requireAuth, async (req, res, next) => {
     res.json({
       user: publicProfile(req.user),
       tier: { key: tier, label: TIERS[tier].label },
-      usage: { proposals: await proposalUsage(req.user.id, tier) },
+      usage: { proposals: await proposalUsage(req.user.id, tier), ai: budgetFor(req.user.id, tier) },
       features: featuresFor(tier),
       // The member's own SAM.gov API key (status only, never the key): drives the renewal banner.
       samKey: await samkey.status(req.user.id),

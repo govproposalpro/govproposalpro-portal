@@ -11,7 +11,7 @@ const helmet = require('helmet');
 const registerRouter = require('./routes/register');
 const whopWebhookRouter = require('./routes/whopWebhook');
 const leadsRouter = require('./routes/leads');
-const { PLANS, whopLink, BOOKING_URL, BOOKING_EMBED_ID, META_PIXEL_ID } = require('./plans');
+const { PLANS, whopLink, BOOKING_URL, BOOKING_EMBED_ID, META_PIXEL_ID, CLARITY_ID } = require('./plans');
 const { corsForSignup } = require('./cors');
 const authRouter = require('./app/routes/auth');
 const { router: bidsRouter } = require('./app/routes/bids');
@@ -24,6 +24,7 @@ const { router: aiJobsRouter } = require('./app/routes/aijobs');
 const { router: autopilotRouter } = require('./app/routes/autopilot');
 const { router: growthRouter } = require('./app/routes/growth');
 const { failInterruptedRuns } = require('./app/autopilot');
+const { loadSpend } = require('./app/ai');
 const { publicRouter: winsPublicRouter } = require('./app/wins');
 const adminAuthRouter = require('./admin/routes/auth');
 const adminManageRouter = require('./admin/routes/manage');
@@ -143,6 +144,7 @@ const fillSite = (file) => fs.readFileSync(path.join(SITE_DIR, file), 'utf8')
   .replaceAll('__BOOKING_URL__', htmlText(BOOKING_URL))
   .replaceAll('__BOOKING_EMBED_URL__', `https://api.leadconnectorhq.com/widget/booking/${BOOKING_EMBED_ID}`)
   .replaceAll('__META_PIXEL_ID__', META_PIXEL_ID)
+  .replaceAll('__CLARITY_ID__', CLARITY_ID)
   .replaceAll('__VSL_ID__', youtubeId)
   .replaceAll('__VSL_URL__', htmlText(vslVideoUrl))
   .replaceAll('__CHECKOUT_MODE__', checkoutMode);
@@ -153,12 +155,12 @@ const watchHtml = fillSite('watch.html');
 // <style> tags that script adds. Every other page keeps the strict policy above.
 const SITE_CSP = [
   "default-src 'self'",
-  "script-src 'self' https://cdn.whop.com https://js.whop.com https://t.whop.tw https://cdn.plaid.com https://connect.facebook.net https://link.msgsndr.com",
+  "script-src 'self' https://cdn.whop.com https://js.whop.com https://t.whop.tw https://cdn.plaid.com https://connect.facebook.net https://link.msgsndr.com https://www.clarity.ms https://*.clarity.ms",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://*.whop.com https://i.ytimg.com https://www.facebook.com",
+  "img-src 'self' data: https://*.whop.com https://i.ytimg.com https://www.facebook.com https://*.clarity.ms https://c.bing.com",
   "font-src 'self'",
   `media-src 'self'${vslVideoUrl ? ` ${new URL(vslVideoUrl).origin}` : ''}`,
-  "connect-src 'self' https://whop.com https://*.whop.com https://t.whop.tw https://www.facebook.com https://connect.facebook.net",
+  "connect-src 'self' https://whop.com https://*.whop.com https://t.whop.tw https://www.facebook.com https://connect.facebook.net https://*.clarity.ms https://c.bing.com",
   "worker-src 'self' blob:",
   "frame-src https://whop.com https://*.whop.com https://*.plaid.com https://www.youtube-nocookie.com https://api.leadconnectorhq.com",
   "form-action 'self'",
@@ -235,6 +237,19 @@ app.get(['/admin', '/admin/*'], (_req, res) => {
   res.type('html').send(adminHtml);
 });
 
+// Search engines: index the public sales pages, never the app, admin or API.
+const SITE_ORIGIN = (process.env.SITE_ORIGIN || 'https://govproposalpro.com').replace(/\/$/, '');
+app.get('/robots.txt', (_req, res) => {
+  res.type('text/plain').set('Cache-Control', 'public, max-age=86400')
+    .send(`User-agent: *\nAllow: /\nDisallow: /app\nDisallow: /admin\nDisallow: /api\nDisallow: /access\n\nSitemap: ${SITE_ORIGIN}/sitemap.xml\n`);
+});
+app.get('/sitemap.xml', (_req, res) => {
+  const pages = ['/', '/demo', '/terms', '/privacy', '/earnings-disclaimer'];
+  res.type('application/xml').set('Cache-Control', 'public, max-age=86400').send(
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map((p) => `  <url><loc>${SITE_ORIGIN}${p}</loc></url>`).join('\n')}\n</urlset>\n`
+  );
+});
+
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
 // eslint-disable-next-line no-unused-vars
@@ -254,6 +269,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.KEY_ENCRYPTION_SECRET)
 const sweep = () => Promise.all([failInterruptedJobs(), failInterruptedRuns()]).catch((err) => console.error('[jobs] sweep failed:', err.message));
 setInterval(sweep, 5 * 60 * 1000).unref();
 sweep();
+loadSpend().catch((err) => console.error('[ai] could not load this month\'s spend:', err.message));
 
 const alerts = () => runAlertJob().catch((err) => console.error('[alerts] job failed:', err.message));
 setInterval(alerts, 60 * 60 * 1000).unref();

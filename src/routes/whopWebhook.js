@@ -16,6 +16,7 @@ const db = require('../db');
 const { normalizeEmail, isValidEmail } = require('../validation');
 const ghl = require('../services/ghl');
 const { SUBSCRIPTION_TIERS } = require('../plans');
+const whop = require('../services/whop');
 
 const router = express.Router();
 const TOLERANCE_SECONDS = 5 * 60;
@@ -26,6 +27,8 @@ const GRANT_EVENTS = new Set(['membership.went_valid', 'membership.activated', '
 const REVOKE_EVENTS = new Set(['payment.refunded']);
 // Monthly edition plans are the product itself, so access ends when that membership ends.
 const MEMBERSHIP_END_EVENTS = new Set(['membership.went_invalid', 'membership.deactivated', 'membership.expired']);
+// A card was declined (first payment or a renewal). Whop retries on its own; we tell the member.
+const PAYMENT_FAILED_EVENTS = new Set(['payment.failed']);
 
 const listFromEnv = (name) => new Set((process.env[name] || '').split(',').map((s) => s.trim()).filter(Boolean));
 const ENTERPRISE_PRODUCTS = listFromEnv('WHOP_ENTERPRISE_PRODUCT_IDS');
@@ -67,7 +70,10 @@ function extract(event) {
   if (monthly) tier = MONTHLY_PLANS.get(planId);
   else if (productId && ENTERPRISE_PRODUCTS.has(productId)) tier = 'enterprise';
   else if (productId && CORE_PRODUCTS.has(productId)) tier = 'core';
-  return { type, email, tier, monthly, fullName, ref: ref ? String(ref).slice(0, 128) : null };
+  const membershipId = [data.membership?.id, data.membership_id, data.id].find((v) => /^mem_/.test(String(v || ''))) || null;
+  const recoveryUrl = typeof data.recovery_url === 'string' ? data.recovery_url.slice(0, 500) : '';
+  const failure = typeof data.failure_message === 'string' ? data.failure_message.slice(0, 160) : '';
+  return { type, email, tier, monthly, fullName, ref: ref ? String(ref).slice(0, 128) : null, membershipId, recoveryUrl, failure };
 }
 
 // Whop sends several grant events per purchase; the access_email_sent_at claim makes the
@@ -89,6 +95,25 @@ function sendAccessEmailOnce({ email, tier, fullName, monthly }) {
     .catch((err) => console.error('[whop] access email claim failed:', err.message));
 }
 
+/**
+ * A Core subscriber bought Enterprise: stop the Core plan renewing (they keep it to the end of the
+ * month they paid for, then Enterprise carries on), and flag the contact in GoHighLevel. Falls back
+ * to a GHL task for the team when there is no Whop API key or the cancel call fails.
+ */
+function cancelOldCore({ email, coreMembership, newMembership }) {
+  const attempt = whop.enabled() && coreMembership && coreMembership !== newMembership
+    ? whop.cancelAtPeriodEnd(coreMembership, 'Upgraded to Enterprise').then(() => true, (err) => {
+      console.error('[whop] auto-cancel of Core failed:', err.message);
+      return false;
+    })
+    : Promise.resolve(false);
+  attempt.then((coreCancelled) => {
+    if (coreCancelled) console.log(`[whop] Core membership ${coreMembership} set to cancel at period end after upgrade`);
+    if (ghl.enabled()) return ghl.onUpgraded({ email, coreCancelled });
+    return null;
+  }).catch((err) => console.error('[whop] upgrade flag failed:', err.message));
+}
+
 router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '256kb' }), async (req, res) => {
   const secret = process.env.WHOP_WEBHOOK_SECRET;
   if (!secret) return res.status(404).end();
@@ -104,7 +129,7 @@ router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '25
     return res.status(400).json({ error: 'invalid json' });
   }
 
-  const { type, email, tier, monthly, fullName, ref } = extract(event);
+  const { type, email, tier, monthly, fullName, ref, membershipId, recoveryUrl, failure } = extract(event);
   // The Whop company sells other products too; only GovProposalPro products grant or revoke access.
   if (!tier) return res.status(200).json({ ignored: true });
   if (!isValidEmail(email)) {
@@ -116,7 +141,7 @@ router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '25
     if (GRANT_EVENTS.has(type)) {
       // A Core subscriber buying Enterprise is an upgrade: the team cancels the old Core plan.
       const before = monthly && tier === 'enterprise'
-        ? (await db.query('SELECT tier, billing, revoked_at FROM authorized_purchasers WHERE lower(email) = $1', [email])).rows[0]
+        ? (await db.query('SELECT tier, billing, revoked_at, whop_ref, core_membership_id FROM authorized_purchasers WHERE lower(email) = $1', [email])).rows[0]
         : null;
       const upgraded = Boolean(before && !before.revoked_at && before.tier === 'core' && before.billing === 'monthly');
       // billing records how access was bought. A one-time purchase always wins over a monthly plan,
@@ -137,8 +162,17 @@ router.post('/webhooks/whop', express.raw({ type: 'application/json', limit: '25
                revoked_at = NULL`,
         [email, tier, ref, monthly ? 'monthly' : 'one_time']
       );
+      // Remember the Core monthly membership so an upgrade can stop it renewing later.
+      if (monthly && tier === 'core' && membershipId) {
+        await db.query('UPDATE authorized_purchasers SET core_membership_id = $2 WHERE lower(email) = $1', [email, membershipId]);
+      }
       sendAccessEmailOnce({ email, tier, fullName, monthly });
-      if (upgraded && ghl.enabled()) ghl.onUpgraded({ email }).catch((err) => console.error('[whop] upgrade flag failed:', err.message));
+      if (upgraded) {
+        const coreMembership = before.core_membership_id || (/^mem_/.test(before.whop_ref || '') ? before.whop_ref : null);
+        cancelOldCore({ email, coreMembership, newMembership: membershipId });
+      }
+    } else if (PAYMENT_FAILED_EVENTS.has(type)) {
+      if (ghl.enabled()) ghl.onPaymentFailed({ email, recoveryUrl, reason: failure }).catch((err) => console.error('[whop] payment-failed notice failed:', err.message));
     } else if (REVOKE_EVENTS.has(type)) {
       await db.query('UPDATE authorized_purchasers SET revoked_at = now() WHERE lower(email) = $1', [email]);
     } else if (monthly && MEMBERSHIP_END_EVENTS.has(type)) {

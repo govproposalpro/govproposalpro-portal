@@ -548,3 +548,18 @@ ALTER TABLE autopilot_settings ADD COLUMN IF NOT EXISTS sam_key_rejected_at TIME
 -- Keys saved before these columns existed: assume 90 days from the last settings change.
 UPDATE autopilot_settings SET sam_key_set_at = updated_at, sam_key_expires_on = (updated_at + interval '90 days')::date
  WHERE sam_key_enc IS NOT NULL AND sam_key_set_at IS NULL;
+-- Launch hardening (Nov 2026)
+-- The Core monthly membership (mem_...), so upgrading to Enterprise can stop it renewing.
+ALTER TABLE authorized_purchasers ADD COLUMN IF NOT EXISTS core_membership_id VARCHAR(64);
+-- Claude usage billed to the platform key, per member and calendar month (UTC), in US dollars.
+-- Backs the monthly fair-use budget in src/app/ai.js.
+CREATE TABLE IF NOT EXISTS ai_spend (
+  user_id     BIGINT        NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
+  month       CHAR(7)       NOT NULL,                     -- YYYY-MM
+  dollars     NUMERIC(12,6) NOT NULL DEFAULT 0,
+  updated_at  TIMESTAMPTZ   NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, month)
+);
+-- Activation milestones (key -> date first reached), each sent to GoHighLevel once as a tag so
+-- follow-up emails can go only to members who have not got started.
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS activation JSONB NOT NULL DEFAULT '{}';

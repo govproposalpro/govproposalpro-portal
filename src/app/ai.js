@@ -26,11 +26,88 @@ const DAILY_CALL_CAP = intEnv('AI_DAILY_CALL_CAP', 1500);
 const MEMBER_DAILY_CALL_CAP = intEnv('AI_MEMBER_DAILY_CALL_CAP', 60);
 const usage = { day: '', calls: 0, byMember: new Map() };
 
+// Monthly fair-use budget per member, in US dollars of Claude usage billed to the platform key.
+// Sized so a member who uses every proposal in their plan never reaches it; it only stops runaway
+// use of the other AI tools. Spend is recorded per call from the API's own token counts.
+const dollarsEnv = (name, fallback) => {
+  const n = Number.parseFloat(process.env[name] || '');
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+};
+const MONTHLY_BUDGET = {
+  core: dollarsEnv('AI_MEMBER_MONTHLY_BUDGET_CORE', 30),
+  enterprise: dollarsEnv('AI_MEMBER_MONTHLY_BUDGET_ENTERPRISE', 150),
+};
+// US dollars per million tokens: [input, output, cache read, cache write].
+const PRICES = {
+  'claude-opus-5-5': [4, 20, 0.2, 5],
+  'claude-opus-5': [5, 25, 0.5, 6.25],
+  'claude-opus-4-8': [5, 25, 0.5, 6.25],
+  'claude-haiku-5-5': [0.1, 0.5, 0.01, 0.125],
+  'claude-sonnet-5-5': [2, 10, 0.1, 2.5],
+};
+const spend = { month: '', byMember: new Map() }; // member id -> dollars this month
+const monthKey = () => new Date().toISOString().slice(0, 7);
+
+/** Dollar cost of one response from its usage block (unknown models are priced as Opus). */
+function costOf(model, u = {}) {
+  const [inP, outP, readP, writeP] = PRICES[model] || PRICES[String(model || '').replace(/-\d{8}$/, '')] || PRICES['claude-opus-5-5'];
+  return ((u.input_tokens || 0) * inP + (u.output_tokens || 0) * outP
+    + (u.cache_read_input_tokens || 0) * readP + (u.cache_creation_input_tokens || 0) * writeP) / 1e6;
+}
+
+function memberSpend(id) {
+  if (spend.month !== monthKey()) Object.assign(spend, { month: monthKey(), byMember: new Map() });
+  return spend.byMember.get(id) || 0;
+}
+
+/** Adds one response's cost to the member's month (memory first, then the database). */
+function recordSpend(member, message) {
+  const dollars = costOf(message.model, message.usage);
+  if (!(dollars > 0)) return;
+  spend.byMember.set(member.id, memberSpend(member.id) + dollars);
+  const db = require('../db');
+  db.query(
+    `INSERT INTO ai_spend (user_id, month, dollars) VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, month) DO UPDATE SET dollars = ai_spend.dollars + EXCLUDED.dollars, updated_at = now()`,
+    [member.id, monthKey(), dollars]
+  ).catch((err) => console.error('[ai] spend record failed:', err.message));
+}
+
+/** Loads this month's spend at startup so a restart doesn't reset anyone's budget. */
+async function loadSpend() {
+  const db = require('../db');
+  const { rows } = await db.query('SELECT user_id, dollars FROM ai_spend WHERE month = $1', [monthKey()]);
+  Object.assign(spend, { month: monthKey(), byMember: new Map(rows.map((r) => [Number(r.user_id), Number(r.dollars)])) });
+}
+
+/** This month's AI usage for one member, for the dashboard. */
+function budgetFor(userId, tier) {
+  const limit = MONTHLY_BUDGET[tier === 'enterprise' ? 'enterprise' : 'core'];
+  const used = memberSpend(Number(userId));
+  return { usedPct: Math.min(100, Math.floor((used / limit) * 100)), reached: used >= limit };
+}
+
 // The signed-in member a request runs for (set by requireAuth), so their calls can be counted.
 const memberScope = new AsyncLocalStorage();
 /** Runs fn with every platform-billed Claude call inside it counted against this member. */
-function forMember(userId, fn) {
-  return memberScope.run(userId, fn);
+function forMember(userId, fn, tier = 'core') {
+  return memberScope.run({ id: Number(userId), tier: tier === 'enterprise' ? 'enterprise' : 'core' }, fn);
+}
+
+/** The platform client with each response's cost recorded against the member who asked. */
+function metered(c, member) {
+  return {
+    beta: {
+      messages: {
+        stream(params) {
+          const s = c.beta.messages.stream(params);
+          s.finalMessage().then((m) => recordSpend(member, m), () => {});
+          return s;
+        },
+      },
+    },
+    models: c.models,
+  };
 }
 
 // Autopilot work runs on the member's own Anthropic key (see withMemberKey). Those calls cost
@@ -62,16 +139,20 @@ function anthropic() {
   }
   const member = memberScope.getStore();
   if (member != null) {
-    const used = usage.byMember.get(member) || 0;
+    const used = usage.byMember.get(member.id) || 0;
     if (used >= MEMBER_DAILY_CALL_CAP) {
-      console.warn(`[ai] member ${member} reached the daily call cap of ${MEMBER_DAILY_CALL_CAP}`);
+      console.warn(`[ai] member ${member.id} reached the daily call cap of ${MEMBER_DAILY_CALL_CAP}`);
       throw new AiError("You've reached today's AI limit for your account. It resets at midnight UTC.");
     }
-    usage.byMember.set(member, used + 1);
+    if (memberSpend(member.id) >= MONTHLY_BUDGET[member.tier]) {
+      console.warn(`[ai] member ${member.id} reached the monthly fair-use budget`);
+      throw new AiError("You've reached this month's fair-use AI limit for your plan. It resets on the 1st. Contact support if you need more.");
+    }
+    usage.byMember.set(member.id, used + 1);
   }
   usage.calls += 1;
   if (!client) client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 3, timeout: 15 * 60 * 1000 });
-  return client;
+  return member != null ? metered(client, member) : client;
 }
 
 class AiError extends Error {}
@@ -689,7 +770,7 @@ async function parseQuoteReply({ text }) {
 }
 
 module.exports = {
-  enabled, forMember, decryptRfp, writeProposal, readCompanyDocument, writeCapabilityStatement, capabilityMarkdown, CAPABILITY_SCHEMA,
+  enabled, forMember, loadSpend, budgetFor, costOf, decryptRfp, writeProposal, readCompanyDocument, writeCapabilityStatement, capabilityMarkdown, CAPABILITY_SCHEMA,
   gradeSectionM, writeRfi, writeCaseStudy, AiError,
   withMemberKey, checkKey, learnBusiness, estimatePricing, parseQuoteReply,
 };

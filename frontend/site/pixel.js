@@ -6,6 +6,14 @@
  */
 (function () {
   'use strict';
+  // Microsoft Clarity (free heatmaps and session replays), only when CLARITY_ID is set.
+  var cl = document.querySelector('meta[name="gpp-clarity"]');
+  var clarityId = cl && /^[a-z0-9]{6,20}$/.test(cl.content) ? cl.content : '';
+  if (clarityId) {
+    window.clarity = window.clarity || function () { (window.clarity.q = window.clarity.q || []).push(arguments); };
+    var ct = document.createElement('script'); ct.async = true; ct.src = 'https://www.clarity.ms/tag/' + clarityId;
+    document.head.appendChild(ct);
+  }
   var meta = document.querySelector('meta[name="gpp-pixel"]');
   var id = meta && /^\d{6,20}$/.test(meta.content) ? meta.content : '';
   window.gppTrack = function (event, params, opts) {

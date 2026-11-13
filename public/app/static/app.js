@@ -498,6 +498,7 @@
           <p class="mt-2 text-3xl font-bold text-white">${usage.used}<span class="text-lg font-medium text-mist-500"> / ${usage.limit}</span></p>
           <div class="meter mt-3"><span id="meter"></span></div>
           <p class="mt-2 text-xs text-mist-500">Resets ${fmtDate(usage.resetsAt)}</p>
+          ${me.usage && me.usage.ai && me.usage.ai.usedPct >= 80 ? `<p class="mt-2 text-xs ${me.usage.ai.reached ? 'text-brand-redSoft' : 'text-amber-200'}">${me.usage.ai.reached ? 'Monthly fair-use AI limit reached. It resets on the 1st.' : `${me.usage.ai.usedPct}% of this month's fair-use AI limit used.`}</p>` : ''}
         </div>
         <div class="stat stat-violet"><div class="flex items-center justify-between"><p class="text-sm text-mist-400">Active opportunities</p><span class="ico-bubble ico-violet">${icon('crm', 'h-4 w-4')}</span></div><p class="mt-2 text-3xl font-bold text-white">${active.length}</p><p class="mt-2 text-xs text-mist-500">${won} won so far</p></div>
         <div class="stat stat-green"><div class="flex items-center justify-between"><p class="text-sm text-mist-400">Pipeline value</p><span class="ico-bubble ico-green">${icon('dollar', 'h-4 w-4')}</span></div><p class="mt-2 text-3xl font-bold text-white">${fmtMoney(pipeline)}</p><p class="mt-2 text-xs text-mist-500">Across open bids</p></div>

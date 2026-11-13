@@ -206,9 +206,14 @@ async function onLead({ email, firstName, phone, page, utm = {}, clickId, referr
  * Runs when a Core subscriber buys Enterprise: tags the contact and gives the team a task to cancel
  * the old Core plan in Whop, so the member is not billed for both (the site promises this).
  */
-async function onUpgraded({ email }) {
-  const contactId = await upsertContact({ email, tags: ['gpp-upgraded-enterprise', 'gpp-cancel-core-plan', 'gpp-enterprise'] });
-  await call('POST', `/contacts/${contactId}/tasks`, {
+async function onUpgraded({ email, coreCancelled = false }) {
+  // With WHOP_API_KEY set the webhook cancels the old Core plan itself; the team only gets a task
+  // when that did not happen.
+  const contactId = await upsertContact({
+    email,
+    tags: ['gpp-upgraded-enterprise', 'gpp-enterprise', coreCancelled ? 'gpp-core-auto-cancelled' : 'gpp-cancel-core-plan'],
+  });
+  if (!coreCancelled) await call('POST', `/contacts/${contactId}/tasks`, {
     title: `Cancel Core plan in Whop: ${email} upgraded to Enterprise`,
     body: `${email} bought Enterprise ($297/mo) while on Core ($97/mo). Cancel their Core membership in Whop today so they are not billed for both. If Core renewed after the upgrade, refund that charge.`,
     dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -218,4 +223,19 @@ async function onUpgraded({ email }) {
   try { await sendEmail(contactId, buildUpgradeEmail({ email })); } catch (err) { console.error('[ghl] upgrade email failed:', err.message); }
 }
 
-module.exports = { onRegistered, onPurchased, onUpgraded, onLead, enabled, upsertContact, sendEmail };
+/** Adds tags to a member's contact (activation milestones, billing status). */
+async function tagContact({ email, tags }) {
+  return upsertContact({ email, tags });
+}
+
+/**
+ * Runs when a renewal or first payment fails: tags the contact (for a GHL follow-up workflow) and
+ * emails the member a link to update their card while Whop retries.
+ */
+async function onPaymentFailed({ email, recoveryUrl, reason }) {
+  const contactId = await upsertContact({ email, tags: ['gpp-payment-failed'] });
+  const { buildPaymentFailedEmail } = require('./email');
+  await sendEmail(contactId, buildPaymentFailedEmail({ recoveryUrl, reason }));
+}
+
+module.exports = { onRegistered, onPurchased, onUpgraded, onLead, onPaymentFailed, tagContact, enabled, upsertContact, sendEmail };
