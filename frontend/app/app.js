@@ -93,6 +93,8 @@
     bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     pen: '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    route: '<circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="5" r="2.2"/><path d="M8.2 19H16a3 3 0 0 0 0-6H8a3 3 0 0 1 0-6h7.8"/>',
+    history: '<path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
     archive: '<rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
   };
   const icon = (name, cls = 'h-5 w-5') =>
@@ -173,6 +175,7 @@
   window.addEventListener('popstate', render);
 
   const ROUTE_OF = {
+    first_win: '/first-win', recompete_radar: '/recompete',
     autopilot: '/autopilot',
     proposal_engine: '/proposals', bid_decryptor: '/decryptor', go_no_go: '/go-no-go', bid_crm: '/crm', bid_matchmaker: '/matchmaker',
     vendor_scraper: '/vendors', outreach: '/outreach', foia: '/foia', pricing_matrix: '/pricing', teaming_legal: '/teaming',
@@ -182,6 +185,7 @@
     state_directory: '/states', deadline_alerts: '/alerts',
   };
   const ICON_OF = {
+    first_win: 'route', recompete_radar: 'history',
     autopilot: 'bolt',
     proposal_engine: 'proposal', bid_decryptor: 'decrypt', go_no_go: 'gauge', bid_crm: 'crm', bid_matchmaker: 'radar',
     vendor_scraper: 'users', outreach: 'mail', foia: 'folder', pricing_matrix: 'dollar', teaming_legal: 'handshake',
@@ -191,8 +195,9 @@
     state_directory: 'map', deadline_alerts: 'bell',
   };
   const NAV_GROUPS = [
+    ['Start here', ['first_win']],
     ['Autopilot', ['autopilot']],
-    ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker']],
+    ['Win work', ['proposal_engine', 'bid_decryptor', 'go_no_go', 'bid_crm', 'bid_matchmaker', 'recompete_radar']],
     ['Subs and pricing', ['vendor_scraper', 'outreach', 'pricing_matrix', 'foia', 'teaming_legal', 'sub_vetting']],
     ['Review and submit', ['section_m', 'rfi_ghostwriter']],
     ['After award', ['milestones', 'invoicing']],
@@ -200,6 +205,8 @@
       'subcontracting_check', 'sam_checklist', 'state_directory', 'deadline_alerts']],
   ];
   const ABOUT = {
+    first_win: 'A step-by-step checklist from forming your LLC to winning your first federal contract. Steps tick themselves as you use the tools.',
+    recompete_radar: 'Federal contracts in your NAICS codes that end in the next 3 to 18 months, with the agency, incumbent and value, so you can get in front of the buyer before the recompete posts.',
     autopilot: 'Your hands-off government contracting assistant. It learns your business, finds matching solicitations on SAM.gov, reads them, emails vendors for quotes, checks what the government really paid, prices every line at your margin and writes the proposal, as many bids a day as you set.',
     go_no_go: 'Analyzes each solicitation against your business profile and tells you if you are legally qualified to bid, including set-aside and limits on subcontracting checks.',
     invoicing: 'Builds SF-1034 public vouchers (with SF-1035 continuation lines) for purchases and services, numbered and totaled so you get paid on time.',
@@ -227,8 +234,9 @@
     const byKey = new Map(f.map((x) => [x.key, x]));
     const link = (href, ic, label, extra = '') =>
       `<a href="/app${href === '/' ? '' : href}" data-link data-path="${href}" class="nav-link"><span class="nav-ico">${icon(ic, 'h-[17px] w-[17px]')}</span><span class="flex-1 truncate">${esc(label)}</span>${extra}</a>`;
+    const preview = (k) => k === 'recompete_radar' && state.me.tier.key !== 'enterprise';
     const item = (x) => (x.unlocked && x.status === 'live'
-      ? link(ROUTE_OF[x.key], ICON_OF[x.key], x.name)
+      ? link(ROUTE_OF[x.key], ICON_OF[x.key], x.name, preview(x.key) ? '<span class="pill bg-white/[0.08] text-mist-400">Preview</span>' : '')
       : link('/feature/' + x.key, x.unlocked ? ICON_OF[x.key] : 'lock', x.name,
         x.unlocked ? '<span class="pill bg-white/[0.08] text-mist-400">Soon</span>' : '<span class="pill bg-gradient-to-r from-brand-blue/30 to-brand-red/30 text-white">Ent</span>'));
     return `
@@ -334,6 +342,8 @@
     try {
       if (path === '/') await viewHome(view);
       else if (path === '/autopilot') await viewAutopilot(view);
+      else if (path === '/first-win') await viewFirstWin(view);
+      else if (path === '/recompete') await viewRecompete(view);
       else if ((m = path.match(/^\/autopilot\/(\d+)$/))) await viewAutopilotItem(view, m[1]);
       else if (path === '/welcome') await viewWelcome(view);
       else if (path === '/capability') await viewCapabilityList(view);
@@ -452,7 +462,8 @@
   // ------------------------------------------------------------------ home
 
   async function viewHome(view) {
-    const [{ bids, stages }, { proposals, usage }, { alerts }] = await Promise.all([api('/bids'), api('/proposals'), api('/alerts')]);
+    const [{ bids, stages }, { proposals, usage }, { alerts }, fw] = await Promise.all([api('/bids'), api('/proposals'), api('/alerts'),
+      hasTool('first_win') ? api('/first-win').catch(() => null) : null]);
     const me = state.me;
     const first = (me.user.fullName || '').split(' ')[0];
     const active = bids.filter((b) => !['won', 'lost'].includes(b.stage));
@@ -463,7 +474,7 @@
     const won = bids.filter((b) => b.stage === 'won').length;
 
     const ent = me.tier.key === 'enterprise';
-    const quick = (ent ? [['autopilot', 'autopilot', 'Run the Autopilot'], ['matchmaker', 'bid_matchmaker', 'Find matched bids'], ['section-m', 'section_m', 'Grade a proposal'], ['pricing', 'pricing_matrix', 'Price with Fringe/G&A']]
+    const quick = (ent ? [['autopilot', 'autopilot', 'Run the Autopilot'], ['matchmaker', 'bid_matchmaker', 'Find matched bids'], ['recompete', 'recompete_radar', 'Recompete Radar'], ['section-m', 'section_m', 'Grade a proposal'], ['pricing', 'pricing_matrix', 'Price with Fringe/G&A']]
       : [['go-no-go', 'go_no_go', 'Go/No-Go a bid'], ['vendors', 'vendor_scraper', 'Find subcontractors'], ['pricing', 'pricing_matrix', 'Price a bid'], ['cmmc', 'cmmc_checklist', 'CMMC Level 1 check']]);
 
     view.innerHTML = `
@@ -475,6 +486,7 @@
         <div class="mt-6 flex flex-wrap gap-2">${quick.map(([path, key, label]) => `<a href="/app/${path}" data-link class="btn-ghost !bg-white/[0.06] !pl-1.5"><span class="ico-bubble ico-grad !h-7 !w-7 !rounded-full">${icon(ICON_OF[key] || 'spark', 'h-3.5 w-3.5')}</span>${label}</a>`).join('')}</div>
         ${ent ? '' : `<div class="mt-6 flex flex-wrap items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4"><p class="min-w-0 flex-1 text-sm text-mist-400">Enterprise adds the GovCon Autopilot (it finds the bids, gets vendor quotes, prices and writes the proposals for you), the Predictive Bid Matchmaker, Section M grading, teaming agreements and 50 proposals a month.</p>${upgradeButton()}</div>`}
       </section>
+      ${firstWinCard(fw)}
       ${pageHead('Today', 'Your pipeline, deadlines and proposals at a glance.',
         '<a href="/app/decryptor" data-link class="btn-ghost">' + icon('decrypt', 'h-4 w-4') + 'Decrypt an RFP</a><a href="/app/proposals/new" data-link class="btn-primary">' + icon('proposal', 'h-4 w-4') + 'New proposal</a>')}
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -506,7 +518,10 @@
             : '<p class="text-sm text-mist-500">Your first proposal is one click away. Decrypt an RFP, then let the engine draft it.</p>'}
         </section>
       </div>`;
-    requestAnimationFrame(() => { const m = $('#meter'); if (m) m.style.width = pct + '%'; });
+    requestAnimationFrame(() => {
+      const m = $('#meter'); if (m) m.style.width = pct + '%';
+      const f = $('#fw-home-meter'); if (f && fw) f.style.width = Math.round((fw.done / fw.total) * 100) + '%';
+    });
   }
 
   const statusPill = (s) => s === 'ready' ? '<span class="pill bg-emerald-500/15 text-emerald-300">Ready</span>'

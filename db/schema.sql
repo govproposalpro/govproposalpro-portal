@@ -528,3 +528,10 @@ CREATE TABLE IF NOT EXISTS proposal_files (
   created_at   TIMESTAMPTZ   NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS proposal_files_proposal_idx ON proposal_files (proposal_id, role, position);
+
+-- First Win Path: steps the member ticked by hand (step key -> date). Most steps also tick
+-- themselves from the member's data (profile, capability statements, subs, bids).
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS first_win JSONB NOT NULL DEFAULT '{}';
+-- Last live SAM.gov check of the member's own UEI (First Win Path), so the page never spends
+-- more than one SAM.gov call per member per day.
+ALTER TABLE "Users" ADD COLUMN IF NOT EXISTS sam_checked JSONB;

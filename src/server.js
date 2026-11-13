@@ -22,6 +22,7 @@ const { router: extrasRouter } = require('./app/routes/extras');
 const { router: toolsRouter } = require('./app/routes/tools');
 const { router: aiJobsRouter } = require('./app/routes/aijobs');
 const { router: autopilotRouter } = require('./app/routes/autopilot');
+const { router: growthRouter } = require('./app/routes/growth');
 const { failInterruptedRuns } = require('./app/autopilot');
 const { publicRouter: winsPublicRouter } = require('./app/wins');
 const adminAuthRouter = require('./admin/routes/auth');
@@ -72,7 +73,7 @@ app.use('/api', leadsRouter);
 // Dashboard API. Responses are per-member, so never cache them anywhere.
 app.use(['/api/auth', '/api/me', '/api/bids', '/api/decryptor', '/api/proposals', '/api/capability-statements',
   '/api/vetting', '/api/alerts', '/api/admin', '/api/subs', '/api/foia', '/api/pricing', '/api/milestones', '/api/invoices',
-  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs', '/api/proposal-files'], sameOrigin, (_req, res, next) => {
+  '/api/legal', '/api/states', '/api/pulse', '/api/matchmaker', '/api/vendors', '/api/jobs', '/api/proposal-files', '/api/first-win', '/api/recompete'], sameOrigin, (_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
@@ -85,6 +86,7 @@ app.use('/api', extrasRouter);
 app.use('/api', toolsRouter);
 app.use('/api', aiJobsRouter);
 app.use('/api', autopilotRouter);
+app.use('/api', growthRouter);
 app.use('/api', adminAuthRouter);
 app.use('/api', adminManageRouter);
 
