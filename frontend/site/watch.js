@@ -88,11 +88,47 @@
       return r.bottom > 0 && r.top < window.innerHeight;
     };
 
+    // Our own progress bar instead of the player's timeline: it races to 75% in the first tenth of
+    // the video, then creeps the last quarter, so the video feels nearly done and people stay.
+    var bar = document.getElementById('vsl-bar');
+    var barFill = document.getElementById('vsl-bar-fill');
+    var resume = document.getElementById('vsl-resume');
+    function shownProgress(t) {
+      if (!(t > 0)) return 0;
+      if (t >= 1) return 1;
+      var FAST = 0.1;
+      if (t < FAST) { var a = 1 - t / FAST; return 0.75 * (1 - a * a); }
+      return 0.75 + 0.25 * ((t - FAST) / (1 - FAST));
+    }
+    function drawBar(v) {
+      if (!barFill) return;
+      var t = v.duration && isFinite(v.duration) ? v.currentTime / v.duration : 0;
+      if (v.ended) t = 1;
+      barFill.style.transform = 'scaleX(' + shownProgress(t).toFixed(4) + ')';
+    }
+    function wireVideo(v) {
+      v.controls = false;
+      v.disablePictureInPicture = true;
+      v.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback noplaybackrate');
+      v.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+      if (bar) bar.hidden = false;
+      ['timeupdate', 'seeked', 'loadedmetadata', 'ended', 'emptied'].forEach(function (ev) { v.addEventListener(ev, function () { drawBar(v); }); });
+      v.addEventListener('play', function () { if (resume) resume.hidden = true; });
+      v.addEventListener('pause', function () { if (resume && !v.ended && !v.muted) resume.hidden = false; });
+      // A tap on the video turns sound on while it is muted, and pauses or plays it after that.
+      v.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (v.muted) { wantSound(); return; }
+        if (v.paused) v.play(); else v.pause();
+      });
+      if (resume) resume.addEventListener('click', function () { if (v.muted) wantSound(); else v.play(); });
+    }
     function mount(clip) {
       if (current.tagName === 'VIDEO' || current.tagName === 'IFRAME') return current;
       var v = window.gppVideo(vslId, clip);
       current.replaceWith(v);
       current = v;
+      if (v.tagName === 'VIDEO') wireVideo(v);
       still.hidden = v.tagName === 'VIDEO';
       watchForOffer(v);
       if (v.tagName !== 'VIDEO') showOffer(); // YouTube can't report its time
@@ -109,12 +145,13 @@
       v.muted = !withSound;
       // iOS Safari checks the attribute as well as the property before it allows muted autoplay.
       if (withSound) v.removeAttribute('muted'); else v.setAttribute('muted', '');
-      v.controls = Boolean(withSound);
+      v.controls = false; // no timeline: viewers never see how long the video runs
       var p = v.play();
       if (p && p.catch) p.catch(function (er) {
         if (er && er.name === 'AbortError') return; // a newer play() call took over
         // Low Power Mode and some browsers refuse even muted autoplay: show the play button.
-        if (!withSound) { v.controls = true; if (soundBtn) soundBtn.hidden = false; }
+        if (!withSound) { if (soundBtn) soundBtn.hidden = false; }
+        else if (resume) resume.hidden = false;
       });
       if (useChapters) chapters.querySelectorAll('[data-clip]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.clip === clip)); });
     }
@@ -153,7 +190,6 @@
       play.hidden = true;
       show(vslUrl || 'intro', false);
       if (soundBtn) soundBtn.hidden = false;
-      if (current.tagName === 'VIDEO') current.addEventListener('click', function (e) { if (current.muted) { e.preventDefault(); wantSound(); } });
     }
 
     function fail(msg, field) {
