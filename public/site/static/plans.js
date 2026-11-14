@@ -159,7 +159,7 @@
     return d;
   }
 
-  var dlg;
+  var dlg, returnTab = '';
   function select(key) {
     if (!TABS[key]) key = 'core';
     dlg.dataset.tab = key;
@@ -189,13 +189,28 @@
       var tab = e.target.closest('.pl-tab');
       if (tab) { select(tab.dataset.tab); return; }
       // A buy button: site.js opens the embedded checkout on top; this sheet steps aside.
-      if (e.target.closest('[data-checkout]')) setTimeout(close, 0);
+      if (e.target.closest('[data-checkout]')) { returnTab = dlg.dataset.tab || 'core'; setTimeout(close, 0); }
     });
     document.addEventListener('click', function (e) {
       var a = e.target.closest('[data-plans]');
       if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
       e.preventDefault();
       open(a.getAttribute('data-plans') || 'core');
+    });
+    // Closing the checkout (or the "before you go" offer after it) without paying brings the
+    // visitor back to the sheet they bought from, on the same tab.
+    document.querySelectorAll('dialog.co').forEach(function (d) {
+      d.addEventListener('close', function () {
+        if (!returnTab) return;
+        var done = document.getElementById('co-done');
+        if (d.id === 'checkout' && done && !done.hidden) { returnTab = ''; return; }
+        // site.js may open the downsell 250 ms after the checkout closes; wait for that first.
+        setTimeout(function () {
+          if (!returnTab || document.querySelector('dialog.co[open]') || dlg.open) return;
+          var tab = returnTab; returnTab = '';
+          open(tab);
+        }, 400);
+      });
     });
     var m = /^#plans(?:-(core|enterprise|compare))?$/.exec(location.hash);
     if (m) open(m[1] || 'core');
